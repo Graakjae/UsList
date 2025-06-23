@@ -1,0 +1,21 @@
+{
+  "rules": {
+    "shoppingItems": {
+      ".read": true,
+      ".write": true,
+      "$itemId": {
+        ".validate": "newData.hasChildren(['name', 'completed'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "completed": {
+          ".validate": "newData.isBoolean()"
+        }
+      }
+    },
+    "products": {
+      ".read": true,
+      ".write": false
+    }
+  }
+} 
