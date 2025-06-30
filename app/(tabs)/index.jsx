@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { onValue, push, ref, remove, set, update } from "firebase/database";
 import { useEffect, useState } from "react";
 import {
@@ -11,10 +12,12 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import basketIcon from "../../assets/icons/basket.png";
 import { database } from "../../firebase";
 
 export default function ShoppingScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   console.log("Safe Area Insets:", {
     top: insets.top,
     bottom: insets.bottom,
@@ -237,7 +240,15 @@ export default function ShoppingScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Indkøbsliste</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>Indkøbsliste</Text>
+        <TouchableOpacity
+          onPress={() => router.push("/products")}
+          style={styles.headerIconButton}
+        >
+          <Image source={basketIcon} style={styles.headerIcon} />
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.inputContainer}>
         <TextInput
@@ -358,11 +369,26 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#fff",
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 20,
     marginTop: 40,
+  },
+  headerIconButton: {
+    padding: 8,
+    borderRadius: 20,
+  },
+  headerIcon: {
+    width: 28,
+    height: 28,
+    resizeMode: "contain",
+  },
+  title: {
+    fontSize: 28,
+    fontFamily: "Baloo2-Bold",
+    color: "#333",
   },
   inputContainer: {
     flexDirection: "row",
@@ -372,9 +398,11 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 2,
     borderColor: "#FFC0CB",
-    borderRadius: 5,
-    padding: 10,
+    borderRadius: 8,
+    padding: 12,
     marginRight: 10,
+    fontFamily: "Nunito-Regular",
+    fontSize: 16,
   },
   addButton: {
     backgroundColor: "#FFC0CB",
@@ -387,6 +415,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: "#fff",
     fontSize: 24,
+    fontFamily: "Baloo2-Bold",
   },
   item: {
     flex: 1,
@@ -398,10 +427,13 @@ const styles = StyleSheet.create({
   },
   itemText: {
     fontSize: 16,
+    fontFamily: "Nunito-Regular",
+    color: "#333",
   },
   completedText: {
     textDecorationLine: "line-through",
     color: "red",
+    fontFamily: "Nunito-Regular",
   },
   deleteButtonsContainer: {
     position: "absolute",
@@ -415,8 +447,8 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     flex: 1,
-    padding: 10,
-    borderRadius: 5,
+    padding: 12,
+    borderRadius: 8,
     alignItems: "center",
   },
   deleteCompletedButton: {
@@ -428,7 +460,7 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "bold",
+    fontFamily: "Baloo2-Bold",
   },
   listContainer: {
     flex: 1,
@@ -460,7 +492,7 @@ const styles = StyleSheet.create({
   },
   searchResultsContainer: {
     position: "absolute",
-    top: 165,
+    top: 180,
     left: 20,
     right: 20,
     backgroundColor: "white",
@@ -483,11 +515,14 @@ const styles = StyleSheet.create({
   },
   searchResultText: {
     fontSize: 16,
+    fontFamily: "Nunito-Regular",
+    color: "#333",
   },
   searchResultCategory: {
     fontSize: 12,
     color: "#666",
     marginTop: 2,
+    fontFamily: "Nunito-Regular",
   },
   productImage: {
     width: 25,

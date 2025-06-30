@@ -1,4 +1,5 @@
 import * as ImagePicker from "expo-image-picker";
+import { Stack } from "expo-router";
 import { onValue, push, ref, remove, set } from "firebase/database";
 import { useEffect, useState } from "react";
 import {
@@ -12,7 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { database } from "../../firebase";
+import { database } from "../firebase";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -24,7 +25,6 @@ export default function Products() {
   const [productImage, setProductImage] = useState(null);
   const [uploading, setUploading] = useState(false);
 
-  // Define category order for sorting
   const categoryOrder = {
     "Frugt & Grønt": 1,
     "Kød & Fisk": 2,
@@ -38,31 +38,25 @@ export default function Products() {
     Husholdning: 10,
   };
 
-  console.log("Products:", products);
-
-  // Sort products by category
   const sortedProducts = [...products].sort((a, b) => {
     const categoryA = categoryOrder[a.category] || 999;
     const categoryB = categoryOrder[b.category] || 999;
     return categoryA - categoryB;
   });
 
-  // Hent produkter fra Firebase
   useEffect(() => {
     const productsRef = ref(database, "products");
     const unsubscribe = onValue(productsRef, (snapshot) => {
       try {
         const data = snapshot.val();
         if (data) {
-          // Convert to array using the numeric indices as IDs
           const itemsArray = Object.entries(data).map(([index, item]) => ({
-            id: index, // Use the numeric index as ID
+            id: index,
             name: item.name,
             category: item.category,
             subcategory: item.subcategory || "",
             icon_url: item.icon_url || null,
           }));
-          console.log("Fetched products:", itemsArray);
           setProducts(itemsArray);
         } else {
           setProducts([]);
@@ -86,7 +80,6 @@ export default function Products() {
       });
 
       if (!result.canceled) {
-        // Convert to base64 data URL
         const base64Image = `data:image/png;base64,${result.assets[0].base64}`;
         setProductImage(base64Image);
       }
@@ -106,9 +99,7 @@ export default function Products() {
   };
 
   const openEditModal = (product) => {
-    console.log("Opening edit modal for product:", product);
     if (!product || !product.id) {
-      console.error("Invalid product data:", product);
       return;
     }
 
@@ -127,8 +118,6 @@ export default function Products() {
     setIsModalVisible(true);
   };
 
-  console.log("Editing product:", editingProduct?.id);
-
   const handleSave = async () => {
     if (!productName.trim() || !productCategory.trim()) {
       Alert.alert("Fejl", "Navn og kategori er påkrævet");
@@ -144,21 +133,11 @@ export default function Products() {
         icon_url: productImage || null,
       };
 
-      console.log("Current editingProduct:", editingProduct);
-      console.log("Product data to save:", productData);
-
       if (editingProduct && editingProduct.id !== undefined) {
-        // Update existing product using the numeric index
         const productRef = ref(database, `products/${editingProduct.id}`);
-        console.log(
-          "Updating product at path:",
-          `products/${editingProduct.id}`
-        );
         await set(productRef, productData);
       } else {
-        // Add new product - Firebase will automatically assign the next numeric index
         const productsRef = ref(database, "products");
-        console.log("Creating new product");
         await push(productsRef, productData);
       }
 
@@ -173,7 +152,6 @@ export default function Products() {
   };
 
   const handleDelete = async (product) => {
-    console.log("Deleting product:", product);
     Alert.alert(
       "Slet produkt",
       `Er du sikker på, at du vil slette "${product.name}"?`,
@@ -188,10 +166,6 @@ export default function Products() {
           onPress: async () => {
             try {
               const productRef = ref(database, `products/${product.id}`);
-              console.log(
-                "Deleting product at path:",
-                `products/${product.id}`
-              );
               await remove(productRef);
             } catch (error) {
               console.error("Error deleting product:", error);
@@ -205,7 +179,13 @@ export default function Products() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Produkter</Text>
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          headerTitle: "Produkter",
+          headerBackTitle: "Tilbage",
+        }}
+      />
 
       <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
         <Text style={styles.addButtonText}>Tilføj produkt</Text>
@@ -333,9 +313,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
+    marginTop: 40,
   },
   addButton: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#FFC0CB",
     padding: 15,
     borderRadius: 8,
     alignItems: "center",
@@ -351,9 +332,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: 15,
-    backgroundColor: "#f8f8f8",
+    backgroundColor: "#fff89d",
     borderRadius: 8,
     marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e1d96b",
   },
   productInfo: {
     flex: 1,
@@ -383,14 +366,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   editButton: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#FFC0CB",
   },
   deleteButton: {
-    backgroundColor: "#ff3b30",
+    backgroundColor: "#FFC0CB",
   },
   actionButtonText: {
-    color: "#fff",
+    color: "#222",
     fontSize: 14,
+    fontWeight: "bold",
   },
   modalContainer: {
     flex: 1,
@@ -412,8 +396,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
+    borderWidth: 2,
+    borderColor: "#FFC0CB",
     borderRadius: 8,
     padding: 12,
     marginBottom: 15,
@@ -431,13 +415,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   cancelButton: {
-    backgroundColor: "#ff3b30",
+    backgroundColor: "#FFC0CB",
   },
   saveButton: {
-    backgroundColor: "#34c759",
+    backgroundColor: "#FFC0CB",
   },
   modalButtonText: {
-    color: "#fff",
+    color: "#222",
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
@@ -475,3 +459,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
+
+export const options = {
+  headerTitle: "",
+};

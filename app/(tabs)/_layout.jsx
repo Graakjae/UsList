@@ -1,5 +1,4 @@
 import {
-  faBoxes,
   faListCheck,
   faRectangleList,
 } from "@fortawesome/free-solid-svg-icons";
@@ -36,15 +35,6 @@ export default function TabLayout() {
           title: "Todo liste",
           tabBarIcon: ({ color }) => (
             <FontAwesomeIcon icon={faListCheck} size={24} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="notes"
-        options={{
-          title: "Produkter",
-          tabBarIcon: ({ color }) => (
-            <FontAwesomeIcon icon={faBoxes} size={24} color={color} />
           ),
         }}
       />

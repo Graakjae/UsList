@@ -1,11 +1,11 @@
 import { useState } from "react";
 import {
-  View,
-  Text,
+  FlatList,
   StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
-  FlatList,
+  View,
 } from "react-native";
 
 export default function TodoScreen() {
@@ -89,9 +89,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
+    fontSize: 28,
+    fontFamily: "Baloo2-Bold",
     marginBottom: 20,
+    color: "#333",
   },
   inputContainer: {
     flexDirection: "row",
@@ -101,9 +102,11 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 1,
     borderColor: "#ddd",
-    borderRadius: 5,
-    padding: 10,
+    borderRadius: 8,
+    padding: 12,
     marginRight: 10,
+    fontFamily: "Nunito-Regular",
+    fontSize: 16,
   },
   addButton: {
     backgroundColor: "#007AFF",
@@ -116,6 +119,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: "#fff",
     fontSize: 24,
+    fontFamily: "Baloo2-Bold",
   },
   todoItem: {
     flexDirection: "row",
@@ -129,10 +133,13 @@ const styles = StyleSheet.create({
   },
   todoText: {
     fontSize: 16,
+    fontFamily: "Nunito-Regular",
+    color: "#333",
   },
   completedText: {
     textDecorationLine: "line-through",
     color: "#888",
+    fontFamily: "Nunito-Regular",
   },
   deleteButton: {
     padding: 10,
@@ -140,5 +147,6 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: 24,
     color: "#ff3b30",
+    fontFamily: "Baloo2-Bold",
   },
 });
