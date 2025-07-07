@@ -1,4 +1,3 @@
-import CustomHeader from "@/components/CustomHeader";
 import * as ImagePicker from "expo-image-picker";
 import { onValue, push, ref, remove, set } from "firebase/database";
 import { useEffect, useState } from "react";
@@ -179,7 +178,7 @@ export default function Products() {
 
   return (
     <View style={styles.container}>
-      <CustomHeader title="Produkter" />
+      <Text style={styles.title}>Produkter</Text>
 
       <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
         <Text style={styles.addButtonText}>Tilføj produkt</Text>

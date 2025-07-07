@@ -17,6 +17,7 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: "#FFC0CB",
         headerShown: false,
+        headerMode: "none",
         tabBarStyle: {
           backgroundColor: "#FFC0CB",
         },
@@ -29,6 +30,7 @@ export default function TabLayout() {
         options={{
           title: "Indkøbsliste",
           headerShown: false,
+          headerMode: "none",
           tabBarIcon: ({ color }) => (
             <FontAwesomeIcon icon={faRectangleList} size={24} color={color} />
           ),

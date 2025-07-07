@@ -1,4 +1,3 @@
-import CustomHeader from "@/components/CustomHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "expo-router";
 import { onValue, push, ref, remove, set, update } from "firebase/database";
@@ -255,17 +254,15 @@ export default function ShoppingScreen() {
 
   return (
     <View style={styles.container}>
-      <CustomHeader
-        title="Indkøbsliste"
-        rightComponent={
-          <TouchableOpacity
-            onPress={() => router.push("/products")}
-            style={styles.headerIconButton}
-          >
-            <Image source={basketIcon} style={styles.headerIcon} />
-          </TouchableOpacity>
-        }
-      />
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>Indkøbsliste</Text>
+        <TouchableOpacity
+          onPress={() => router.push("/products")}
+          style={styles.headerIconButton}
+        >
+          <Image source={basketIcon} style={styles.headerIcon} />
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.inputContainer}>
         <TextInput
@@ -386,6 +383,13 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#fff",
   },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 20,
+    marginTop: 40,
+  },
   headerIconButton: {
     padding: 8,
     borderRadius: 20,
@@ -394,6 +398,11 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     resizeMode: "contain",
+  },
+  title: {
+    fontSize: 28,
+    fontFamily: "Baloo2-Bold",
+    color: "#333",
   },
   inputContainer: {
     flexDirection: "row",
