@@ -1,3 +1,5 @@
+import CustomHeader from "@/components/CustomHeader";
+import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "expo-router";
 import { onValue, push, ref, remove, set, update } from "firebase/database";
 import { useEffect, useState } from "react";
@@ -18,6 +20,7 @@ import { database } from "../../firebase";
 export default function ShoppingScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { user } = useAuth();
   console.log("Safe Area Insets:", {
     top: insets.top,
     bottom: insets.bottom,
@@ -102,8 +105,10 @@ export default function ShoppingScreen() {
 
   // Vælg produkt fra søgeresultater
   const selectProduct = (product) => {
+    if (!user) return;
+
     try {
-      const itemsRef = ref(database, "shoppingItems");
+      const itemsRef = ref(database, `users/${user.uid}/shoppingItems`);
       const newItemRef = push(itemsRef);
       set(newItemRef, {
         name: product.name,
@@ -125,6 +130,8 @@ export default function ShoppingScreen() {
   };
 
   const deleteCompletedItems = () => {
+    if (!user) return;
+
     Alert.alert(
       "Slet overstregede varer",
       "Er du sikker på, at du vil slette alle overstregede varer?",
@@ -139,7 +146,10 @@ export default function ShoppingScreen() {
           onPress: () => {
             const completedItems = items.filter((item) => item.completed);
             completedItems.forEach((item) => {
-              const itemRef = ref(database, `shoppingItems/${item.id}`);
+              const itemRef = ref(
+                database,
+                `users/${user.uid}/shoppingItems/${item.id}`
+              );
               remove(itemRef);
             });
           },
@@ -149,6 +159,8 @@ export default function ShoppingScreen() {
   };
 
   const deleteAllItems = () => {
+    if (!user) return;
+
     Alert.alert(
       "Slet alle varer",
       "Er du sikker på, at du vil slette alle varer?",
@@ -161,7 +173,7 @@ export default function ShoppingScreen() {
           text: "Slet",
           style: "destructive",
           onPress: () => {
-            const itemsRef = ref(database, "shoppingItems");
+            const itemsRef = ref(database, `users/${user.uid}/shoppingItems`);
             remove(itemsRef);
           },
         },
@@ -170,9 +182,11 @@ export default function ShoppingScreen() {
   };
 
   useEffect(() => {
+    if (!user) return;
+
     try {
       // Listen for changes in the database
-      const itemsRef = ref(database, "shoppingItems");
+      const itemsRef = ref(database, `users/${user.uid}/shoppingItems`);
 
       onValue(
         itemsRef,
@@ -195,41 +209,42 @@ export default function ShoppingScreen() {
     } catch (error) {
       console.error("Error setting up Firebase listener:", error);
     }
-  }, []);
+  }, [user]);
 
   const addItem = () => {
-    if (newItem.trim()) {
-      try {
-        // Check if the entered text matches any product
-        const matchingProduct = products.find(
-          (product) =>
-            product.name.toLowerCase() === newItem.trim().toLowerCase()
-        );
+    if (!user || !newItem.trim()) return;
 
-        const itemsRef = ref(database, "shoppingItems");
-        const newItemRef = push(itemsRef);
-        set(newItemRef, {
-          name: matchingProduct ? matchingProduct.name : newItem,
-          category: matchingProduct ? matchingProduct.category : "",
-          subcategory: matchingProduct ? matchingProduct.subcategory : "",
-          completed: false,
-          icon_url: matchingProduct ? matchingProduct.icon_url : "",
+    try {
+      // Check if the entered text matches any product
+      const matchingProduct = products.find(
+        (product) => product.name.toLowerCase() === newItem.trim().toLowerCase()
+      );
+
+      const itemsRef = ref(database, `users/${user.uid}/shoppingItems`);
+      const newItemRef = push(itemsRef);
+      set(newItemRef, {
+        name: matchingProduct ? matchingProduct.name : newItem,
+        category: matchingProduct ? matchingProduct.category : "",
+        subcategory: matchingProduct ? matchingProduct.subcategory : "",
+        completed: false,
+        icon_url: matchingProduct ? matchingProduct.icon_url : "",
+      })
+        .then(() => {
+          setNewItem("");
+          setShowResults(false);
         })
-          .then(() => {
-            setNewItem("");
-            setShowResults(false);
-          })
-          .catch((error) => {
-            console.error("Error adding item:", error);
-          });
-      } catch (error) {
-        console.error("Error in addItem:", error);
-      }
+        .catch((error) => {
+          console.error("Error adding item:", error);
+        });
+    } catch (error) {
+      console.error("Error in addItem:", error);
     }
   };
 
   const toggleItem = (id) => {
-    const itemRef = ref(database, `shoppingItems/${id}`);
+    if (!user) return;
+
+    const itemRef = ref(database, `users/${user.uid}/shoppingItems/${id}`);
     const item = items.find((item) => item.id === id);
     if (item) {
       update(itemRef, {
@@ -240,15 +255,17 @@ export default function ShoppingScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerRow}>
-        <Text style={styles.title}>Indkøbsliste</Text>
-        <TouchableOpacity
-          onPress={() => router.push("/products")}
-          style={styles.headerIconButton}
-        >
-          <Image source={basketIcon} style={styles.headerIcon} />
-        </TouchableOpacity>
-      </View>
+      <CustomHeader
+        title="Indkøbsliste"
+        rightComponent={
+          <TouchableOpacity
+            onPress={() => router.push("/products")}
+            style={styles.headerIconButton}
+          >
+            <Image source={basketIcon} style={styles.headerIcon} />
+          </TouchableOpacity>
+        }
+      />
 
       <View style={styles.inputContainer}>
         <TextInput
@@ -369,13 +386,6 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#fff",
   },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 20,
-    marginTop: 40,
-  },
   headerIconButton: {
     padding: 8,
     borderRadius: 20,
@@ -384,11 +394,6 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     resizeMode: "contain",
-  },
-  title: {
-    fontSize: 28,
-    fontFamily: "Baloo2-Bold",
-    color: "#333",
   },
   inputContainer: {
     flexDirection: "row",

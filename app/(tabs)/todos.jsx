@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { onValue, push, ref, remove, set, update } from "firebase/database";
+import { useEffect, useState } from "react";
 import {
+  Alert,
   FlatList,
   StyleSheet,
   Text,
@@ -7,31 +9,98 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { database } from "../../firebase";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function TodoScreen() {
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState("");
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) return;
+
+    try {
+      const todosRef = ref(database, `users/${user.uid}/todos`);
+
+      onValue(
+        todosRef,
+        (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            const todosArray = Object.entries(data).map(([id, todo]) => ({
+              id,
+              ...todo,
+            }));
+            setTodos(todosArray);
+          } else {
+            setTodos([]);
+          }
+        },
+        (error) => {
+          console.error("Firebase listener error:", error);
+        }
+      );
+    } catch (error) {
+      console.error("Error setting up Firebase listener:", error);
+    }
+  }, [user]);
 
   const addTodo = () => {
+    if (!user) return;
+
     if (newTodo.trim()) {
-      setTodos([
-        ...todos,
-        { id: Date.now().toString(), title: newTodo, completed: false },
-      ]);
-      setNewTodo("");
+      try {
+        const todosRef = ref(database, `users/${user.uid}/todos`);
+        const newTodoRef = push(todosRef);
+        set(newTodoRef, {
+          title: newTodo,
+          completed: false,
+          createdAt: Date.now(),
+        })
+          .then(() => {
+            setNewTodo("");
+          })
+          .catch((error) => {
+            console.error("Error adding todo:", error);
+            Alert.alert("Fejl", "Kunne ikke tilføje opgave");
+          });
+      } catch (error) {
+        console.error("Error in addTodo:", error);
+      }
     }
   };
 
   const toggleTodo = (id) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
+    if (!user) return;
+
+    const todoRef = ref(database, `users/${user.uid}/todos/${id}`);
+    const todo = todos.find((todo) => todo.id === id);
+    if (todo) {
+      update(todoRef, {
+        completed: !todo.completed,
+      });
+    }
   };
 
   const deleteTodo = (id) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
+    if (!user) return;
+
+    Alert.alert(
+      "Slet opgave",
+      "Er du sikker på, at du vil slette denne opgave?",
+      [
+        { text: "Annuller", style: "cancel" },
+        {
+          text: "Slet",
+          style: "destructive",
+          onPress: () => {
+            const todoRef = ref(database, `users/${user.uid}/todos/${id}`);
+            remove(todoRef);
+          },
+        },
+      ]
+    );
   };
 
   return (

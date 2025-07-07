@@ -4,9 +4,12 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import { ActivityIndicator, View } from "react-native";
 import "react-native-reanimated";
+import { AuthProvider, useAuth } from "../hooks/useAuth";
 
 import {
   Baloo2_400Regular,
@@ -28,8 +31,59 @@ import {
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 
-export default function RootLayout() {
+function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading) {
+      if (!user) {
+        // Hvis brugeren ikke er logget ind, redirect til login
+        router.replace("/login");
+      } else {
+        // Hvis brugeren er logget ind, redirect til hovedfanen
+        router.replace("/(tabs)");
+      }
+    }
+  }, [user, loading, router]);
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#FFC0CB" />
+      </View>
+    );
+  }
+
+  return (
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <Stack>
+        {user ? (
+          <>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="profile" options={{ headerShown: false }} />
+            <Stack.Screen name="invite" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="invite/[inviteCode]"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="products" options={{ headerShown: false }} />
+          </>
+        ) : (
+          <>
+            <Stack.Screen name="login" options={{ headerShown: false }} />
+            <Stack.Screen name="signup" options={{ headerShown: false }} />
+          </>
+        )}
+        <Stack.Screen name="+not-found" />
+      </Stack>
+      <StatusBar style="auto" />
+    </ThemeProvider>
+  );
+}
+
+export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     // Baloo 2 fonts
@@ -55,12 +109,8 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <AuthProvider>
+      <RootLayoutNav />
+    </AuthProvider>
   );
 }
