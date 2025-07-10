@@ -1,0 +1,64 @@
+{
+  "rules": {
+    "users": {
+      "$userId": {
+        ".read": "auth != null && auth.uid == $userId",
+        ".write": "auth != null && auth.uid == $userId",
+        "shoppingLists": {
+          ".read": "auth != null",
+          "$listId": {
+            ".read": "auth != null",
+            ".write": "auth != null",
+            "members": {
+              "$memberId": {
+                ".read": "auth != null",
+                ".write": "auth != null"
+              }
+            }
+          }
+        },
+        "shoppingItems": {
+          "$listId": {
+            ".read": "auth != null",
+            ".write": "auth != null"
+          }
+        },
+        "notes": {
+          ".read": "auth != null && auth.uid == $userId",
+          ".write": "auth != null && auth.uid == $userId"
+        },
+        "todos": {
+          ".read": "auth != null && auth.uid == $userId",
+          ".write": "auth != null && auth.uid == $userId"
+        },
+        "displayName": {
+          ".read": "auth != null && auth.uid == $userId",
+          ".write": "auth != null && auth.uid == $userId"
+        }
+      }
+    },
+    "shared_lists": {
+      "$userId": {
+        ".read": "auth != null && auth.uid == $userId",
+        ".write": "auth != null && auth.uid == $userId"
+      }
+    },
+    "shoppingItems": {
+      ".read": true,
+      ".write": true,
+      "$itemId": {
+        ".validate": "newData.hasChildren(['name', 'completed'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "completed": {
+          ".validate": "newData.isBoolean()"
+        }
+      }
+    },
+    "products": {
+      ".read": true,
+      ".write": false
+    }
+  }
+}

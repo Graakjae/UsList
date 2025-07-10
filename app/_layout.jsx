@@ -59,20 +59,13 @@ function RootLayoutNav() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
-        {user ? (
-          <>
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="profile" />
-            <Stack.Screen name="invite" />
-            <Stack.Screen name="invite/[inviteCode]" />
-            <Stack.Screen name="products" />
-          </>
-        ) : (
-          <>
-            <Stack.Screen name="login" />
-            <Stack.Screen name="signup" />
-          </>
-        )}
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="profile" />
+        <Stack.Screen name="invite" />
+        <Stack.Screen name="invite/[inviteCode]" />
+        <Stack.Screen name="products" />
+        <Stack.Screen name="login" />
+        <Stack.Screen name="signup" />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />

@@ -13,7 +13,9 @@
       "bundleIdentifier": "com.camillaogfrederik.app",
       "icon": "./assets/images/ios/icon.png",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryAddUsageDescription": "Denne app gemmer QR-koder i dit galleri for at dele dem med andre.",
+        "NSPhotoLibraryUsageDescription": "Denne app gemmer QR-koder i dit galleri for at dele dem med andre."
       }
     },
     "android": {
@@ -23,7 +25,21 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.camillaogfrederik.app",
-      "icon": "./assets/images/android/icon.png"
+      "icon": "./assets/images/android/icon.png",
+      "permissions": ["WRITE_EXTERNAL_STORAGE", "READ_EXTERNAL_STORAGE"],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "*.vercel.app"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -42,7 +58,15 @@
         }
       ],
       "expo-web-browser",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Tillad appen til at gemme QR-koder i dit galleri.",
+          "savePhotosPermission": "Tillad appen til at gemme QR-koder i dit galleri.",
+          "isAccessMediaLocationEnabled": true
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

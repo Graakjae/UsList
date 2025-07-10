@@ -1,10 +1,8 @@
 import {
   faCamera,
   faCog,
-  faShare,
   faSignOutAlt,
   faUserEdit,
-  faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useRouter } from "expo-router";
@@ -70,10 +68,6 @@ export default function ProfileScreen() {
     router.replace("/login");
   };
 
-  const shareInviteLink = () => {
-    router.push("/invite");
-  };
-
   return (
     <ScrollView style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
@@ -128,16 +122,9 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.menuSection}>
-        <TouchableOpacity style={styles.menuItem} onPress={shareInviteLink}>
-          <FontAwesomeIcon icon={faShare} size={20} color="#333" />
-          <Text style={styles.menuText}>Del invitation</Text>
-          <FontAwesomeIcon icon={faUsers} size={16} color="#ccc" />
-        </TouchableOpacity>
-
         <TouchableOpacity style={styles.menuItem}>
           <FontAwesomeIcon icon={faCog} size={20} color="#333" />
           <Text style={styles.menuText}>Indstillinger</Text>
-          <FontAwesomeIcon icon={faUsers} size={16} color="#ccc" />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.menuItem} onPress={handleSignOut}>

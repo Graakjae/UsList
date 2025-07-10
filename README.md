@@ -35,6 +35,20 @@ npm run reset-project
 
 This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
+## Troubleshooting
+
+### Warnings
+
+**Media Library Warning**: When using Expo Go, you may see a warning about media library permissions. This is expected behavior in Expo Go. To test full media library functionality (like saving QR codes to gallery), you need to create a development build:
+
+```bash
+npx expo install expo-dev-client
+eas build --profile development --platform ios
+eas build --profile development --platform android
+```
+
+**Layout Warning**: The warning about "Layout children must be of type Screen" is typically a false positive in development and doesn't affect functionality.
+
 ## Learn more
 
 To learn more about developing your project with Expo, look at the following resources:
