@@ -195,9 +195,26 @@ export default function ShoppingScreen() {
 
   // Generate invite link
   const generateInviteLink = () => {
-    const inviteCode = `${user.uid}_${currentListId}_${Date.now()}`;
+    const timestamp = Date.now();
+    const ownerName = user.displayName || user.email?.split("@")[0] || "Bruger";
+    const listName = getCurrentListName();
+
+    // Clean up names for URL (remove special characters, replace spaces with dashes)
+    const cleanOwnerName = ownerName
+      .replace(/[^a-zA-Z0-9æøåÆØÅ\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .toLowerCase();
+
+    const cleanListName = listName
+      .replace(/[^a-zA-Z0-9æøåÆØÅ\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .toLowerCase();
+
+    // Include the original invite code for Firebase lookup
+    const inviteCode = `${user.uid}_${currentListId}_${timestamp}`;
+
     // Generate a proper invitation link to the Vercel page
-    return `https://list-invite-fa96uo958-graakjaes-projects.vercel.app/invite/${inviteCode}`;
+    return `https://list-invite-app.vercel.app/invite/${cleanOwnerName}/${cleanListName}/${timestamp}?code=${inviteCode}`;
   };
 
   // Share list
@@ -860,10 +877,24 @@ export default function ShoppingScreen() {
         return;
       }
 
-      const [ownerId, listId, timestamp] = parts;
+      const [ownerName, listName, timestamp] = parts;
+
+      // Clean up names for URL (remove special characters, replace spaces with dashes)
+      const cleanOwnerName = ownerName
+        .replace(/[^a-zA-Z0-9æøåÆØÅ\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .toLowerCase();
+
+      const cleanListName = listName
+        .replace(/[^a-zA-Z0-9æøåÆØÅ\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .toLowerCase();
 
       // Check if the list exists
-      const listRef = ref(database, `users/${ownerId}/shoppingLists/${listId}`);
+      const listRef = ref(
+        database,
+        `users/${user.uid}/shoppingLists/${cleanOwnerName}-${cleanListName}-${timestamp}`
+      );
       const listSnapshot = await get(listRef);
 
       if (!listSnapshot.exists()) {
@@ -876,7 +907,7 @@ export default function ShoppingScreen() {
       // Check if user is already a member
       const membersRef = ref(
         database,
-        `users/${ownerId}/shoppingLists/${listId}/members`
+        `users/${user.uid}/shoppingLists/${cleanOwnerName}-${cleanListName}-${timestamp}/members`
       );
       const membersSnapshot = await get(membersRef);
 
@@ -890,11 +921,11 @@ export default function ShoppingScreen() {
       // Add user to the list members
       const userMemberRef = ref(
         database,
-        `users/${ownerId}/shoppingLists/${listId}/members/${user.uid}`
+        `users/${user.uid}/shoppingLists/${cleanOwnerName}-${cleanListName}-${timestamp}/members/${user.uid}`
       );
       console.log(
         "Attempting to add user to members at path:",
-        `users/${ownerId}/shoppingLists/${listId}/members/${user.uid}`
+        `users/${user.uid}/shoppingLists/${cleanOwnerName}-${cleanListName}-${timestamp}/members/${user.uid}`
       );
       console.log("User data:", {
         email: user.email,
@@ -911,12 +942,13 @@ export default function ShoppingScreen() {
       // Also add to shared_lists for easier access
       const sharedListRef = ref(
         database,
-        `shared_lists/${user.uid}/${ownerId}_${listId}`
+        `shared_lists/${user.uid}/${cleanOwnerName}-${cleanListName}-${timestamp}`
       );
       await set(sharedListRef, {
-        originalId: listId,
-        ownerId: ownerId,
-        ownerName: listData.ownerName || "Ukendt bruger",
+        originalId: `${cleanOwnerName}-${cleanListName}-${timestamp}`,
+        ownerId: user.uid,
+        ownerName:
+          user.displayName || user.email?.split("@")[0] || "Ukendt bruger",
         name: listData.name,
         createdAt: listData.createdAt,
         isShared: true,
@@ -928,7 +960,7 @@ export default function ShoppingScreen() {
       setInviteCodeInput("");
 
       // Automatically select the shared list
-      setCurrentListId(`${ownerId}_${listId}`);
+      setCurrentListId(`${cleanOwnerName}-${cleanListName}-${timestamp}`);
     } catch (error) {
       console.error("Error handling invite code:", error);
 
