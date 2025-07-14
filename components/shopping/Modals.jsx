@@ -66,7 +66,27 @@ export default function Modals({
   getCurrentListName,
   qrCodeRef,
   qrModalOpacity,
+  user,
+  lists,
+  sharedLists,
 }) {
+  // Check if current user is owner of the list
+  const isOwner = () => {
+    if (!user) return false;
+
+    if (currentListId === "default") return true;
+
+    if (currentListId.includes("_")) {
+      // Shared list
+      const sharedList = sharedLists.find((list) => list.id === currentListId);
+      return sharedList && sharedList.ownerId === user.uid;
+    } else {
+      // User's own list - if it exists in their lists array, they own it
+      const list = lists.find((list) => list.id === currentListId);
+      return !!list; // If the list exists in user's lists, they own it
+    }
+  };
+
   // Generate invite link
   const generateInviteLink = () => {
     return `https://list-invite-app.vercel.app/invite/test/test/123?code=test`;
@@ -142,7 +162,6 @@ export default function Modals({
         onClose={() => {
           setShowAddListModal(false);
           setNewListName("");
-          openBottomSheet();
         }}
         title="Opret ny liste"
         buttons={[
@@ -152,7 +171,6 @@ export default function Modals({
             onPress: () => {
               setShowAddListModal(false);
               setNewListName("");
-              openBottomSheet();
             },
           },
           {
@@ -176,7 +194,13 @@ export default function Modals({
         visible={showBottomSheet}
         onClose={closeBottomSheet}
         title={getCurrentListName()}
-        contentStyle={{ maxHeight: 500 }}
+        buttons={[
+          {
+            text: "Luk",
+            style: { backgroundColor: "#f0f0f0" },
+            onPress: closeBottomSheet,
+          },
+        ]}
       >
         <View style={styles.bottomSheetContent}>
           {/* For all lists */}
@@ -214,8 +238,16 @@ export default function Modals({
             <Text style={styles.bottomSheetItemText}>Tilslut dig liste</Text>
           </TouchableOpacity>
 
-          {/* Only for user-created lists */}
-          {currentListId !== "default" && !currentListId.includes("_") && (
+          <TouchableOpacity
+            style={styles.bottomSheetItem}
+            onPress={handleMembers}
+          >
+            <FontAwesomeIcon icon={faUsers} size={24} color="#333" />
+            <Text style={styles.bottomSheetItemText}>
+              Brugere ({listMembers.length})
+            </Text>
+          </TouchableOpacity>
+          {isOwner() && (
             <>
               <TouchableOpacity
                 style={styles.bottomSheetItem}
@@ -224,16 +256,6 @@ export default function Modals({
                 <FontAwesomeIcon icon={faEdit} size={24} color="#333" />
                 <Text style={styles.bottomSheetItemText}>
                   Rediger liste navn
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.bottomSheetItem}
-                onPress={handleMembers}
-              >
-                <FontAwesomeIcon icon={faUsers} size={24} color="#333" />
-                <Text style={styles.bottomSheetItemText}>
-                  Brugere ({listMembers.length})
                 </Text>
               </TouchableOpacity>
 
@@ -249,19 +271,6 @@ export default function Modals({
                 </Text>
               </TouchableOpacity>
             </>
-          )}
-
-          {/* For shared lists - only show members */}
-          {currentListId !== "default" && currentListId.includes("_") && (
-            <TouchableOpacity
-              style={styles.bottomSheetItem}
-              onPress={handleMembers}
-            >
-              <FontAwesomeIcon icon={faUsers} size={24} color="#333" />
-              <Text style={styles.bottomSheetItemText}>
-                Brugere ({listMembers.length})
-              </Text>
-            </TouchableOpacity>
           )}
         </View>
       </Modal>
@@ -376,16 +385,18 @@ export default function Modals({
                   </Text>
                   <Text style={styles.memberEmail}>{item.email}</Text>
                 </View>
-                <TouchableOpacity
-                  style={styles.removeMemberButton}
-                  onPress={() => removeUserFromList(item.id)}
-                >
-                  <FontAwesomeIcon
-                    icon={faUserTimes}
-                    size={16}
-                    color="#F44336"
-                  />
-                </TouchableOpacity>
+                {isOwner() && (
+                  <TouchableOpacity
+                    style={styles.removeMemberButton}
+                    onPress={() => removeUserFromList(item.id)}
+                  >
+                    <FontAwesomeIcon
+                      icon={faUserTimes}
+                      size={16}
+                      color="#F44336"
+                    />
+                  </TouchableOpacity>
+                )}
               </View>
             )}
             style={styles.membersList}

@@ -162,6 +162,9 @@ export default function ShoppingScreen() {
         getCurrentListName={getCurrentListName}
         qrCodeRef={qrCodeRef}
         qrModalOpacity={qrModalOpacity}
+        user={user}
+        lists={lists}
+        sharedLists={sharedLists}
       />
     </View>
   );

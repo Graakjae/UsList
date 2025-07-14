@@ -1,5 +1,6 @@
 import {
   faChevronDown,
+  faEllipsisV,
   faPlus,
   faTrash,
   faUserTimes,
@@ -128,20 +129,10 @@ export default function ListHeader({
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => {
-            console.log("Test: Opening invite modal directly");
-            setShowInviteCodeModal(true);
-          }}
-          style={styles.headerIconButton}
-        >
-          <FontAwesomeIcon icon={faUserTimes} size={20} color="#333" />
-        </TouchableOpacity>
-
-        <TouchableOpacity
           onPress={openBottomSheet}
           style={styles.headerIconButton}
         >
-          <FontAwesomeIcon icon={faChevronDown} size={20} color="#333" />
+          <FontAwesomeIcon icon={faEllipsisV} size={20} color="#333" />
         </TouchableOpacity>
       </View>
     </View>
