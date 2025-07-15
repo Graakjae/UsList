@@ -6,9 +6,7 @@ import {
   faUserTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { useRouter } from "expo-router";
-import { Image, Text, TouchableOpacity, View } from "react-native";
-import basketIcon from "../../assets/icons/basket.png";
+import { Text, TouchableOpacity, View } from "react-native";
 
 export default function ListHeader({
   currentListId,
@@ -25,8 +23,6 @@ export default function ListHeader({
   setShowInviteCodeModal,
   openBottomSheet,
 }) {
-  const router = useRouter();
-
   return (
     <View style={styles.headerRow}>
       <View style={styles.titleContainer}>
@@ -122,13 +118,6 @@ export default function ListHeader({
 
       <View style={styles.headerButtons}>
         <TouchableOpacity
-          onPress={() => router.push("/products")}
-          style={styles.headerIconButton}
-        >
-          <Image source={basketIcon} style={styles.headerIcon} />
-        </TouchableOpacity>
-
-        <TouchableOpacity
           onPress={openBottomSheet}
           style={styles.headerIconButton}
         >
@@ -150,16 +139,10 @@ const styles = {
   headerButtons: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
   },
   headerIconButton: {
     padding: 8,
     borderRadius: 20,
-  },
-  headerIcon: {
-    width: 28,
-    height: 28,
-    resizeMode: "contain",
   },
   title: {
     fontSize: 28,

@@ -1,7 +1,6 @@
 import {
-  faListCheck,
+  faBasketShopping,
   faRectangleList,
-  faStickyNote,
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
@@ -35,23 +34,12 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="todos"
+        name="products"
         options={{
-          title: "Todo liste",
+          title: "Produkter",
           headerShown: false,
           tabBarIcon: ({ color }) => (
-            <FontAwesomeIcon icon={faListCheck} size={24} color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="notes"
-        options={{
-          title: "Noter",
-          headerShown: false,
-          tabBarIcon: ({ color }) => (
-            <FontAwesomeIcon icon={faStickyNote} size={24} color={color} />
+            <FontAwesomeIcon icon={faBasketShopping} size={24} color={color} />
           ),
         }}
       />

@@ -151,6 +151,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: "#333",
+    fontFamily: "Baloo2-Bold",
   },
   profileSection: {
     alignItems: "center",
@@ -192,6 +193,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: "#333",
+    fontFamily: "Baloo2-Bold",
   },
   editButton: {
     padding: 8,
@@ -209,6 +211,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#FFC0CB",
     paddingBottom: 4,
     minWidth: 150,
+    fontFamily: "Baloo2-Bold",
   },
   saveButton: {
     backgroundColor: "#FFC0CB",
@@ -219,10 +222,12 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: "#fff",
     fontWeight: "600",
+    fontFamily: "Baloo2-Bold",
   },
   email: {
     fontSize: 16,
     color: "#666",
+    fontFamily: "Baloo2-Regular",
   },
   menuSection: {
     paddingHorizontal: 20,
@@ -242,5 +247,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#333",
     marginLeft: 12,
+    fontFamily: "Baloo2-Bold",
   },
 });

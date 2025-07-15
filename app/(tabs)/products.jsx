@@ -1,3 +1,5 @@
+import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import * as ImagePicker from "expo-image-picker";
 import { onValue, push, ref, remove, set } from "firebase/database";
 import { useEffect, useState } from "react";
@@ -5,14 +7,14 @@ import {
   Alert,
   FlatList,
   Image,
-  Modal,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import { database } from "../firebase";
+import Modal from "../../components/ui/Modal";
+import { database } from "../../firebase";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -187,6 +189,7 @@ export default function Products() {
       <FlatList
         data={sortedProducts}
         keyExtractor={(item) => item.id.toString()}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <View style={styles.productItem}>
             {item.icon_url && (
@@ -209,12 +212,14 @@ export default function Products() {
                 style={[styles.actionButton, styles.editButton]}
                 onPress={() => openEditModal(item)}
               >
+                <FontAwesomeIcon icon={faEdit} size={12} color="#333" />
                 <Text style={styles.actionButtonText}>Rediger</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionButton, styles.deleteButton]}
                 onPress={() => handleDelete(item)}
               >
+                <FontAwesomeIcon icon={faTrash} size={12} color="#333" />
                 <Text style={styles.actionButtonText}>Slet</Text>
               </TouchableOpacity>
             </View>
@@ -224,73 +229,59 @@ export default function Products() {
 
       <Modal
         visible={isModalVisible}
-        animationType="slide"
+        onClose={() => setIsModalVisible(false)}
+        title={editingProduct ? "Rediger produkt" : "Tilføj produkt"}
+        buttons={[
+          {
+            text: "Annuller",
+            style: { backgroundColor: "#f0f0f0" },
+            onPress: () => setIsModalVisible(false),
+            disabled: uploading,
+          },
+          {
+            text: uploading ? "Gemmer..." : "Gem",
+            style: { backgroundColor: "#FFC0CB", color: "#fff" },
+            onPress: handleSave,
+            disabled: uploading,
+          },
+        ]}
+        animationType="fade"
         transparent={true}
-        onRequestClose={() => setIsModalVisible(false)}
+        contentStyle={styles.modalContent}
       >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {editingProduct ? "Rediger produkt" : "Tilføj produkt"}
-            </Text>
-
-            <TouchableOpacity
-              style={styles.imagePickerButton}
-              onPress={pickImage}
-            >
-              {productImage ? (
-                <Image
-                  source={{ uri: productImage }}
-                  style={styles.selectedImage}
-                />
-              ) : (
-                <View style={styles.imagePlaceholder}>
-                  <Text style={styles.imagePlaceholderText}>Vælg billede</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-
-            <TextInput
-              style={styles.input}
-              value={productName}
-              onChangeText={setProductName}
-              placeholder="Produktnavn"
+        <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
+          {productImage ? (
+            <Image
+              source={{ uri: productImage }}
+              style={styles.selectedImage}
             />
-
-            <TextInput
-              style={styles.input}
-              value={productCategory}
-              onChangeText={setProductCategory}
-              placeholder="Kategori"
-            />
-
-            <TextInput
-              style={styles.input}
-              value={productSubcategory}
-              onChangeText={setProductSubcategory}
-              placeholder="Underkategori (valgfrit)"
-            />
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setIsModalVisible(false)}
-                disabled={uploading}
-              >
-                <Text style={styles.modalButtonText}>Annuller</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.saveButton]}
-                onPress={handleSave}
-                disabled={uploading}
-              >
-                <Text style={styles.modalButtonText}>
-                  {uploading ? "Gemmer..." : "Gem"}
-                </Text>
-              </TouchableOpacity>
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <Text style={styles.imagePlaceholderText}>Vælg billede</Text>
             </View>
-          </View>
-        </View>
+          )}
+        </TouchableOpacity>
+
+        <TextInput
+          style={styles.input}
+          value={productName}
+          onChangeText={setProductName}
+          placeholder="Produktnavn"
+        />
+
+        <TextInput
+          style={styles.input}
+          value={productCategory}
+          onChangeText={setProductCategory}
+          placeholder="Kategori"
+        />
+
+        <TextInput
+          style={styles.input}
+          value={productSubcategory}
+          onChangeText={setProductSubcategory}
+          placeholder="Underkategori (valgfrit)"
+        />
       </Modal>
     </View>
   );
@@ -307,6 +298,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
     marginTop: 40,
+    fontFamily: "Baloo2-Bold",
+    color: "#333",
   },
   addButton: {
     backgroundColor: "#FFC0CB",
@@ -319,15 +312,16 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+    fontFamily: "Baloo2-Bold",
   },
   productItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 15,
+    padding: 10,
     backgroundColor: "#fff89d",
     borderRadius: 8,
-    marginBottom: 10,
+    marginBottom: 6,
     borderBottomWidth: 1,
     borderBottomColor: "#e1d96b",
   },
@@ -336,38 +330,39 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontFamily: "Baloo2-Medium",
+    marginBottom: -2,
   },
   productCategory: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#666",
-    marginTop: 4,
+    fontFamily: "Baloo2-Regular",
   },
   productSubcategory: {
-    fontSize: 12,
+    fontSize: 11,
     color: "#999",
-    marginTop: 2,
+    fontFamily: "Baloo2-Regular",
   },
   productActions: {
     flexDirection: "row",
     gap: 10,
   },
   actionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
     padding: 8,
     borderRadius: 6,
     minWidth: 70,
     alignItems: "center",
   },
-  editButton: {
-    backgroundColor: "#FFC0CB",
-  },
-  deleteButton: {
-    backgroundColor: "#FFC0CB",
-  },
+  editButton: {},
+  deleteButton: {},
   actionButtonText: {
-    color: "#222",
+    color: "#333",
     fontSize: 14,
-    fontWeight: "bold",
+    fontFamily: "Baloo2-Medium",
   },
   modalContainer: {
     flex: 1,
@@ -387,6 +382,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
+    fontFamily: "Baloo2-Bold",
+    color: "#333",
   },
   input: {
     borderWidth: 2,
@@ -418,6 +415,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
+    fontFamily: "Baloo2-Bold",
   },
   productImage: {
     width: 35,
@@ -452,7 +450,3 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
-
-export const options = {
-  headerTitle: "",
-};
