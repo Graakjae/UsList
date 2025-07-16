@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as AuthSession from "expo-auth-session";
+import Constants from "expo-constants";
 import {
   createUserWithEmailAndPassword,
   signInAnonymously as firebaseSignInAnonymously,
@@ -61,8 +62,10 @@ export const AuthProvider = ({ children }) => {
   // Google sign-in via Expo AuthSession
   const signInWithGoogle = async () => {
     try {
+      const isExpoGo = Constants.appOwnership === "expo";
       const redirectUri = AuthSession.makeRedirectUri({
         scheme: "camillaogfrederiksapp",
+        useProxy: isExpoGo,
       });
 
       const clientId =
