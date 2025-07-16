@@ -295,7 +295,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold",
     marginBottom: 20,
     marginTop: 40,
     fontFamily: "Baloo2-Bold",
@@ -311,7 +310,6 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "bold",
     fontFamily: "Baloo2-Bold",
   },
   productItem: {
@@ -379,7 +377,6 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
     fontFamily: "Baloo2-Bold",
@@ -413,7 +410,6 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: "#222",
     fontSize: 16,
-    fontWeight: "bold",
     textAlign: "center",
     fontFamily: "Baloo2-Bold",
   },

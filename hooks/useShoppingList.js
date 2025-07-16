@@ -46,6 +46,8 @@ export default function useShoppingList() {
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [showInviteCodeModal, setShowInviteCodeModal] = useState(false);
   const [inviteCodeInput, setInviteCodeInput] = useState("");
+  const [userListColor, setUserListColor] = useState("#333");
+  const [userListFont, setUserListFont] = useState("Baloo2-Bold");
 
   // Refs and animations
   const qrCodeRef = useRef();
@@ -181,6 +183,8 @@ export default function useShoppingList() {
         subcategory: product.subcategory,
         completed: false,
         icon_url: product.icon_url,
+        color: userListColor || "#333",
+        font: userListFont || "Baloo2-Bold",
       })
         .then(() => {
           setNewItem("");
@@ -212,6 +216,8 @@ export default function useShoppingList() {
         subcategory: matchingProduct ? matchingProduct.subcategory : "",
         completed: false,
         icon_url: matchingProduct ? matchingProduct.icon_url : "",
+        color: userListColor || "#333",
+        font: userListFont || "Baloo2-Bold",
       })
         .then(() => {
           setNewItem("");
@@ -747,6 +753,31 @@ export default function useShoppingList() {
     }
   }, [user, currentListId]);
 
+  useEffect(() => {
+    if (user) {
+      const colorRef = ref(database, `users/${user.uid}/settings/listColor`);
+      const unsubscribeColor = onValue(colorRef, (snapshot) => {
+        if (snapshot.exists()) {
+          setUserListColor(snapshot.val());
+        } else {
+          setUserListColor("#333");
+        }
+      });
+      const fontRef = ref(database, `users/${user.uid}/settings/listFont`);
+      const unsubscribeFont = onValue(fontRef, (snapshot) => {
+        if (snapshot.exists()) {
+          setUserListFont(snapshot.val());
+        } else {
+          setUserListFont("Baloo2-Bold");
+        }
+      });
+      return () => {
+        unsubscribeColor();
+        unsubscribeFont();
+      };
+    }
+  }, [user]);
+
   return {
     // State
     items,
@@ -769,6 +800,8 @@ export default function useShoppingList() {
     showMembersModal,
     showInviteCodeModal,
     inviteCodeInput,
+    userListColor,
+    userListFont,
 
     // Computed values
     sortedItems,
@@ -794,6 +827,8 @@ export default function useShoppingList() {
     setShowMembersModal,
     setShowInviteCodeModal,
     setInviteCodeInput,
+    setUserListColor,
+    setUserListFont,
 
     handleSearch,
     selectProduct,

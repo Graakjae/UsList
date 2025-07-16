@@ -29,6 +29,11 @@ import {
   Nunito_900Black,
 } from "@expo-google-fonts/nunito";
 
+import { Caveat_400Regular } from "@expo-google-fonts/caveat";
+import { IndieFlower_400Regular } from "@expo-google-fonts/indie-flower";
+import { PermanentMarker_400Regular } from "@expo-google-fonts/permanent-marker";
+import { SpaceMono_400Regular } from "@expo-google-fonts/space-mono";
+
 import { useColorScheme } from "@/hooks/useColorScheme";
 
 function RootLayoutNav() {
@@ -60,10 +65,9 @@ function RootLayoutNav() {
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="profile" />
-        <Stack.Screen name="invite" />
+        <Stack.Screen name="invite/[code]" />
         <Stack.Screen name="invite/[inviteCode]" />
-        <Stack.Screen name="products" />
+        <Stack.Screen name="invite/[ownerName]/[listName]/[timestamp]" />
         <Stack.Screen name="login" />
         <Stack.Screen name="signup" />
         <Stack.Screen name="+not-found" />
@@ -91,6 +95,11 @@ export default function RootLayout() {
     "Nunito-Bold": Nunito_700Bold,
     "Nunito-ExtraBold": Nunito_800ExtraBold,
     "Nunito-Black": Nunito_900Black,
+    // Håndskrift og display fonts
+    "IndieFlower-Regular": IndieFlower_400Regular,
+    "Caveat-Regular": Caveat_400Regular,
+    "PermanentMarker-Regular": PermanentMarker_400Regular,
+    "SpaceMono-Regular": SpaceMono_400Regular,
   });
 
   if (!loaded) {

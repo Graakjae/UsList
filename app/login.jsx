@@ -163,15 +163,15 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: "600",
     color: "#333",
     marginBottom: 8,
+    fontFamily: "Baloo2-Bold",
   },
   appName: {
     fontSize: 32,
-    fontWeight: "bold",
     color: "#FFC0CB",
     marginBottom: 16,
+    fontFamily: "Baloo2-Bold",
   },
   subtitle: {
     fontSize: 16,
@@ -179,6 +179,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 24,
     maxWidth: 280,
+    fontFamily: "Nunito-Regular",
   },
   formSection: {
     marginBottom: 24,
@@ -190,6 +191,7 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     marginBottom: 12,
+    fontFamily: "Nunito-Regular",
   },
   loginButton: {
     backgroundColor: "#FFC0CB",
@@ -201,7 +203,7 @@ const styles = StyleSheet.create({
   loginButtonText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Baloo2-Bold",
   },
   linkButton: {
     alignItems: "center",
@@ -210,7 +212,7 @@ const styles = StyleSheet.create({
   linkButtonText: {
     color: "#007AFF",
     fontSize: 15,
-    fontWeight: "500",
+    fontFamily: "Nunito-Regular",
   },
   dividerRow: {
     flexDirection: "row",
@@ -226,6 +228,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
     color: "#999",
     fontSize: 14,
+    fontFamily: "Nunito-Regular",
   },
   altLoginSection: {
     alignItems: "center",
@@ -244,8 +247,8 @@ const styles = StyleSheet.create({
   googleButtonText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "600",
     marginLeft: 12,
+    fontFamily: "Baloo2-Bold",
   },
   anonymousButton: {
     flexDirection: "row",
@@ -262,7 +265,7 @@ const styles = StyleSheet.create({
   anonymousButtonText: {
     marginLeft: 12,
     fontSize: 16,
-    fontWeight: "600",
     color: "#FFC0CB",
+    fontFamily: "Baloo2-Bold",
   },
 });

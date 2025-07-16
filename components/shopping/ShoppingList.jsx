@@ -1,6 +1,9 @@
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 
 export default function ShoppingList({ sortedItems, toggleItem }) {
+  // console.log(sortedItems);
+  // const { user } = useAuth();
+  // console.log("user", user);
   return (
     <FlatList
       data={sortedItems}
@@ -17,7 +20,14 @@ export default function ShoppingList({ sortedItems, toggleItem }) {
             onPress={() => toggleItem(item.id)}
           >
             <Text
-              style={[styles.itemText, item.completed && styles.completedText]}
+              style={[
+                styles.itemText,
+                {
+                  color: item.color || "#333",
+                  fontFamily: item.font || "Baloo2-Bold",
+                },
+                item.completed && styles.completedText,
+              ]}
             >
               {item.name}
             </Text>
@@ -82,13 +92,13 @@ const styles = {
   },
   itemText: {
     fontSize: 16,
-    fontFamily: "Nunito-Regular",
+    fontFamily: "Nunito-Bold",
     color: "#333",
   },
   completedText: {
     textDecorationLine: "line-through",
     color: "red",
-    fontFamily: "Nunito-Regular",
+    fontFamily: "Nunito-Bold",
   },
   productImage: {
     width: 25,

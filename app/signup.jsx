@@ -113,9 +113,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: "bold",
     color: "#333",
     marginBottom: 8,
+    fontFamily: "Baloo2-Bold",
   },
   subtitle: {
     fontSize: 16,
@@ -123,6 +123,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 24,
     maxWidth: 280,
+    fontFamily: "Nunito-Regular",
   },
   formSection: {
     marginBottom: 24,
@@ -134,6 +135,7 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     marginBottom: 12,
+    fontFamily: "Nunito-Regular",
   },
   signupButton: {
     backgroundColor: "#FFC0CB",
@@ -145,7 +147,7 @@ const styles = StyleSheet.create({
   signupButtonText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Baloo2-Bold",
   },
   linkButton: {
     alignItems: "center",
@@ -154,6 +156,6 @@ const styles = StyleSheet.create({
   linkButtonText: {
     color: "#007AFF",
     fontSize: 15,
-    fontWeight: "500",
+    fontFamily: "Nunito-Regular",
   },
 });
