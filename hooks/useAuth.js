@@ -62,14 +62,18 @@ export const AuthProvider = ({ children }) => {
   // Google sign-in via Expo AuthSession
   const signInWithGoogle = async () => {
     try {
+      console.log("Starting Google sign-in...");
       const isExpoGo = Constants.appOwnership === "expo";
-      const redirectUri = AuthSession.makeRedirectUri({
-        scheme: "camillaogfrederiksapp",
-        useProxy: isExpoGo,
-      });
+      console.log("Is Expo Go:", isExpoGo);
+
+      // Use the correct Expo proxy URI for development
+      const redirectUri =
+        "https://auth.expo.io/@graakjaer/Camilla-og-Frederiks-app";
+      console.log("Redirect URI:", redirectUri);
 
       const clientId =
         "808301550029-beotgqhmcvutvge3e3nvns19ma0tdb6h.apps.googleusercontent.com";
+      console.log("Client ID:", clientId);
 
       const request = new AuthSession.AuthRequest({
         clientId: clientId,
@@ -77,21 +81,35 @@ export const AuthProvider = ({ children }) => {
         redirectUri: redirectUri,
         responseType: AuthSession.ResponseType.Token,
       });
+      console.log("Auth request created");
 
+      // Debug: Log the authorization URL
+      const authUrl = await request.makeAuthUrlAsync({
+        authorizationEndpoint: "https://accounts.google.com/oauth/authorize",
+      });
+      console.log("Authorization URL:", authUrl);
+
+      console.log("Prompting for authorization...");
       const result = await request.promptAsync({
         authorizationEndpoint: "https://accounts.google.com/oauth/authorize",
       });
+      console.log("Auth result:", result);
 
       if (result.type === "success" && result.params.access_token) {
+        console.log("Got access token, creating credential...");
         const credential = GoogleAuthProvider.credential(
           null,
           result.params.access_token
         );
+        console.log("Signing in with credential...");
         await signInWithCredential(auth, credential);
+        console.log("Google sign-in successful!");
       } else {
+        console.log("Auth failed or was cancelled:", result);
         throw new Error("Google login blev afbrudt eller mislykkedes");
       }
     } catch (error) {
+      console.error("Google sign-in error:", error);
       throw error;
     }
   };

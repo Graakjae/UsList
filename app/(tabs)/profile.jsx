@@ -1,36 +1,13 @@
 import {
-  Baloo2_700Bold,
-  useFonts as useBaloo2,
-} from "@expo-google-fonts/baloo-2";
-import {
-  Caveat_400Regular,
-  useFonts as useCaveat,
-} from "@expo-google-fonts/caveat";
-import {
-  IndieFlower_400Regular,
-  useFonts as useIndieFlower,
-} from "@expo-google-fonts/indie-flower";
-import {
-  Nunito_400Regular,
-  useFonts as useNunito,
-} from "@expo-google-fonts/nunito";
-import {
-  PermanentMarker_400Regular,
-  useFonts as usePermanentMarker,
-} from "@expo-google-fonts/permanent-marker";
-import {
-  SpaceMono_400Regular,
-  useFonts as useSpaceMono,
-} from "@expo-google-fonts/space-mono";
-import {
-  faCamera,
   faCog,
   faSignOutAlt,
   faUserEdit,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+
+import Modal from "@/components/ui/Modal";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import { updateProfile as updateAuthProfile } from "firebase/auth";
 import { ref as dbRef, get, set } from "firebase/database";
 import React, { useEffect, useState } from "react";
 import {
@@ -53,9 +30,14 @@ export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const [displayName, setDisplayName] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingModal, setIsEditingModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [listColor, setListColor] = useState("#333");
   const [listFont, setListFont] = useState("Baloo2-Bold");
+  const [image, setImage] = useState("");
+  const [newImage, setNewImage] = useState();
+  const [newDisplayName, setNewDisplayName] = useState(displayName);
+
   const fontOptions = [
     { label: "Baloo2", value: "Baloo2-Bold", fontFamily: "Baloo2-Bold" },
     { label: "Nunito", value: "Nunito-Regular", fontFamily: "Nunito-Regular" },
@@ -91,17 +73,28 @@ export default function ProfileScreen() {
     "#B388FF",
   ];
 
-  // Load fonts
-  const [balooLoaded] = useBaloo2({ Baloo2_700Bold });
-  const [nunitoLoaded] = useNunito({ Nunito_400Regular });
-  const [spaceMonoLoaded] = useSpaceMono({ SpaceMono_400Regular });
-  const [indieLoaded] = useIndieFlower({ IndieFlower_400Regular });
-  const [caveatLoaded] = useCaveat({ Caveat_400Regular });
-  const [markerLoaded] = usePermanentMarker({ PermanentMarker_400Regular });
-
   useEffect(() => {
     if (user) {
-      setDisplayName(user.displayName || "");
+      // Hent displayName fra Realtime Database
+      const displayNameRef = dbRef(database, `users/${user.uid}/displayName`);
+      get(displayNameRef).then((snapshot) => {
+        if (snapshot.exists()) {
+          setDisplayName(snapshot.val());
+          setNewDisplayName(snapshot.val());
+        } else {
+          setDisplayName("");
+        }
+      });
+      // Hent photoURL fra Realtime Database
+      const photoURLRef = dbRef(database, `users/${user.uid}/photoURL`);
+      get(photoURLRef).then((snapshot) => {
+        if (snapshot.exists()) {
+          setImage(snapshot.val());
+          setNewImage(snapshot.val());
+        } else {
+          setImage("");
+        }
+      });
       // Hent farvevalg fra Firebase
       const colorRef = dbRef(database, `users/${user.uid}/settings/listColor`);
       get(colorRef).then((snapshot) => {
@@ -117,26 +110,37 @@ export default function ProfileScreen() {
         }
       });
     }
-    console.log("User:", user);
   }, [user]);
+  console.log("Image:", image);
+  console.log("NewImage:", newImage);
+
+  async function chooseImage() {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      base64: true,
+      allowsEditing: true,
+      quality: 0.3,
+    });
+
+    if (!result.canceled) {
+      const base64 = "data:image/jpeg;base64," + result.assets[0].base64;
+      setNewImage(base64);
+    }
+  }
 
   const updateProfile = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-
-      // Opdater Firebase Auth user's displayName
-      await updateAuthProfile(user, {
-        displayName: displayName,
+      const userRef = dbRef(database, `users/${user.uid}`);
+      await set(userRef, {
+        displayName: newDisplayName,
+        photoURL: newImage,
       });
-
-      // Opdater Realtime Database
-      await set(dbRef(database, `users/${user.uid}/displayName`), displayName);
-
-      setIsEditing(false);
-      Alert.alert("Succes", "Profil opdateret");
+      setImage(newImage);
+      setDisplayName(newDisplayName);
+      setIsEditingModal(false);
     } catch (error) {
-      Alert.alert("Fejl", "Kunne ikke opdatere profil");
-      console.error("Update profile error:", error);
+      console.error("Error updating user data:", error);
     } finally {
       setLoading(false);
     }
@@ -179,45 +183,25 @@ export default function ProfileScreen() {
       <View style={styles.profileSection}>
         <View style={styles.imageContainer}>
           <Image
-            source={require("../../assets/images/icon.png")}
+            source={
+              image ? { uri: image } : require("../../assets/images/icon.png")
+            }
             style={styles.profileImage}
           />
-          <TouchableOpacity style={styles.cameraButton}>
-            <FontAwesomeIcon icon={faCamera} size={16} color="#fff" />
+          <TouchableOpacity
+            style={styles.cameraButton}
+            onPress={() => setIsEditingModal(true)}
+          >
+            <FontAwesomeIcon icon={faUserEdit} size={16} color="#fff" />
           </TouchableOpacity>
         </View>
 
         <View style={styles.nameSection}>
-          {isEditing ? (
-            <View style={styles.editContainer}>
-              <TextInput
-                style={styles.nameInput}
-                value={displayName}
-                onChangeText={setDisplayName}
-                placeholder="Dit navn"
-                autoFocus
-              />
-              <TouchableOpacity
-                style={styles.saveButton}
-                onPress={updateProfile}
-                disabled={loading}
-              >
-                <Text style={styles.saveButtonText}>Gem</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.nameContainer}>
-              <Text style={styles.displayName}>
-                {displayName || "Ingen navn"}
-              </Text>
-              <TouchableOpacity
-                style={styles.editButton}
-                onPress={() => setIsEditing(true)}
-              >
-                <FontAwesomeIcon icon={faUserEdit} size={16} color="#FFC0CB" />
-              </TouchableOpacity>
-            </View>
-          )}
+          <View style={styles.nameContainer}>
+            <Text style={styles.displayName}>
+              {displayName || "Ingen navn"}
+            </Text>
+          </View>
         </View>
 
         <Text style={styles.email}>{user?.email || "Anonym bruger"}</Text>
@@ -284,6 +268,68 @@ export default function ProfileScreen() {
           <Text style={[styles.menuText, { color: "#ff4444" }]}>Log ud</Text>
         </TouchableOpacity>
       </View>
+      <Modal
+        visible={isEditingModal}
+        onClose={() => setIsEditingModal(false)}
+        title="Rediger profil"
+        buttons={[
+          {
+            text: "Annuller",
+            style: { backgroundColor: "#f0f0f0" },
+            onPress: () => setIsEditingModal(false),
+            disabled: loading,
+          },
+          {
+            text: "Gem",
+            style: { backgroundColor: "#FFC0CB" },
+            onPress: () => {
+              updateProfile();
+            },
+            disabled: loading,
+          },
+        ]}
+      >
+        <View style={styles.editProfileContainer}>
+          <Text style={styles.editProfileText}>Dit billede</Text>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 12,
+              marginBottom: 12,
+            }}
+          >
+            <TouchableOpacity
+              onPress={chooseImage}
+              disabled={loading}
+              style={{ flex: 1 }}
+            >
+              <Image
+                source={
+                  image
+                    ? { uri: newImage }
+                    : require("../../assets/images/icon.png")
+                }
+                style={styles.profileImage}
+              />
+
+              {loading && (
+                <Text style={{ textAlign: "center" }}>Uploader...</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.editProfileText}>Dit navn</Text>
+          <View style={styles.editProfileInputContainer}>
+            <TextInput
+              style={styles.nameInput}
+              value={newDisplayName}
+              onChangeText={setNewDisplayName}
+              placeholder="Dit navn"
+            />
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
