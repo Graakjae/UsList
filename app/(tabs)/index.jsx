@@ -85,6 +85,7 @@ export default function ShoppingScreen() {
     closeBottomSheet,
 
     getCurrentListName,
+    generateInviteLink,
   } = useShoppingList();
 
   return (
@@ -150,6 +151,7 @@ export default function ShoppingScreen() {
         // Functions
         addNewList={addNewList}
         saveListName={saveListName}
+        deleteList={deleteList}
         closeQRModal={closeQRModal}
         saveQRCodeToGallery={saveQRCodeToGallery}
         shareQRCode={shareQRCode}
@@ -165,6 +167,7 @@ export default function ShoppingScreen() {
         user={user}
         lists={lists}
         sharedLists={sharedLists}
+        generateInviteLink={generateInviteLink}
       />
     </View>
   );

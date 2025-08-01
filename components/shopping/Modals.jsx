@@ -53,6 +53,7 @@ export default function Modals({
   // Functions
   addNewList,
   saveListName,
+  deleteList,
   closeQRModal,
   saveQRCodeToGallery,
   shareQRCode,
@@ -69,6 +70,7 @@ export default function Modals({
   user,
   lists,
   sharedLists,
+  generateInviteLink,
 }) {
   // Check if current user is owner of the list
   const isOwner = () => {
@@ -83,22 +85,23 @@ export default function Modals({
     } else {
       // User's own list - if it exists in their lists array, they own it
       const list = lists.find((list) => list.id === currentListId);
+      console.log("list", list.id, currentListId);
       return !!list; // If the list exists in user's lists, they own it
     }
   };
 
-  // Generate invite link
-  const generateInviteLink = () => {
-    return `https://list-invite-app.vercel.app/invite/test/test/123?code=test`;
-  };
+  console.log("owner", isOwner());
 
   // Handle share list
-  const handleShareList = () => {
-    const inviteLink = generateInviteLink();
-    Share.share({
-      message: `Hej! Du er inviteret til at deltage i min indkøbsliste "${getCurrentListName()}". Klik på linket for at tilslutte dig: ${inviteLink}`,
-      url: inviteLink,
-    });
+  const handleShareList = async () => {
+    try {
+      const inviteLink = generateInviteLink();
+      await Share.share({
+        message: `Hej! Du er inviteret til at deltage i min indkøbsliste "${getCurrentListName()}". Klik på linket for at tilslutte dig: ${inviteLink}`,
+      });
+    } catch (error) {
+      console.error("Error sharing list:", error);
+    }
   };
 
   // Handle email invitation
@@ -144,14 +147,16 @@ export default function Modals({
 
   // Handle delete list
   const handleDeleteList = () => {
-    Alert.alert(
-      "Slet liste",
-      "Er du sikker på, at du vil slette denne liste? Alle varer i listen vil også blive slettet.",
-      [
-        { text: "Annuller", style: "cancel" },
-        { text: "Slet", style: "destructive" },
-      ]
-    );
+    if (currentListId === "default") {
+      Alert.alert(
+        "Kan ikke slette",
+        "Du kan ikke slette standard listen. Opret en ny liste i stedet.",
+        [{ text: "OK" }]
+      );
+      return;
+    }
+
+    deleteList(currentListId);
   };
 
   return (

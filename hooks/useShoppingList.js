@@ -62,13 +62,15 @@ export default function useShoppingList() {
   const getCurrentListName = () => {
     if (currentListId === "default") return "Indkøbsliste";
 
-    if (currentListId.includes("_")) {
-      const sharedList = sharedLists.find((list) => list.id === currentListId);
-      return sharedList ? `${sharedList.name} ` : "Liste";
+    // First check if it's in regular lists
+    const currentList = lists.find((list) => list.id === currentListId);
+    if (currentList) {
+      return currentList.name;
     }
 
-    const currentList = lists.find((list) => list.id === currentListId);
-    return currentList ? currentList.name : "Indkøbsliste";
+    // If not found in regular lists, check shared lists
+    const sharedList = sharedLists.find((list) => list.id === currentListId);
+    return sharedList ? sharedList.name : "Liste";
   };
 
   // Generate invite link using utility function
@@ -82,7 +84,6 @@ export default function useShoppingList() {
       const inviteLink = generateInviteLink();
       await Share.share({
         message: `Hej! Du er inviteret til at deltage i min indkøbsliste "${getCurrentListName()}". Klik på linket for at tilslutte dig: ${inviteLink}`,
-        url: inviteLink,
       });
     } catch (error) {
       console.error("Error sharing list:", error);
@@ -146,7 +147,6 @@ export default function useShoppingList() {
       const uri = await qrCodeRef.current.capture();
       await Share.share({
         url: uri,
-        message: `QR-kode til indkøbsliste "${getCurrentListName()}"`,
       });
     } catch (error) {
       console.error("Error sharing QR code:", error);
@@ -370,16 +370,31 @@ export default function useShoppingList() {
 
   // Save list name
   const saveListName = async () => {
-    if (!user || currentListId === "default" || !editListName.trim()) return;
+    if (!user || !editListName.trim()) return;
 
     try {
-      const listRef = ref(
-        database,
-        `users/${user.uid}/shoppingLists/${currentListId}`
-      );
-      await update(listRef, {
-        name: editListName.trim(),
-      });
+      if (currentListId === "default") {
+        // Create a new list instead of editing default
+        const listsRef = ref(database, `users/${user.uid}/shoppingLists`);
+        const newListRef = push(listsRef);
+        const newListId = newListRef.key;
+
+        await set(newListRef, {
+          name: editListName.trim(),
+          createdAt: Date.now(),
+        });
+
+        setCurrentListId(newListId);
+      } else {
+        // Edit existing list
+        const listRef = ref(
+          database,
+          `users/${user.uid}/shoppingLists/${currentListId}`
+        );
+        await update(listRef, {
+          name: editListName.trim(),
+        });
+      }
 
       setEditListName("");
       setShowEditListModal(false);
@@ -655,6 +670,7 @@ export default function useShoppingList() {
           ...list,
         }));
         setLists(listsArray);
+        console.log("listsArray", listsArray);
 
         if (currentListId === "default" && listsArray.length > 0) {
           setCurrentListId(listsArray[0].id);
@@ -855,5 +871,6 @@ export default function useShoppingList() {
     closeBottomSheet,
 
     getCurrentListName,
+    generateInviteLink,
   };
 }

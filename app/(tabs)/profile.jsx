@@ -209,7 +209,9 @@ export default function ProfileScreen() {
 
       <View style={styles.menuSection}>
         {/* Farvevalg til indkøbslisten */}
-        <Text style={styles.sectionLabel}>Vælg farve til indkøbslisten:</Text>
+        <Text style={styles.sectionLabel}>
+          Vælg farve til teksten på indkøbslisten:
+        </Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
