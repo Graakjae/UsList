@@ -1,9 +1,6 @@
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 
 export default function ShoppingList({ sortedItems, toggleItem }) {
-  // console.log(sortedItems);
-  // const { user } = useAuth();
-  // console.log("user", user);
   return (
     <FlatList
       data={sortedItems}

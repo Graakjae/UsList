@@ -85,12 +85,9 @@ export default function Modals({
     } else {
       // User's own list - if it exists in their lists array, they own it
       const list = lists.find((list) => list.id === currentListId);
-      console.log("list", list.id, currentListId);
       return !!list; // If the list exists in user's lists, they own it
     }
   };
-
-  console.log("owner", isOwner());
 
   // Handle share list
   const handleShareList = async () => {

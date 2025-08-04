@@ -1,0 +1,116 @@
+import Modal from "@/components/ui/Modal";
+import React from "react";
+import {
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+export default function EditProfileModal({
+  visible,
+  onClose,
+  onSave,
+  loading,
+  image,
+  newImage,
+  newDisplayName,
+  setNewDisplayName,
+  onChooseImage,
+}) {
+  return (
+    <Modal
+      visible={visible}
+      onClose={onClose}
+      title="Rediger profil"
+      buttons={[
+        {
+          text: "Annuller",
+          style: { backgroundColor: "#f0f0f0" },
+          onPress: onClose,
+          disabled: loading,
+        },
+        {
+          text: "Gem",
+          style: { backgroundColor: "#FFC0CB" },
+          onPress: onSave,
+          disabled: loading,
+        },
+      ]}
+    >
+      <View style={styles.editProfileContainer}>
+        <Text style={styles.editProfileText}>Dit billede</Text>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 12,
+            marginBottom: 12,
+          }}
+        >
+          <TouchableOpacity
+            onPress={onChooseImage}
+            disabled={loading}
+            style={{ flex: 1 }}
+          >
+            <Image
+              source={
+                image
+                  ? { uri: newImage }
+                  : require("../../assets/images/icon.png")
+              }
+              style={styles.profileImage}
+            />
+
+            {loading && (
+              <Text style={{ textAlign: "center" }}>Uploader...</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.editProfileText}>Dit navn</Text>
+        <View style={styles.editProfileInputContainer}>
+          <TextInput
+            style={styles.nameInput}
+            value={newDisplayName}
+            onChangeText={setNewDisplayName}
+            placeholder="Dit navn"
+          />
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  editProfileContainer: {
+    padding: 16,
+  },
+  editProfileText: {
+    fontSize: 16,
+    color: "#333",
+    fontFamily: "Baloo2-Bold",
+    marginBottom: 8,
+  },
+  editProfileInputContainer: {
+    marginBottom: 16,
+  },
+  profileImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 3,
+    borderColor: "#FFC0CB",
+  },
+  nameInput: {
+    fontSize: 24,
+    color: "#333",
+    borderBottomWidth: 1,
+    borderBottomColor: "#FFC0CB",
+    paddingBottom: 4,
+    minWidth: 150,
+    fontFamily: "Baloo2-Bold",
+  },
+});
