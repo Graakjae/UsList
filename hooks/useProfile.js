@@ -52,7 +52,10 @@ export default function useProfile(user) {
         }
       });
       // Hent sprogvalg fra Firebase
-      const languageRef = dbRef(database, `users/${user.uid}/settings/language`);
+      const languageRef = dbRef(
+        database,
+        `users/${user.uid}/settings/language`
+      );
       get(languageRef).then((snapshot) => {
         if (snapshot.exists()) {
           setLanguageState(snapshot.val());
@@ -62,16 +65,35 @@ export default function useProfile(user) {
   }, [user]);
 
   async function chooseImage() {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      base64: true,
-      allowsEditing: true,
-      quality: 0.3,
-    });
+    console.log("chooseImage function called");
 
-    if (!result.canceled) {
-      const base64 = "data:image/jpeg;base64," + result.assets[0].base64;
-      setNewImage(base64);
+    try {
+      // Request permissions first
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      console.log("Permission status:", status);
+
+      if (status !== "granted") {
+        console.log("Permission not granted");
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        base64: true,
+        allowsEditing: true,
+        quality: 0.3,
+      });
+
+      console.log("ImagePicker result:", result);
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const base64 = "data:image/jpeg;base64," + result.assets[0].base64;
+        console.log("Setting new image with base64 length:", base64.length);
+        setNewImage(base64);
+      } else {
+        console.log("Image selection was canceled or no assets");
+      }
+    } catch (error) {
+      console.error("Error in chooseImage:", error);
     }
   }
 
@@ -79,11 +101,21 @@ export default function useProfile(user) {
     setLoading(true);
     try {
       const userRef = dbRef(database, `users/${user.uid}`);
-      await set(userRef, {
+
+      // Only update photoURL if newImage exists
+      const updateData = {
         displayName: newDisplayName,
-        photoURL: newImage,
-      });
-      setImage(newImage);
+      };
+
+      if (newImage) {
+        updateData.photoURL = newImage;
+      }
+
+      await set(userRef, updateData);
+
+      if (newImage) {
+        setImage(newImage);
+      }
       setDisplayName(newDisplayName);
       setIsEditingModal(false);
     } catch (error) {

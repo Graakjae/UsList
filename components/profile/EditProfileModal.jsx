@@ -54,24 +54,22 @@ export default function EditProfileModal({
           }}
         >
           <TouchableOpacity
-            onPress={onChooseImage}
-            disabled={loading}
+            onPress={() => {
+              console.log("Image pressed, calling onChooseImage");
+              onChooseImage();
+            }}
             style={{ flex: 1 }}
           >
             <Image
+              style={styles.profileImage}
               source={
-                image
+                newImage
                   ? { uri: newImage }
+                  : image
+                  ? { uri: image }
                   : require("../../assets/images/icon.png")
               }
-              style={styles.profileImage}
             />
-
-            {loading && (
-              <Text style={{ textAlign: "center" }}>
-                {t("profile.uploading")}
-              </Text>
-            )}
           </TouchableOpacity>
         </View>
 
