@@ -1,0 +1,49 @@
+{
+  "profile": {
+    "title": "Profile",
+    "editProfile": "Edit Profile",
+    "settings": "Settings",
+    "logout": "Log Out",
+    "logoutConfirm": "Are you sure you want to log out?",
+    "cancel": "Cancel",
+    "save": "Save",
+    "uploading": "Uploading...",
+    "yourImage": "Your image",
+    "yourName": "Your name",
+    "colorSelector": "Choose color for shopping list text:",
+    "fontSelector": "Choose font for shopping list:",
+    "languageSelector": "Choose language:",
+    "noName": "No name",
+    "anonymousUser": "Anonymous user",
+    "shoppingList": "Shopping List"
+  },
+  "shopping": {
+    "addItem": "Add item",
+    "completed": "Completed",
+    "deleteCompleted": "Delete completed",
+    "deleteAll": "Delete all",
+    "search": "Search for items...",
+    "noItems": "No items on list",
+    "addFirstItem": "Add your first item"
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign up",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close"
+  }
+}

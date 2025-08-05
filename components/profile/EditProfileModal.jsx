@@ -1,5 +1,6 @@
 import Modal from "@/components/ui/Modal";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   Image,
   StyleSheet,
@@ -20,20 +21,22 @@ export default function EditProfileModal({
   setNewDisplayName,
   onChooseImage,
 }) {
+  const { t } = useTranslation();
+
   return (
     <Modal
       visible={visible}
       onClose={onClose}
-      title="Rediger profil"
+      title={t("profile.editProfile")}
       buttons={[
         {
-          text: "Annuller",
+          text: t("common.cancel"),
           style: { backgroundColor: "#f0f0f0" },
           onPress: onClose,
           disabled: loading,
         },
         {
-          text: "Gem",
+          text: t("common.save"),
           style: { backgroundColor: "#FFC0CB" },
           onPress: onSave,
           disabled: loading,
@@ -41,7 +44,7 @@ export default function EditProfileModal({
       ]}
     >
       <View style={styles.editProfileContainer}>
-        <Text style={styles.editProfileText}>Dit billede</Text>
+        <Text style={styles.editProfileText}>{t("profile.yourImage")}</Text>
         <View
           style={{
             flexDirection: "row",
@@ -65,18 +68,20 @@ export default function EditProfileModal({
             />
 
             {loading && (
-              <Text style={{ textAlign: "center" }}>Uploader...</Text>
+              <Text style={{ textAlign: "center" }}>
+                {t("profile.uploading")}
+              </Text>
             )}
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.editProfileText}>Dit navn</Text>
+        <Text style={styles.editProfileText}>{t("profile.yourName")}</Text>
         <View style={styles.editProfileInputContainer}>
           <TextInput
             style={styles.nameInput}
             value={newDisplayName}
             onChangeText={setNewDisplayName}
-            placeholder="Dit navn"
+            placeholder={t("profile.yourName")}
           />
         </View>
       </View>

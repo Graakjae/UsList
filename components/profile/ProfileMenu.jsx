@@ -1,14 +1,17 @@
 import { faCog, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function ProfileMenu({ onSignOut }) {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.menuSection}>
       <TouchableOpacity style={styles.menuItem}>
         <FontAwesomeIcon icon={faCog} size={20} color="#333" />
-        <Text style={styles.menuText}>Indstillinger</Text>
+        <Text style={styles.menuText}>{t("profile.settings")}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -16,7 +19,9 @@ export default function ProfileMenu({ onSignOut }) {
         onPress={onSignOut}
       >
         <FontAwesomeIcon icon={faSignOutAlt} size={20} color="#ff4444" />
-        <Text style={[styles.menuText, { color: "#ff4444" }]}>Log ud</Text>
+        <Text style={[styles.menuText, { color: "#ff4444" }]}>
+          {t("profile.logout")}
+        </Text>
       </TouchableOpacity>
     </View>
   );

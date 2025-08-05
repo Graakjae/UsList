@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const fontOptions = [
@@ -23,11 +24,11 @@ const fontOptions = [
 ];
 
 export default function FontSelector({ selectedFont, onFontSelect }) {
+  const { t } = useTranslation();
+
   return (
     <View>
-      <Text style={styles.sectionLabel}>
-        Vælg skrifttype til indkøbslisten:
-      </Text>
+      <Text style={styles.sectionLabel}>{t("profile.fontSelector")}</Text>
       <View style={styles.fontOptionsRow}>
         {fontOptions.map((font) => (
           <TouchableOpacity
@@ -45,7 +46,7 @@ export default function FontSelector({ selectedFont, onFontSelect }) {
                 color: selectedFont === font.value ? "#FFC0CB" : "#333",
               }}
             >
-              Indkøbsliste
+              {t("profile.shoppingList")}
             </Text>
           </TouchableOpacity>
         ))}

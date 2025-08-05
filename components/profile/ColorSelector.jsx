@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   ScrollView,
   StyleSheet,
@@ -23,11 +24,11 @@ const colorOptions = [
 ];
 
 export default function ColorSelector({ selectedColor, onColorSelect }) {
+  const { t } = useTranslation();
+
   return (
     <View>
-      <Text style={styles.sectionLabel}>
-        Vælg farve til teksten på indkøbslisten:
-      </Text>
+      <Text style={styles.sectionLabel}>{t("profile.colorSelector")}</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}

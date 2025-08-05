@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 import "react-native-reanimated";
 import { AuthProvider, useAuth } from "../hooks/useAuth";
+import { initializeLanguage } from "../utils/i18n";
 
 import {
   Baloo2_400Regular,
@@ -101,6 +102,10 @@ export default function RootLayout() {
     "PermanentMarker-Regular": PermanentMarker_400Regular,
     "SpaceMono-Regular": SpaceMono_400Regular,
   });
+
+  useEffect(() => {
+    initializeLanguage();
+  }, []);
 
   if (!loaded) {
     // Async font loading only occurs in development.

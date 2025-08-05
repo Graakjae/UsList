@@ -2,12 +2,14 @@ import * as ImagePicker from "expo-image-picker";
 import { ref as dbRef, get, set } from "firebase/database";
 import { useEffect, useState } from "react";
 import { database } from "../firebase";
+import { setLanguage } from "../utils/i18n";
 
 export default function useProfile(user) {
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
   const [listColor, setListColor] = useState("#333");
   const [listFont, setListFont] = useState("Baloo2-Bold");
+  const [language, setLanguageState] = useState("da");
   const [image, setImage] = useState("");
   const [newImage, setNewImage] = useState();
   const [newDisplayName, setNewDisplayName] = useState(displayName);
@@ -47,6 +49,13 @@ export default function useProfile(user) {
       get(fontRef).then((snapshot) => {
         if (snapshot.exists()) {
           setListFont(snapshot.val());
+        }
+      });
+      // Hent sprogvalg fra Firebase
+      const languageRef = dbRef(database, `users/${user.uid}/settings/language`);
+      get(languageRef).then((snapshot) => {
+        if (snapshot.exists()) {
+          setLanguageState(snapshot.val());
         }
       });
     }
@@ -98,12 +107,21 @@ export default function useProfile(user) {
     }
   };
 
+  const handleLanguageSelect = async (lang) => {
+    setLanguageState(lang);
+    await setLanguage(lang);
+    if (user) {
+      await set(dbRef(database, `users/${user.uid}/settings/language`), lang);
+    }
+  };
+
   return {
     // State
     displayName,
     loading,
     listColor,
     listFont,
+    language,
     image,
     newImage,
     newDisplayName,
@@ -116,5 +134,6 @@ export default function useProfile(user) {
     updateProfile,
     handleColorSelect,
     handleFontSelect,
+    handleLanguageSelect,
   };
 }

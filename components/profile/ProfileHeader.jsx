@@ -2,6 +2,7 @@ import { faUserEdit } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 export default function ProfileHeader({
   image,
@@ -9,6 +10,8 @@ export default function ProfileHeader({
   email,
   onEditPress,
 }) {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.profileSection}>
       <View style={styles.imageContainer}>
@@ -25,11 +28,15 @@ export default function ProfileHeader({
 
       <View style={styles.nameSection}>
         <View style={styles.nameContainer}>
-          <Text style={styles.displayName}>{displayName || "Ingen navn"}</Text>
+          <Text style={styles.displayName}>
+            {displayName || t('profile.noName')}
+          </Text>
         </View>
       </View>
 
-      <Text style={styles.email}>{email || "Anonym bruger"}</Text>
+      <Text style={styles.email}>
+        {email || t('profile.anonymousUser')}
+      </Text>
     </View>
   );
 }

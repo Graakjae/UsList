@@ -1,0 +1,49 @@
+{
+  "profile": {
+    "title": "Profil",
+    "editProfile": "Rediger profil",
+    "settings": "Indstillinger",
+    "logout": "Log ud",
+    "logoutConfirm": "Er du sikker på, at du vil logge ud?",
+    "cancel": "Annuller",
+    "save": "Gem",
+    "uploading": "Uploader...",
+    "yourImage": "Dit billede",
+    "yourName": "Dit navn",
+    "colorSelector": "Vælg farve til teksten på indkøbslisten:",
+    "fontSelector": "Vælg skrifttype til indkøbslisten:",
+    "languageSelector": "Vælg sprog:",
+    "noName": "Ingen navn",
+    "anonymousUser": "Anonym bruger",
+    "shoppingList": "Indkøbsliste"
+  },
+  "shopping": {
+    "addItem": "Tilføj vare",
+    "completed": "Færdig",
+    "deleteCompleted": "Slet færdige",
+    "deleteAll": "Slet alle",
+    "search": "Søg efter varer...",
+    "noItems": "Ingen varer på listen",
+    "addFirstItem": "Tilføj din første vare"
+  },
+  "auth": {
+    "login": "Log ind",
+    "signup": "Opret konto",
+    "email": "Email",
+    "password": "Adgangskode",
+    "confirmPassword": "Bekræft adgangskode",
+    "forgotPassword": "Glemt adgangskode?",
+    "noAccount": "Har du ikke en konto?",
+    "hasAccount": "Har du allerede en konto?"
+  },
+  "common": {
+    "loading": "Indlæser...",
+    "error": "Fejl",
+    "success": "Succes",
+    "cancel": "Annuller",
+    "save": "Gem",
+    "delete": "Slet",
+    "edit": "Rediger",
+    "close": "Luk"
+  }
+}

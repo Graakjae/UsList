@@ -1,11 +1,13 @@
 import { useRouter } from "expo-router";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import ColorSelector from "@/components/profile/ColorSelector";
 import EditProfileModal from "@/components/profile/EditProfileModal";
 import FontSelector from "@/components/profile/FontSelector";
+import LanguageSelector from "@/components/profile/LanguageSelector";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileMenu from "@/components/profile/ProfileMenu";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,6 +17,7 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user, signOut } = useAuth();
+  const { t } = useTranslation();
 
   const {
     // State
@@ -22,6 +25,7 @@ export default function ProfileScreen() {
     loading,
     listColor,
     listFont,
+    language,
     image,
     newImage,
     newDisplayName,
@@ -34,13 +38,14 @@ export default function ProfileScreen() {
     updateProfile,
     handleColorSelect,
     handleFontSelect,
+    handleLanguageSelect,
   } = useProfile(user);
 
   const handleSignOut = () => {
-    Alert.alert("Log ud", "Er du sikker på, at du vil logge ud?", [
-      { text: "Annuller", style: "cancel" },
+    Alert.alert(t("profile.logout"), t("profile.logoutConfirm"), [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Log ud",
+        text: t("profile.logout"),
         style: "destructive",
         onPress: () => {
           signOut();
@@ -65,6 +70,11 @@ export default function ProfileScreen() {
       />
 
       <FontSelector selectedFont={listFont} onFontSelect={handleFontSelect} />
+
+      <LanguageSelector
+        currentLanguage={language}
+        onLanguageSelect={handleLanguageSelect}
+      />
 
       <ProfileMenu onSignOut={handleSignOut} />
 
