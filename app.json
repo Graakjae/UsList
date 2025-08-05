@@ -15,7 +15,7 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSPhotoLibraryAddUsageDescription": "Denne app gemmer QR-koder i dit galleri for at dele dem med andre.",
-        "NSPhotoLibraryUsageDescription": "Denne app gemmer QR-koder i dit galleri for at dele dem med andre."
+        "NSPhotoLibraryUsageDescription": "Denne app bruger dit galleri til at vælge profilbilleder."
       }
     },
     "android": {
@@ -26,7 +26,12 @@
       "edgeToEdgeEnabled": true,
       "package": "com.camillaogfrederik.app",
       "icon": "./assets/images/android/icon.png",
-      "permissions": ["WRITE_EXTERNAL_STORAGE", "READ_EXTERNAL_STORAGE"],
+      "permissions": [
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE",
+        "CAMERA",
+        "READ_MEDIA_IMAGES"
+      ],
       "intentFilters": [
         {
           "action": "VIEW",
@@ -57,7 +62,6 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-web-browser",
       "expo-font",
       [
         "expo-media-library",
@@ -65,6 +69,12 @@
           "photosPermission": "Tillad appen til at gemme QR-koder i dit galleri.",
           "savePhotosPermission": "Tillad appen til at gemme QR-koder i dit galleri.",
           "isAccessMediaLocationEnabled": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Tillad appen til at vælge billeder fra dit galleri."
         }
       ]
     ],

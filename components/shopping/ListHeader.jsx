@@ -7,6 +7,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { Text, TouchableOpacity, View } from "react-native";
+import MembersAvatars from "./MembersAvatars";
 
 export default function ListHeader({
   currentListId,
@@ -22,17 +23,23 @@ export default function ListHeader({
   getCurrentListName,
   setShowInviteCodeModal,
   openBottomSheet,
+  listMembers,
 }) {
+  console.log("lists", lists);
   return (
     <View style={styles.headerRow}>
       <View style={styles.titleContainer}>
-        <TouchableOpacity
-          style={styles.listSelector}
-          onPress={() => setShowListDropdown(!showListDropdown)}
-        >
-          <Text style={styles.title}>{getCurrentListName()}</Text>
-          <FontAwesomeIcon icon={faChevronDown} size={16} color="#333" />
-        </TouchableOpacity>
+        <View style={styles.titleRow}>
+          <TouchableOpacity
+            style={styles.listSelector}
+            onPress={() => setShowListDropdown(!showListDropdown)}
+          >
+            <Text style={styles.title}>{getCurrentListName()}</Text>
+            <FontAwesomeIcon icon={faChevronDown} size={16} color="#333" />
+          </TouchableOpacity>
+
+          <MembersAvatars members={listMembers} />
+        </View>
 
         {showListDropdown && (
           <View style={styles.dropdownContainer}>
@@ -152,6 +159,10 @@ const styles = {
   titleContainer: {
     flex: 1,
     position: "relative",
+  },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   listSelector: {
     flexDirection: "row",

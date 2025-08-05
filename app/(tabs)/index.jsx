@@ -104,6 +104,7 @@ export default function ShoppingScreen() {
         getCurrentListName={getCurrentListName}
         setShowInviteCodeModal={setShowInviteCodeModal}
         openBottomSheet={openBottomSheet}
+        listMembers={listMembers}
       />
 
       <ItemInput
