@@ -11,7 +11,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import {
-  Alert,
   FlatList,
   Linking,
   Share,
@@ -74,9 +73,7 @@ export default function Modals({
 }) {
   // Check if current user is owner of the list
   const isOwner = () => {
-    if (!user) return false;
-
-    if (currentListId === "default") return true;
+    if (!user || !currentListId) return false;
 
     if (currentListId.includes("_")) {
       // Shared list
@@ -144,16 +141,8 @@ export default function Modals({
 
   // Handle delete list
   const handleDeleteList = () => {
-    if (currentListId === "default") {
-      Alert.alert(
-        "Kan ikke slette",
-        "Du kan ikke slette standard listen. Opret en ny liste i stedet.",
-        [{ text: "OK" }]
-      );
-      return;
-    }
-
     deleteList(currentListId);
+    closeBottomSheet();
   };
 
   return (
@@ -285,9 +274,7 @@ export default function Modals({
           setEditListName("");
           openBottomSheet();
         }}
-        title={
-          currentListId === "default" ? "Opret ny liste" : "Rediger liste navn"
-        }
+        title={!currentListId ? "Opret ny liste" : "Rediger liste navn"}
         buttons={[
           {
             text: "Annuller",
@@ -299,7 +286,7 @@ export default function Modals({
             },
           },
           {
-            text: currentListId === "default" ? "Opret" : "Gem ændringer",
+            text: !currentListId ? "Opret" : "Gem ændringer",
             style: { backgroundColor: "#FFC0CB" },
             onPress: saveListName,
           },
@@ -310,7 +297,7 @@ export default function Modals({
           value={editListName}
           onChangeText={setEditListName}
           placeholder="Liste navn"
-          autoFocus={currentListId === "default"}
+          autoFocus={!currentListId}
         />
       </Modal>
 

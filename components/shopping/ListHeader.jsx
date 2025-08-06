@@ -25,7 +25,9 @@ export default function ListHeader({
   openBottomSheet,
   listMembers,
 }) {
-  console.log("lists", lists);
+  const hasLists = lists.length > 0 || sharedLists.length > 0;
+  const currentListName = getCurrentListName();
+
   return (
     <View style={styles.headerRow}>
       <View style={styles.titleContainer}>
@@ -34,11 +36,15 @@ export default function ListHeader({
             style={styles.listSelector}
             onPress={() => setShowListDropdown(!showListDropdown)}
           >
-            <Text style={styles.title}>{getCurrentListName()}</Text>
+            <Text style={styles.title}>
+              {hasLists ? currentListName : "Du har ingen lister"}
+            </Text>
             <FontAwesomeIcon icon={faChevronDown} size={16} color="#333" />
           </TouchableOpacity>
 
-          <MembersAvatars members={listMembers} />
+          {hasLists && currentListId && (
+            <MembersAvatars members={listMembers} />
+          )}
         </View>
 
         {showListDropdown && (
@@ -54,6 +60,11 @@ export default function ListHeader({
                     key={list.id}
                     style={styles.dropdownItem}
                     onPress={() => {
+                      console.log("ListHeader: Switching to list:", list.id);
+                      console.log(
+                        "setCurrentListId function:",
+                        typeof setCurrentListId
+                      );
                       setCurrentListId(list.id);
                       setShowListDropdown(false);
                     }}
@@ -123,14 +134,16 @@ export default function ListHeader({
         )}
       </View>
 
-      <View style={styles.headerButtons}>
-        <TouchableOpacity
-          onPress={openBottomSheet}
-          style={styles.headerIconButton}
-        >
-          <FontAwesomeIcon icon={faEllipsisV} size={20} color="#333" />
-        </TouchableOpacity>
-      </View>
+      {hasLists && currentListId && (
+        <View style={styles.headerButtons}>
+          <TouchableOpacity
+            onPress={openBottomSheet}
+            style={styles.headerIconButton}
+          >
+            <FontAwesomeIcon icon={faEllipsisV} size={20} color="#333" />
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
@@ -235,5 +248,17 @@ const styles = {
     fontFamily: "Nunito-Regular",
     color: "#666",
     marginTop: 2,
+  },
+  noListsContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 20,
+  },
+  noListsText: {
+    fontSize: 18,
+    fontFamily: "Nunito-Regular",
+    color: "#666",
+    marginBottom: 10,
   },
 };

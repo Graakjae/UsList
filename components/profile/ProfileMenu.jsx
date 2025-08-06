@@ -1,14 +1,23 @@
-import { faCog, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBoxes,
+  faCog,
+  faSignOutAlt,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function ProfileMenu({ onSignOut }) {
+export default function ProfileMenu({ onSignOut, onManageProducts }) {
   const { t } = useTranslation();
 
   return (
     <View style={styles.menuSection}>
+      <TouchableOpacity style={styles.menuItem} onPress={onManageProducts}>
+        <FontAwesomeIcon icon={faBoxes} size={20} color="#333" />
+        <Text style={styles.menuText}>Administrer produkter</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.menuItem}>
         <FontAwesomeIcon icon={faCog} size={20} color="#333" />
         <Text style={styles.menuText}>{t("profile.settings")}</Text>

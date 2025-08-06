@@ -5,22 +5,30 @@ export default function DeleteButtons({
   hasCompletedItems,
   deleteCompletedItems,
   deleteAllItems,
+  currentListId,
 }) {
-  if (!hasItems) return null;
-
   return (
     <View style={styles.deleteButtonsContainer}>
-      {hasCompletedItems && (
-        <TouchableOpacity
-          style={[styles.deleteButton, styles.deleteCompletedButton]}
-          onPress={deleteCompletedItems}
-        >
-          <Text style={styles.deleteButtonText}>Slet overstregede</Text>
-        </TouchableOpacity>
-      )}
       <TouchableOpacity
-        style={[styles.deleteButton, styles.deleteAllButton]}
+        style={[
+          styles.deleteButton,
+          styles.deleteCompletedButton,
+          !currentListId ||
+            (!hasCompletedItems && styles.deleteCompletedButtonDisabled),
+        ]}
+        onPress={deleteCompletedItems}
+        disabled={!currentListId || !hasCompletedItems}
+      >
+        <Text style={styles.deleteButtonText}>Slet overstregede</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[
+          styles.deleteButton,
+          styles.deleteAllButton,
+          !currentListId || (!hasItems && styles.deleteAllButtonDisabled),
+        ]}
         onPress={deleteAllItems}
+        disabled={!currentListId || !hasItems}
       >
         <Text style={styles.deleteButtonText}>Slet alle</Text>
       </TouchableOpacity>
@@ -55,5 +63,11 @@ const styles = {
     color: "#fff",
     fontSize: 16,
     fontFamily: "Baloo2-Bold",
+  },
+  deleteCompletedButtonDisabled: {
+    backgroundColor: "#ccc",
+  },
+  deleteAllButtonDisabled: {
+    backgroundColor: "#ccc",
   },
 };

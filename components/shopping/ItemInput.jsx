@@ -14,20 +14,26 @@ export default function ItemInput({
   showResults,
   searchResults,
   selectProduct,
+  currentListId,
 }) {
   return (
     <>
       <View style={styles.inputContainer}>
         <TextInput
-          style={styles.input}
+          style={currentListId ? styles.input : styles.disabledInput}
           value={newItem}
           onChangeText={handleSearch}
           placeholder="Tilføj en vare..."
           onSubmitEditing={addItem}
           blurOnSubmit={false}
           returnKeyType="done"
+          editable={!!currentListId}
         />
-        <TouchableOpacity style={styles.addButton} onPress={addItem}>
+        <TouchableOpacity
+          style={currentListId ? styles.addButton : styles.disabledAddButton}
+          onPress={addItem}
+          disabled={!currentListId}
+        >
           <Text style={styles.addButtonText}>+</Text>
         </TouchableOpacity>
       </View>
@@ -84,8 +90,29 @@ const styles = {
     fontFamily: "Nunito-Regular",
     fontSize: 16,
   },
+  disabledInput: {
+    flex: 1,
+    borderWidth: 2,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 12,
+    marginRight: 10,
+    fontFamily: "Nunito-Regular",
+    fontSize: 16,
+    backgroundColor: "#f0f0f0",
+    color: "#666",
+    opacity: 0.5,
+  },
   addButton: {
     backgroundColor: "#FFC0CB",
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  disabledAddButton: {
+    backgroundColor: "#ccc",
     width: 50,
     height: 50,
     borderRadius: 25,
@@ -130,5 +157,17 @@ const styles = {
     height: 25,
     padding: 2,
     zIndex: 1000,
+  },
+  disabledContainer: {
+    backgroundColor: "#f0f0f0",
+    padding: 20,
+    borderRadius: 8,
+    marginBottom: 20,
+    alignItems: "center",
+  },
+  disabledText: {
+    fontSize: 16,
+    fontFamily: "Nunito-Regular",
+    color: "#666",
   },
 };

@@ -71,6 +71,7 @@ function RootLayoutNav() {
         <Stack.Screen name="invite/[ownerName]/[listName]/[timestamp]" />
         <Stack.Screen name="login" />
         <Stack.Screen name="signup" />
+        <Stack.Screen name="products" />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />

@@ -55,6 +55,10 @@ export default function ProfileScreen() {
     ]);
   };
 
+  const handleManageProducts = () => {
+    router.push("/products");
+  };
+
   return (
     <ScrollView style={[styles.container, { paddingTop: insets.top }]}>
       <ProfileHeader
@@ -76,7 +80,10 @@ export default function ProfileScreen() {
         onLanguageSelect={handleLanguageSelect}
       />
 
-      <ProfileMenu onSignOut={handleSignOut} />
+      <ProfileMenu
+        onSignOut={handleSignOut}
+        onManageProducts={handleManageProducts}
+      />
 
       <EditProfileModal
         visible={isEditingModal}

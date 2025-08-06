@@ -5,7 +5,7 @@ import Modals from "@/components/shopping/Modals";
 import ShoppingList from "@/components/shopping/ShoppingList";
 import { useAuth } from "@/hooks/useAuth";
 import useShoppingList from "@/hooks/useShoppingList";
-import { StyleSheet, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ShoppingScreen() {
@@ -22,6 +22,7 @@ export default function ShoppingScreen() {
     lists,
     sharedLists,
     currentListId,
+    listsLoading,
     showListDropdown,
     showAddListModal,
     newListName,
@@ -59,6 +60,7 @@ export default function ShoppingScreen() {
     setShowMembersModal,
     setShowInviteCodeModal,
     setInviteCodeInput,
+    setCurrentListIdWithSave,
 
     handleSearch,
     selectProduct,
@@ -90,86 +92,101 @@ export default function ShoppingScreen() {
 
   return (
     <View style={styles.container}>
-      <ListHeader
-        currentListId={currentListId}
-        lists={lists}
-        sharedLists={sharedLists}
-        showListDropdown={showListDropdown}
-        setShowListDropdown={setShowListDropdown}
-        setCurrentListId={setCurrentListId}
-        deleteList={deleteList}
-        selectSharedList={selectSharedList}
-        leaveSharedList={leaveSharedList}
-        setShowAddListModal={setShowAddListModal}
-        getCurrentListName={getCurrentListName}
-        setShowInviteCodeModal={setShowInviteCodeModal}
-        openBottomSheet={openBottomSheet}
-        listMembers={listMembers}
-      />
+      {listsLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FFC0CB" />
+        </View>
+      ) : (
+        <>
+          <ListHeader
+            currentListId={currentListId}
+            lists={lists}
+            sharedLists={sharedLists}
+            showListDropdown={showListDropdown}
+            setShowListDropdown={setShowListDropdown}
+            setCurrentListId={setCurrentListIdWithSave}
+            deleteList={deleteList}
+            selectSharedList={selectSharedList}
+            leaveSharedList={leaveSharedList}
+            setShowAddListModal={setShowAddListModal}
+            getCurrentListName={getCurrentListName}
+            setShowInviteCodeModal={setShowInviteCodeModal}
+            openBottomSheet={openBottomSheet}
+            listMembers={listMembers}
+          />
 
-      <ItemInput
-        newItem={newItem}
-        handleSearch={handleSearch}
-        addItem={addItem}
-        showResults={showResults}
-        searchResults={searchResults}
-        selectProduct={selectProduct}
-      />
+          <ItemInput
+            newItem={newItem}
+            handleSearch={handleSearch}
+            addItem={addItem}
+            showResults={showResults}
+            searchResults={searchResults}
+            selectProduct={selectProduct}
+            currentListId={currentListId}
+          />
 
-      <ShoppingList sortedItems={sortedItems} toggleItem={toggleItem} />
+          <ShoppingList
+            sortedItems={sortedItems}
+            toggleItem={toggleItem}
+            currentListId={currentListId}
+            setShowAddListModal={setShowAddListModal}
+          />
 
-      <DeleteButtons
-        hasItems={hasItems}
-        hasCompletedItems={hasCompletedItems}
-        deleteCompletedItems={deleteCompletedItems}
-        deleteAllItems={deleteAllItems}
-      />
+          <DeleteButtons
+            hasItems={hasItems}
+            hasCompletedItems={hasCompletedItems}
+            deleteCompletedItems={deleteCompletedItems}
+            deleteAllItems={deleteAllItems}
+            currentListId={currentListId}
+          />
 
-      <Modals
-        // Modal states
-        showAddListModal={showAddListModal}
-        setShowAddListModal={setShowAddListModal}
-        showBottomSheet={showBottomSheet}
-        setShowBottomSheet={setShowBottomSheet}
-        showEditListModal={showEditListModal}
-        setShowEditListModal={setShowEditListModal}
-        showQRModal={showQRModal}
-        setShowQRModal={setShowQRModal}
-        showMembersModal={showMembersModal}
-        setShowMembersModal={setShowMembersModal}
-        showInviteCodeModal={showInviteCodeModal}
-        setShowInviteCodeModal={setShowInviteCodeModal}
-        // Modal data
-        newListName={newListName}
-        setNewListName={setNewListName}
-        editListName={editListName}
-        setEditListName={setEditListName}
-        qrCodeData={qrCodeData}
-        setQrCodeData={setQrCodeData}
-        listMembers={listMembers}
-        inviteCodeInput={inviteCodeInput}
-        setInviteCodeInput={setInviteCodeInput}
-        // Functions
-        addNewList={addNewList}
-        saveListName={saveListName}
-        deleteList={deleteList}
-        closeQRModal={closeQRModal}
-        saveQRCodeToGallery={saveQRCodeToGallery}
-        shareQRCode={shareQRCode}
-        removeUserFromList={removeUserFromList}
-        handleManualInviteCode={handleManualInviteCode}
-        openBottomSheet={openBottomSheet}
-        closeBottomSheet={closeBottomSheet}
-        // Other props
-        currentListId={currentListId}
-        getCurrentListName={getCurrentListName}
-        qrCodeRef={qrCodeRef}
-        qrModalOpacity={qrModalOpacity}
-        user={user}
-        lists={lists}
-        sharedLists={sharedLists}
-        generateInviteLink={generateInviteLink}
-      />
+          <Modals
+            // Modal states
+            showAddListModal={showAddListModal}
+            setShowAddListModal={setShowAddListModal}
+            showBottomSheet={showBottomSheet}
+            setShowBottomSheet={setShowBottomSheet}
+            showEditListModal={showEditListModal}
+            setShowEditListModal={setShowEditListModal}
+            showQRModal={showQRModal}
+            setShowQRModal={setShowQRModal}
+            showMembersModal={showMembersModal}
+            setShowMembersModal={setShowMembersModal}
+            showInviteCodeModal={showInviteCodeModal}
+            setShowInviteCodeModal={setShowInviteCodeModal}
+            // Modal data
+            newListName={newListName}
+            setNewListName={setNewListName}
+            editListName={editListName}
+            setEditListName={setEditListName}
+            qrCodeData={qrCodeData}
+            setQrCodeData={setQrCodeData}
+            listMembers={listMembers}
+            inviteCodeInput={inviteCodeInput}
+            setInviteCodeInput={setInviteCodeInput}
+            // Functions
+            addNewList={addNewList}
+            saveListName={saveListName}
+            deleteList={deleteList}
+            closeQRModal={closeQRModal}
+            saveQRCodeToGallery={saveQRCodeToGallery}
+            shareQRCode={shareQRCode}
+            removeUserFromList={removeUserFromList}
+            handleManualInviteCode={handleManualInviteCode}
+            openBottomSheet={openBottomSheet}
+            closeBottomSheet={closeBottomSheet}
+            // Other props
+            currentListId={currentListId}
+            getCurrentListName={getCurrentListName}
+            qrCodeRef={qrCodeRef}
+            qrModalOpacity={qrModalOpacity}
+            user={user}
+            lists={lists}
+            sharedLists={sharedLists}
+            generateInviteLink={generateInviteLink}
+          />
+        </>
+      )}
     </View>
   );
 }
@@ -179,5 +196,10 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: "#fff",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

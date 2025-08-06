@@ -1,6 +1,25 @@
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 
-export default function ShoppingList({ sortedItems, toggleItem }) {
+export default function ShoppingList({
+  sortedItems,
+  toggleItem,
+  currentListId,
+  setShowAddListModal,
+}) {
+  if (!currentListId) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>Opret en liste for at komme i gang</Text>
+        <TouchableOpacity
+          style={styles.createListButton}
+          onPress={() => setShowAddListModal(true)}
+        >
+          <Text style={styles.createListButtonText}>Opret liste</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <FlatList
       data={sortedItems}
@@ -95,12 +114,36 @@ const styles = {
   completedText: {
     textDecorationLine: "line-through",
     color: "red",
-    fontFamily: "Nunito-Bold",
   },
   productImage: {
     width: 25,
     height: 25,
     padding: 2,
     zIndex: 1000,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff89d",
+    padding: 20,
+  },
+  emptyText: {
+    fontSize: 18,
+    color: "#555",
+    textAlign: "center",
+    fontFamily: "Nunito-Bold",
+  },
+  createListButton: {
+    backgroundColor: "#FFC0CB",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginTop: 15,
+  },
+  createListButtonText: {
+    fontSize: 16,
+    fontFamily: "Nunito-Bold",
+    color: "white",
   },
 };

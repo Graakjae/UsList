@@ -1,8 +1,4 @@
-import {
-  faBasketShopping,
-  faRectangleList,
-  faUser,
-} from "@fortawesome/free-solid-svg-icons";
+import { faRectangleList, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { Tabs } from "expo-router";
 import React from "react";
@@ -29,17 +25,6 @@ export default function TabLayout() {
           headerMode: "none",
           tabBarIcon: ({ color }) => (
             <FontAwesomeIcon icon={faRectangleList} size={24} color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="products"
-        options={{
-          title: "Produkter",
-          headerShown: false,
-          tabBarIcon: ({ color }) => (
-            <FontAwesomeIcon icon={faBasketShopping} size={24} color={color} />
           ),
         }}
       />
