@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   FlatList,
   Image,
@@ -16,6 +17,8 @@ export default function ItemInput({
   selectProduct,
   currentListId,
 }) {
+  const { t } = useTranslation();
+
   return (
     <>
       <View style={styles.inputContainer}>
@@ -23,7 +26,7 @@ export default function ItemInput({
           style={currentListId ? styles.input : styles.disabledInput}
           value={newItem}
           onChangeText={handleSearch}
-          placeholder="Tilføj en vare..."
+          placeholder={t("shopping.addItem")}
           onSubmitEditing={addItem}
           blurOnSubmit={false}
           returnKeyType="done"

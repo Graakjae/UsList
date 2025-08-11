@@ -1,7 +1,10 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function ProductTabs({ activeTab, setActiveTab }) {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.tabContainer}>
       <TouchableOpacity
@@ -11,7 +14,7 @@ export default function ProductTabs({ activeTab, setActiveTab }) {
         <Text
           style={[styles.tabText, activeTab === "user" && styles.activeTabText]}
         >
-          Mine produkter
+          {t("products.myProducts")}
         </Text>
       </TouchableOpacity>
       <TouchableOpacity
@@ -24,7 +27,7 @@ export default function ProductTabs({ activeTab, setActiveTab }) {
             activeTab === "standard" && styles.activeTabText,
           ]}
         >
-          Standardprodukter
+          {t("products.standardProducts")}
         </Text>
       </TouchableOpacity>
     </View>

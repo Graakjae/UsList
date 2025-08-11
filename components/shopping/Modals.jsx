@@ -10,6 +10,7 @@ import {
   faUserTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { useTranslation } from "react-i18next";
 import {
   FlatList,
   Linking,
@@ -71,6 +72,8 @@ export default function Modals({
   sharedLists,
   generateInviteLink,
 }) {
+  const { t } = useTranslation();
+
   // Check if current user is owner of the list
   const isOwner = () => {
     if (!user || !currentListId) return false;
@@ -187,7 +190,7 @@ export default function Modals({
         title={getCurrentListName()}
         buttons={[
           {
-            text: "Luk",
+            text: t("shopping.close"),
             style: { backgroundColor: "#f0f0f0" },
             onPress: closeBottomSheet,
           },
@@ -200,7 +203,9 @@ export default function Modals({
             onPress={handleShareList}
           >
             <FontAwesomeIcon icon={faShare} size={24} color="#333" />
-            <Text style={styles.bottomSheetItemText}>Del liste</Text>
+            <Text style={styles.bottomSheetItemText}>
+              {t("shopping.shareList")}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -209,7 +214,7 @@ export default function Modals({
           >
             <FontAwesomeIcon icon={faEnvelope} size={24} color="#333" />
             <Text style={styles.bottomSheetItemText}>
-              Send e-mail invitation
+              {t("shopping.sendEmailInvitation")}
             </Text>
           </TouchableOpacity>
 
@@ -218,7 +223,9 @@ export default function Modals({
             onPress={handleQRCode}
           >
             <FontAwesomeIcon icon={faQrcode} size={24} color="#333" />
-            <Text style={styles.bottomSheetItemText}>QR-kode</Text>
+            <Text style={styles.bottomSheetItemText}>
+              {t("shopping.qrCode")}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -226,7 +233,9 @@ export default function Modals({
             onPress={handleInviteCode}
           >
             <FontAwesomeIcon icon={faUsers} size={24} color="#333" />
-            <Text style={styles.bottomSheetItemText}>Tilslut dig liste</Text>
+            <Text style={styles.bottomSheetItemText}>
+              {t("shopping.joinList")}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -235,7 +244,7 @@ export default function Modals({
           >
             <FontAwesomeIcon icon={faUsers} size={24} color="#333" />
             <Text style={styles.bottomSheetItemText}>
-              Brugere ({listMembers.length})
+              {t("shopping.users")} ({listMembers.length})
             </Text>
           </TouchableOpacity>
           {isOwner() && (
@@ -246,7 +255,7 @@ export default function Modals({
               >
                 <FontAwesomeIcon icon={faEdit} size={24} color="#333" />
                 <Text style={styles.bottomSheetItemText}>
-                  Rediger liste navn
+                  {t("shopping.editListName")}
                 </Text>
               </TouchableOpacity>
 
@@ -258,7 +267,7 @@ export default function Modals({
                 <Text
                   style={[styles.bottomSheetItemText, { color: "#F44336" }]}
                 >
-                  Slet liste
+                  {t("shopping.deleteList")}
                 </Text>
               </TouchableOpacity>
             </>
@@ -274,10 +283,12 @@ export default function Modals({
           setEditListName("");
           openBottomSheet();
         }}
-        title={!currentListId ? "Opret ny liste" : "Rediger liste navn"}
+        title={
+          !currentListId ? t("shopping.createList") : t("shopping.editListName")
+        }
         buttons={[
           {
-            text: "Annuller",
+            text: t("shopping.cancel"),
             style: { backgroundColor: "#f0f0f0" },
             onPress: () => {
               setShowEditListModal(false);
@@ -286,7 +297,7 @@ export default function Modals({
             },
           },
           {
-            text: !currentListId ? "Opret" : "Gem ændringer",
+            text: !currentListId ? t("shopping.create") : t("shopping.save"),
             style: { backgroundColor: "#FFC0CB" },
             onPress: saveListName,
           },
@@ -296,7 +307,7 @@ export default function Modals({
           style={styles.modalInput}
           value={editListName}
           onChangeText={setEditListName}
-          placeholder="Liste navn"
+          placeholder={t("shopping.listName")}
           autoFocus={!currentListId}
         />
       </Modal>
@@ -307,10 +318,9 @@ export default function Modals({
           style={[styles.qrModalOverlay, { opacity: qrModalOpacity }]}
         >
           <View style={styles.qrModalContent}>
-            <Text style={styles.modalTitle}>QR-kode til invitation</Text>
+            <Text style={styles.modalTitle}>{t("shopping.qrCodeTitle")}</Text>
             <Text style={styles.qrModalSubtitle}>
-              Del denne QR-kode med andre for at invitere dem til "
-              {getCurrentListName()}"
+              {t("shopping.qrCodeSubtitle")}
             </Text>
 
             <ViewShot ref={qrCodeRef} style={styles.qrCodeContainer}>
@@ -330,7 +340,9 @@ export default function Modals({
                 onPress={shareQRCode}
               >
                 <FontAwesomeIcon icon={faShare} size={20} color="#fff" />
-                <Text style={styles.qrModalButtonText}>Del</Text>
+                <Text style={styles.qrModalButtonText}>
+                  {t("shopping.share")}
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -338,12 +350,14 @@ export default function Modals({
                 onPress={saveQRCodeToGallery}
               >
                 <FontAwesomeIcon icon={faDownload} size={20} color="#fff" />
-                <Text style={styles.qrModalButtonText}>Gem</Text>
+                <Text style={styles.qrModalButtonText}>
+                  {t("shopping.save")}
+                </Text>
               </TouchableOpacity>
             </View>
 
             <TouchableOpacity style={styles.closeButton} onPress={closeQRModal}>
-              <Text style={styles.closeButtonText}>Luk</Text>
+              <Text style={styles.closeButtonText}>{t("shopping.close")}</Text>
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -353,10 +367,10 @@ export default function Modals({
       <Modal
         visible={showMembersModal}
         onClose={() => setShowMembersModal(false)}
-        title="Liste medlemmer"
+        title={t("shopping.membersTitle")}
         buttons={[
           {
-            text: "Luk",
+            text: t("shopping.close"),
             style: { backgroundColor: "#FFC0CB" },
             onPress: () => setShowMembersModal(false),
           },
@@ -370,7 +384,9 @@ export default function Modals({
               <View style={styles.memberItem}>
                 <View style={styles.memberInfo}>
                   <Text style={styles.memberName}>
-                    {item.displayName || item.email || "Ukendt bruger"}
+                    {item.displayName ||
+                      item.email ||
+                      t("shopping.unknownUser")}
                   </Text>
                   <Text style={styles.memberEmail}>{item.email}</Text>
                 </View>
@@ -391,9 +407,7 @@ export default function Modals({
             style={styles.membersList}
           />
         ) : (
-          <Text style={styles.noMembersText}>
-            Ingen medlemmer på denne liste endnu
-          </Text>
+          <Text style={styles.noMembersText}>{t("shopping.noMembers")}</Text>
         )}
       </Modal>
 
@@ -405,10 +419,10 @@ export default function Modals({
           setInviteCodeInput("");
           openBottomSheet();
         }}
-        title="Tilslut dig liste"
+        title={t("shopping.joinList")}
         buttons={[
           {
-            text: "Annuller",
+            text: t("shopping.cancel"),
             style: { backgroundColor: "#f0f0f0" },
             onPress: () => {
               setShowInviteCodeModal(false);
@@ -417,20 +431,20 @@ export default function Modals({
             },
           },
           {
-            text: "Tilslut",
+            text: t("shopping.join"),
             style: { backgroundColor: "#FFC0CB" },
             onPress: handleManualInviteCode,
           },
         ]}
       >
         <Text style={styles.modalSubtitle}>
-          Indtast invitation koden du har modtaget
+          {t("shopping.enterInvitationCode")}
         </Text>
         <TextInput
           style={styles.modalInput}
           value={inviteCodeInput}
           onChangeText={setInviteCodeInput}
-          placeholder="Indtast invitation kode"
+          placeholder={t("shopping.enterInvitationCode")}
           autoFocus
           autoCapitalize="none"
         />

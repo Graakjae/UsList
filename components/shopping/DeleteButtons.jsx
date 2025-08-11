@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Text, TouchableOpacity, View } from "react-native";
 
 export default function DeleteButtons({
@@ -7,6 +8,8 @@ export default function DeleteButtons({
   deleteAllItems,
   currentListId,
 }) {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.deleteButtonsContainer}>
       <TouchableOpacity
@@ -19,7 +22,9 @@ export default function DeleteButtons({
         onPress={deleteCompletedItems}
         disabled={!currentListId || !hasCompletedItems}
       >
-        <Text style={styles.deleteButtonText}>Slet overstregede</Text>
+        <Text style={styles.deleteButtonText}>
+          {t("shopping.deleteCompleted")}
+        </Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={[
@@ -30,7 +35,7 @@ export default function DeleteButtons({
         onPress={deleteAllItems}
         disabled={!currentListId || !hasItems}
       >
-        <Text style={styles.deleteButtonText}>Slet alle</Text>
+        <Text style={styles.deleteButtonText}>{t("shopping.deleteAll")}</Text>
       </TouchableOpacity>
     </View>
   );

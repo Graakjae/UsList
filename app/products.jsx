@@ -3,6 +3,7 @@ import { faArrowLeft, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   FlatList,
   StyleSheet,
@@ -20,6 +21,7 @@ import useProducts from "../hooks/useProducts";
 export default function Products() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("user");
 
   const {
@@ -68,7 +70,7 @@ export default function Products() {
         >
           <FontAwesomeIcon icon={faArrowLeft} size={20} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.title}>Administrer produkter</Text>
+        <Text style={styles.title}>{t("products.title")}</Text>
       </View>
 
       <ProductTabs activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -76,7 +78,7 @@ export default function Products() {
       {activeTab === "user" && (
         <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
           <FontAwesomeIcon icon={faPlus} size={16} color="#fff" />
-          <Text style={styles.addButtonText}>Tilføj mit produkt</Text>
+          <Text style={styles.addButtonText}>{t("products.addProduct")}</Text>
         </TouchableOpacity>
       )}
 
@@ -111,7 +113,8 @@ export default function Products() {
         productImage={productImage}
         setProductImage={setProductImage}
         uploading={uploading}
-        chooseProductImage={chooseProductImage}
+        onChooseImage={chooseProductImage}
+        newImage={productImage}
       />
     </View>
   );

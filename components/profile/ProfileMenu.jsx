@@ -15,7 +15,7 @@ export default function ProfileMenu({ onSignOut, onManageProducts }) {
     <View style={styles.menuSection}>
       <TouchableOpacity style={styles.menuItem} onPress={onManageProducts}>
         <FontAwesomeIcon icon={faBoxes} size={20} color="#333" />
-        <Text style={styles.menuText}>Administrer produkter</Text>
+        <Text style={styles.menuText}>{t("profile.manageProducts")}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.menuItem}>

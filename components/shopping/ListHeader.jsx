@@ -6,6 +6,7 @@ import {
   faUserTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { useTranslation } from "react-i18next";
 import { Text, TouchableOpacity, View } from "react-native";
 import MembersAvatars from "./MembersAvatars";
 
@@ -27,7 +28,7 @@ export default function ListHeader({
 }) {
   const hasLists = lists.length > 0 || sharedLists.length > 0;
   const currentListName = getCurrentListName();
-
+  const { t } = useTranslation();
   return (
     <View style={styles.headerRow}>
       <View style={styles.titleContainer}>
@@ -53,7 +54,9 @@ export default function ListHeader({
             {lists.length > 0 && (
               <>
                 <View style={styles.dropdownSectionHeader}>
-                  <Text style={styles.dropdownSectionText}>Mine lister</Text>
+                  <Text style={styles.dropdownSectionText}>
+                    {t("shopping.myLists")}
+                  </Text>
                 </View>
                 {lists.map((list) => (
                   <TouchableOpacity
@@ -89,7 +92,9 @@ export default function ListHeader({
             {sharedLists.length > 0 && (
               <>
                 <View style={styles.dropdownSectionHeader}>
-                  <Text style={styles.dropdownSectionText}>Delte lister</Text>
+                  <Text style={styles.dropdownSectionText}>
+                    {t("shopping.sharedLists")}
+                  </Text>
                 </View>
                 {sharedLists.map((sharedList) => (
                   <TouchableOpacity
@@ -128,7 +133,7 @@ export default function ListHeader({
               }}
             >
               <FontAwesomeIcon icon={faPlus} size={14} color="#FFC0CB" />
-              <Text style={styles.addListText}>Tilføj ny liste</Text>
+              <Text style={styles.addListText}>{t("shopping.addList")}</Text>
             </TouchableOpacity>
           </View>
         )}

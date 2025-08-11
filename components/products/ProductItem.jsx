@@ -1,6 +1,7 @@
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function ProductItem({
@@ -10,8 +11,10 @@ export default function ProductItem({
   canEdit,
   canDelete,
 }) {
+  const { t } = useTranslation();
+
   return (
-    <View style={styles.productItem}>
+    <View style={[styles.productItem, !canEdit && styles.productItemReadOnly]}>
       {product.icon_url && (
         <Image source={{ uri: product.icon_url }} style={styles.productImage} />
       )}
@@ -29,7 +32,7 @@ export default function ProductItem({
             onPress={() => onEdit(product)}
           >
             <FontAwesomeIcon icon={faEdit} size={12} color="#333" />
-            <Text style={styles.actionButtonText}>Rediger</Text>
+            <Text style={styles.actionButtonText}>{t("common.edit")}</Text>
           </TouchableOpacity>
         )}
         {canDelete && (
@@ -38,7 +41,7 @@ export default function ProductItem({
             onPress={() => onDelete(product)}
           >
             <FontAwesomeIcon icon={faTrash} size={12} color="#333" />
-            <Text style={styles.actionButtonText}>Slet</Text>
+            <Text style={styles.actionButtonText}>{t("common.delete")}</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -57,6 +60,9 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
+  },
+  productItemReadOnly: {
+    opacity: 0.7,
   },
   productInfo: {
     flex: 1,

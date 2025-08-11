@@ -1,6 +1,7 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   Image,
   StyleSheet,
@@ -25,22 +26,27 @@ export default function ProductModal({
   productImage,
   setProductImage,
   uploading,
-  chooseProductImage,
+  onChooseImage,
+  newImage,
 }) {
+  const { t } = useTranslation();
+
   return (
     <Modal
       visible={visible}
       onClose={onClose}
-      title={editingProduct ? "Rediger produkt" : "Tilføj mit produkt"}
+      title={
+        editingProduct ? t("products.editProduct") : t("products.addMyProduct")
+      }
       buttons={[
         {
-          text: "Annuller",
+          text: t("common.cancel"),
           style: { backgroundColor: "#f0f0f0" },
           onPress: onClose,
           disabled: uploading,
         },
         {
-          text: uploading ? "Gemmer..." : "Gem",
+          text: uploading ? t("common.loading") : t("common.save"),
           style: { backgroundColor: "#FFC0CB", color: "#fff" },
           onPress: onSave,
           disabled: uploading,
@@ -52,14 +58,16 @@ export default function ProductModal({
     >
       <TouchableOpacity
         style={styles.imagePickerButton}
-        onPress={chooseProductImage}
+        onPress={onChooseImage}
       >
-        {productImage ? (
-          <Image source={{ uri: productImage }} style={styles.selectedImage} />
+        {newImage ? (
+          <Image source={{ uri: newImage }} style={styles.selectedImage} />
         ) : (
           <View style={styles.imagePlaceholder}>
             <FontAwesomeIcon icon={faPlus} size={24} color="#ccc" />
-            <Text style={styles.imagePlaceholderText}>Vælg billede</Text>
+            <Text style={styles.imagePlaceholderText}>
+              {t("products.selectImage")}
+            </Text>
           </View>
         )}
       </TouchableOpacity>
@@ -68,21 +76,21 @@ export default function ProductModal({
         style={styles.input}
         value={productName}
         onChangeText={setProductName}
-        placeholder="Produktnavn"
+        placeholder={t("products.productName")}
       />
 
       <TextInput
         style={styles.input}
         value={productCategory}
         onChangeText={setProductCategory}
-        placeholder="Kategori"
+        placeholder={t("products.category")}
       />
 
       <TextInput
         style={styles.input}
         value={productSubcategory}
         onChangeText={setProductSubcategory}
-        placeholder="Underkategori (valgfrit)"
+        placeholder={t("products.subcategory")}
       />
     </Modal>
   );
