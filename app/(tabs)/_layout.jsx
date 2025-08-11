@@ -2,11 +2,14 @@ import { faRectangleList, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { Tabs } from "expo-router";
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 import { HapticTab } from "@/components/HapticTab";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 
 export default function TabLayout() {
+  const { t } = useTranslation();
+
   return (
     <Tabs
       screenOptions={{
@@ -20,7 +23,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Indkøbsliste",
+          title: t("navigation.shoppingList"),
           headerShown: false,
           headerMode: "none",
           tabBarIcon: ({ color }) => (
@@ -32,7 +35,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profil",
+          title: t("navigation.profile"),
           headerShown: false,
           tabBarIcon: ({ color }) => (
             <FontAwesomeIcon icon={faUser} size={24} color={color} />

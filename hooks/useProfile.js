@@ -65,16 +65,12 @@ export default function useProfile(user) {
   }, [user]);
 
   async function chooseImage() {
-    console.log("chooseImage function called");
-
     try {
       // Request permissions first
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
-      console.log("Permission status:", status);
 
       if (status !== "granted") {
-        console.log("Permission not granted");
         return;
       }
 
@@ -84,10 +80,8 @@ export default function useProfile(user) {
         quality: 0.3,
       });
 
-      console.log("ImagePicker result:", result);
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const base64 = "data:image/jpeg;base64," + result.assets[0].base64;
-        console.log("Setting new image with base64 length:", base64.length);
         setNewImage(base64);
       } else {
         console.log("Image selection was canceled or no assets");

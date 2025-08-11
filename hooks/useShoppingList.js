@@ -1,4 +1,4 @@
-import * as MediaLibrary from "expo-media-library";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   get,
   onValue,
@@ -8,9 +8,9 @@ import {
   set,
   update,
 } from "firebase/database";
-import { useEffect, useRef, useState } from "react";
-import { Alert, Linking, Share } from "react-native";
-import { runOnJS, useSharedValue, withSpring } from "react-native-reanimated";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Alert, Share } from "react-native";
 import { database } from "../firebase";
 import {
   generateInviteLink as generateInviteLinkUtil,
@@ -23,8 +23,9 @@ import {
 import { useAuth } from "./useAuth";
 
 export default function useShoppingList() {
+  console.log("useShoppingList hook initialized");
   const { user } = useAuth();
-
+  const { t } = useTranslation();
   // State
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState("");
@@ -33,7 +34,8 @@ export default function useShoppingList() {
   const [products, setProducts] = useState([]);
   const [lists, setLists] = useState([]);
   const [sharedLists, setSharedLists] = useState([]);
-  const [currentListId, setCurrentListId] = useState("default");
+  const [currentListId, setCurrentListId] = useState(null);
+  const [listsLoading, setListsLoading] = useState(true);
   const [showListDropdown, setShowListDropdown] = useState(false);
   const [showAddListModal, setShowAddListModal] = useState(false);
   const [newListName, setNewListName] = useState("");
@@ -41,17 +43,44 @@ export default function useShoppingList() {
   const [showEditListModal, setShowEditListModal] = useState(false);
   const [editListName, setEditListName] = useState("");
   const [listMembers, setListMembers] = useState([]);
-  const [showQRModal, setShowQRModal] = useState(false);
-  const [qrCodeData, setQrCodeData] = useState("");
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [showInviteCodeModal, setShowInviteCodeModal] = useState(false);
   const [inviteCodeInput, setInviteCodeInput] = useState("");
   const [userListColor, setUserListColor] = useState("#333");
   const [userListFont, setUserListFont] = useState("Baloo2-Bold");
 
-  // Refs and animations
-  const qrCodeRef = useRef();
-  const qrModalOpacity = useSharedValue(0);
+  // Custom setCurrentListId that saves to AsyncStorage
+  const setCurrentListIdWithSave = (listId) => {
+    console.log("setCurrentListIdWithSave called with:", listId);
+    console.log("Current user:", user?.uid);
+    setCurrentListId(listId);
+    saveLastSelectedList(listId);
+    console.log("setCurrentListIdWithSave completed");
+  };
+
+  // Save last selected list
+  const saveLastSelectedList = async (listId) => {
+    if (!user) return;
+    try {
+      await AsyncStorage.setItem(`lastSelectedList_${user.uid}`, listId || "");
+    } catch (error) {
+      console.error("Error saving last selected list:", error);
+    }
+  };
+
+  // Load last selected list
+  const loadLastSelectedList = async () => {
+    if (!user) return null;
+    try {
+      const lastListId = await AsyncStorage.getItem(
+        `lastSelectedList_${user.uid}`
+      );
+      return lastListId || null;
+    } catch (error) {
+      console.error("Error loading last selected list:", error);
+      return null;
+    }
+  };
 
   // Computed values using utility functions
   const sortedItems = sortItemsByCategory(items);
@@ -60,7 +89,10 @@ export default function useShoppingList() {
 
   // Get current list name
   const getCurrentListName = () => {
-    if (currentListId === "default") return "Indkøbsliste";
+    // If no lists exist, return empty
+    if (lists.length === 0 && sharedLists.length === 0) {
+      return "";
+    }
 
     // First check if it's in regular lists
     const currentList = lists.find((list) => list.id === currentListId);
@@ -90,70 +122,6 @@ export default function useShoppingList() {
     }
   };
 
-  // Send email invitation
-  const sendEmailInvitation = () => {
-    const inviteLink = generateInviteLink();
-    const subject = `Invitation til indkøbsliste: ${getCurrentListName()}`;
-    const body = `Hej!\n\nDu er inviteret til at deltage i min indkøbsliste "${getCurrentListName()}".\n\nKlik på dette link for at tilslutte dig: ${inviteLink}\n\nMed venlig hilsen`;
-
-    Linking.openURL(
-      `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
-        body
-      )}`
-    );
-  };
-
-  // Show QR code
-  const showQRCode = () => {
-    const inviteLink = generateInviteLink();
-    setQrCodeData(inviteLink);
-    setShowQRModal(true);
-    qrModalOpacity.value = withSpring(1, { damping: 15 });
-    closeBottomSheet();
-  };
-
-  // Close QR modal
-  const closeQRModal = () => {
-    qrModalOpacity.value = withSpring(0, { damping: 15 }, () => {
-      runOnJS(setShowQRModal)(false);
-    });
-  };
-
-  // Save QR code to gallery
-  const saveQRCodeToGallery = async () => {
-    try {
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(
-          "Tilladelse nødvendig",
-          "Du skal give tilladelse til at gemme billeder i galleriet."
-        );
-        return;
-      }
-
-      const uri = await qrCodeRef.current.capture();
-      await MediaLibrary.saveToLibraryAsync(uri);
-
-      Alert.alert("Succes", "QR-kode er gemt i dit galleri!");
-    } catch (error) {
-      console.error("Error saving QR code:", error);
-      Alert.alert("Fejl", "Kunne ikke gemme QR-kode");
-    }
-  };
-
-  // Share QR code
-  const shareQRCode = async () => {
-    try {
-      const uri = await qrCodeRef.current.capture();
-      await Share.share({
-        url: uri,
-      });
-    } catch (error) {
-      console.error("Error sharing QR code:", error);
-      Alert.alert("Fejl", "Kunne ikke dele QR-kode");
-    }
-  };
-
   // Search function
   const handleSearch = (text) => {
     setNewItem(text);
@@ -171,10 +139,12 @@ export default function useShoppingList() {
 
   // Select product from search results
   const selectProduct = (product) => {
-    if (!user) return;
+    if (!user || !currentListId) return;
 
     try {
       const itemsPath = getItemsPath(user, currentListId);
+      if (!itemsPath) return; // No valid path
+
       const itemsRef = ref(database, itemsPath);
       const newItemRef = push(itemsRef);
       set(newItemRef, {
@@ -200,7 +170,7 @@ export default function useShoppingList() {
 
   // Add item
   const addItem = () => {
-    if (!user || !newItem.trim()) return;
+    if (!user || !newItem.trim() || !currentListId) return;
 
     try {
       const matchingProduct = products.find(
@@ -208,6 +178,8 @@ export default function useShoppingList() {
       );
 
       const itemsPath = getItemsPath(user, currentListId);
+      if (!itemsPath) return; // No valid path
+
       const itemsRef = ref(database, itemsPath);
       const newItemRef = push(itemsRef);
       set(newItemRef, {
@@ -233,9 +205,11 @@ export default function useShoppingList() {
 
   // Toggle item completion
   const toggleItem = (id) => {
-    if (!user) return;
+    if (!user || !currentListId) return;
 
     const itemPath = getItemPath(user, currentListId, id);
+    if (!itemPath) return; // No valid path
+
     const itemRef = ref(database, itemPath);
     const item = items.find((item) => item.id === id);
     if (item) {
@@ -247,22 +221,24 @@ export default function useShoppingList() {
 
   // Delete completed items
   const deleteCompletedItems = () => {
-    if (!user) return;
+    if (!user || !currentListId) return;
 
     Alert.alert(
-      "Slet overstregede varer",
-      "Er du sikker på, at du vil slette alle overstregede varer?",
+      t("shopping.deleteCompleted"),
+      t("shopping.deleteCompletedConfirm"),
       [
-        { text: "Annuller", style: "cancel" },
+        { text: t("shopping.cancel"), style: "cancel" },
         {
-          text: "Slet",
+          text: t("shopping.delete"),
           style: "destructive",
           onPress: () => {
             const completedItems = items.filter((item) => item.completed);
             completedItems.forEach((item) => {
               const itemPath = getItemPath(user, currentListId, item.id);
-              const itemRef = ref(database, itemPath);
-              remove(itemRef);
+              if (itemPath) {
+                const itemRef = ref(database, itemPath);
+                remove(itemRef);
+              }
             });
           },
         },
@@ -272,24 +248,22 @@ export default function useShoppingList() {
 
   // Delete all items
   const deleteAllItems = () => {
-    if (!user) return;
+    if (!user || !currentListId) return;
 
-    Alert.alert(
-      "Slet alle varer",
-      "Er du sikker på, at du vil slette alle varer?",
-      [
-        { text: "Annuller", style: "cancel" },
-        {
-          text: "Slet",
-          style: "destructive",
-          onPress: () => {
-            const itemsPath = getItemsPath(user, currentListId);
+    Alert.alert(t("shopping.deleteAll"), t("shopping.deleteAllConfirm"), [
+      { text: t("shopping.cancel"), style: "cancel" },
+      {
+        text: t("shopping.delete"),
+        style: "destructive",
+        onPress: () => {
+          const itemsPath = getItemsPath(user, currentListId);
+          if (itemsPath) {
             const itemsRef = ref(database, itemsPath);
             remove(itemsRef);
-          },
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   // Add new list
@@ -307,7 +281,7 @@ export default function useShoppingList() {
       });
 
       setNewListName("");
-      setCurrentListId(newListId);
+      setCurrentListIdWithSave(newListId);
 
       setTimeout(() => {
         setShowAddListModal(false);
@@ -322,50 +296,36 @@ export default function useShoppingList() {
   const deleteList = (listId) => {
     if (!user) return;
 
-    Alert.alert(
-      "Slet liste",
-      "Er du sikker på, at du vil slette denne liste? Alle varer i listen vil også blive slettet.",
-      [
-        { text: "Annuller", style: "cancel" },
-        {
-          text: "Slet",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const listRef = ref(
-                database,
-                `users/${user.uid}/shoppingLists/${listId}`
-              );
-              await remove(listRef);
+    Alert.alert(t("shopping.deleteList"), t("shopping.deleteListConfirm"), [
+      { text: t("shopping.cancel"), style: "cancel" },
+      {
+        text: t("shopping.delete"),
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const listRef = ref(
+              database,
+              `users/${user.uid}/shoppingLists/${listId}`
+            );
+            await remove(listRef);
 
-              const itemsRef = ref(
-                database,
-                `users/${user.uid}/shoppingItems/${listId}`
-              );
-              await remove(itemsRef);
+            const itemsRef = ref(
+              database,
+              `users/${user.uid}/shoppingItems/${listId}`
+            );
+            await remove(itemsRef);
 
-              const remainingLists = lists.filter((list) => list.id !== listId);
-              if (remainingLists.length === 0) {
-                const defaultListRef = ref(
-                  database,
-                  `users/${user.uid}/shoppingLists/default`
-                );
-                await set(defaultListRef, {
-                  name: "Indkøbsliste",
-                  createdAt: Date.now(),
-                });
-                setCurrentListId("default");
-              } else {
-                setCurrentListId(remainingLists[0].id);
-              }
-            } catch (error) {
-              console.error("Error deleting list:", error);
-              Alert.alert("Fejl", "Kunne ikke slette listen");
+            // If this was the current list, clear the current list selection
+            if (currentListId === listId) {
+              setCurrentListIdWithSave(null);
             }
-          },
+          } catch (error) {
+            console.error("Error deleting list:", error);
+            Alert.alert("Fejl", "Kunne ikke slette listen");
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   // Save list name
@@ -373,8 +333,8 @@ export default function useShoppingList() {
     if (!user || !editListName.trim()) return;
 
     try {
-      if (currentListId === "default") {
-        // Create a new list instead of editing default
+      if (!currentListId) {
+        // Create a new list if no list is selected
         const listsRef = ref(database, `users/${user.uid}/shoppingLists`);
         const newListRef = push(listsRef);
         const newListId = newListRef.key;
@@ -384,7 +344,7 @@ export default function useShoppingList() {
           createdAt: Date.now(),
         });
 
-        setCurrentListId(newListId);
+        setCurrentListIdWithSave(newListId);
       } else {
         // Edit existing list
         const listRef = ref(
@@ -395,34 +355,35 @@ export default function useShoppingList() {
           name: editListName.trim(),
         });
       }
-
       setEditListName("");
       setShowEditListModal(false);
       closeBottomSheet();
     } catch (error) {
       console.error("Error editing list name:", error);
-      Alert.alert("Fejl", "Kunne ikke redigere liste navn");
+      Alert.alert(t("shopping.error"), t("shopping.errorEditingListName"));
     }
   };
 
   // Select shared list
   const selectSharedList = (sharedList) => {
-    setCurrentListId(sharedList.id);
+    setCurrentListIdWithSave(sharedList.id);
     setShowListDropdown(false);
   };
 
   // Leave shared list
   const leaveSharedList = (sharedList) => {
     const action = sharedList.isOwner ? "slette" : "forlade";
-    const title = sharedList.isOwner ? "Slet liste" : "Forlad liste";
+    const title = sharedList.isOwner
+      ? t("shopping.deleteList")
+      : t("shopping.leaveList");
 
     Alert.alert(
       title,
       `Er du sikker på, at du vil ${action} "${sharedList.name}"?`,
       [
-        { text: "Annuller", style: "cancel" },
+        { text: t("shopping.cancel"), style: "cancel" },
         {
-          text: sharedList.isOwner ? "Slet" : "Forlad",
+          text: sharedList.isOwner ? t("shopping.delete") : t("shopping.leave"),
           style: "destructive",
           onPress: async () => {
             try {
@@ -447,7 +408,7 @@ export default function useShoppingList() {
               await remove(sharedListRef);
 
               if (currentListId === sharedList.id) {
-                setCurrentListId("default");
+                setCurrentListIdWithSave(null);
               }
             } catch (error) {
               console.error("Error leaving/deleting shared list:", error);
@@ -461,31 +422,27 @@ export default function useShoppingList() {
 
   // Remove user from list
   const removeUserFromList = (userId) => {
-    if (!user || currentListId === "default") return;
+    if (!user || !currentListId) return;
 
-    Alert.alert(
-      "Fjern bruger",
-      "Er du sikker på, at du vil fjerne denne bruger fra listen?",
-      [
-        { text: "Annuller", style: "cancel" },
-        {
-          text: "Fjern",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const memberRef = ref(
-                database,
-                `users/${user.uid}/shoppingLists/${currentListId}/members/${userId}`
-              );
-              await remove(memberRef);
-            } catch (error) {
-              console.error("Error removing user:", error);
-              Alert.alert("Fejl", "Kunne ikke fjerne bruger");
-            }
-          },
+    Alert.alert(t("shopping.removeUser"), t("shopping.removeUserConfirm"), [
+      { text: t("shopping.cancel"), style: "cancel" },
+      {
+        text: t("shopping.remove"),
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const memberRef = ref(
+              database,
+              `users/${user.uid}/shoppingLists/${currentListId}/members/${userId}`
+            );
+            await remove(memberRef);
+          } catch (error) {
+            console.error("Error removing user:", error);
+            Alert.alert("Fejl", "Kunne ikke fjerne bruger");
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   // Handle manual invite code
@@ -495,7 +452,7 @@ export default function useShoppingList() {
     try {
       const parts = inviteCodeInput.trim().split("_");
       if (parts.length < 3) {
-        Alert.alert("Fejl", "Ugyldig invitation kode");
+        Alert.alert(t("shopping.error"), t("shopping.invalidInviteCode"));
         return;
       }
 
@@ -518,7 +475,7 @@ export default function useShoppingList() {
       const listSnapshot = await get(listRef);
 
       if (!listSnapshot.exists()) {
-        Alert.alert("Fejl", "Listen findes ikke længere");
+        Alert.alert(t("shopping.error"), t("shopping.listNotFound"));
         return;
       }
 
@@ -531,7 +488,7 @@ export default function useShoppingList() {
       const membersSnapshot = await get(membersRef);
 
       if (membersSnapshot.exists() && membersSnapshot.val()[user.uid]) {
-        Alert.alert("Info", "Du er allerede medlem af denne liste");
+        Alert.alert(t("shopping.info"), t("shopping.alreadyMember"));
         setShowInviteCodeModal(false);
         setInviteCodeInput("");
         return;
@@ -563,24 +520,25 @@ export default function useShoppingList() {
         isOwner: false,
       });
 
-      Alert.alert("Succes", "Du er nu tilsluttet listen!");
+      Alert.alert(t("shopping.success"), t("shopping.joinedList"));
       setShowInviteCodeModal(false);
       setInviteCodeInput("");
 
-      setCurrentListId(`${cleanOwnerName}-${cleanListName}-${timestamp}`);
+      setCurrentListIdWithSave(
+        `${cleanOwnerName}-${cleanListName}-${timestamp}`
+      );
     } catch (error) {
       console.error("Error handling invite code:", error);
 
-      let errorMessage = "Kunne ikke tilslutte dig listen. Prøv igen senere.";
+      let errorMessage = t("shopping.errorJoiningList");
 
       if (error.message.includes("Permission denied")) {
-        errorMessage =
-          "Du har ikke tilladelse til at tilslutte dig denne liste. Kontakt listen's ejer.";
+        errorMessage = t("shopping.errorJoiningListPermissionDenied");
       } else if (error.message.includes("not found")) {
-        errorMessage = "Listen findes ikke længere.";
+        errorMessage = t("shopping.errorJoiningListNotFound");
       }
 
-      Alert.alert("Fejl", errorMessage);
+      Alert.alert(t("shopping.error"), errorMessage);
     }
   };
 
@@ -595,7 +553,7 @@ export default function useShoppingList() {
 
   // Load list members
   const loadListMembers = () => {
-    if (!user || currentListId === "default") return;
+    if (!user || !currentListId) return;
 
     try {
       const membersRef = ref(
@@ -649,6 +607,7 @@ export default function useShoppingList() {
         } else {
           setSharedLists([]);
         }
+        // Loading is set to false in the main lists useEffect
       });
 
       return unsubscribe;
@@ -661,6 +620,15 @@ export default function useShoppingList() {
   useEffect(() => {
     if (!user) return;
 
+    // Load last selected list
+    const loadLastList = async () => {
+      const lastListId = await loadLastSelectedList();
+      if (lastListId) {
+        setCurrentListId(lastListId);
+      }
+    };
+    loadLastList();
+
     const listsRef = ref(database, `users/${user.uid}/shoppingLists`);
     const listsUnsubscribe = onValue(listsRef, (snapshot) => {
       const data = snapshot.val();
@@ -670,22 +638,12 @@ export default function useShoppingList() {
           ...list,
         }));
         setLists(listsArray);
-        console.log("listsArray", listsArray);
-
-        if (currentListId === "default" && listsArray.length > 0) {
-          setCurrentListId(listsArray[0].id);
-        }
       } else {
-        const defaultListRef = ref(
-          database,
-          `users/${user.uid}/shoppingLists/default`
-        );
-        set(defaultListRef, {
-          name: "Indkøbsliste",
-          createdAt: Date.now(),
-        });
+        // No lists exist - this is now allowed
         setLists([]);
+        setCurrentListIdWithSave(null);
       }
+      setListsLoading(false);
     });
 
     const sharedListsUnsubscribe = loadSharedLists();
@@ -698,8 +656,21 @@ export default function useShoppingList() {
     };
   }, [user]);
 
+  // Reset loading when user changes
   useEffect(() => {
-    if (showBottomSheet && user && currentListId !== "default") {
+    if (user) {
+      setListsLoading(true);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user && currentListId) {
+      loadListMembers();
+    }
+  }, [user, currentListId]);
+
+  useEffect(() => {
+    if (showBottomSheet && user && currentListId) {
       loadListMembers();
     }
   }, [showBottomSheet, user, currentListId]);
@@ -712,38 +683,85 @@ export default function useShoppingList() {
 
   useEffect(() => {
     try {
-      const productsRef = ref(database, "products");
+      // Load standard products
+      const standardProductsRef = ref(database, "standard_products");
+      const userProductsRef = user
+        ? ref(database, `users/${user.uid}/products`)
+        : null;
 
-      onValue(
-        productsRef,
+      const unsubscribeStandard = onValue(
+        standardProductsRef,
         (snapshot) => {
           const data = snapshot.val();
+          let standardProducts = [];
           if (data) {
-            const itemsArray = Object.entries(data).map(([id, item]) => {
-              return {
-                id,
-                ...item,
-              };
-            });
-            setProducts(itemsArray);
+            standardProducts = Object.entries(data).map(([id, item]) => ({
+              id: `standard_${id}`,
+              ...item,
+              isStandard: true,
+              createdBy: "system",
+            }));
+          }
+
+          // Combine with user products if available
+          if (userProductsRef) {
+            const unsubscribeUser = onValue(
+              userProductsRef,
+              (userSnapshot) => {
+                const userData = userSnapshot.val();
+                let userProducts = [];
+                if (userData) {
+                  userProducts = Object.entries(userData).map(([id, item]) => ({
+                    id: `user_${id}`,
+                    ...item,
+                    isStandard: false,
+                    createdBy: user.uid,
+                  }));
+                }
+
+                // Combine all products
+                const allProducts = [...standardProducts, ...userProducts];
+                setProducts(allProducts);
+              },
+              (error) => {
+                console.error(
+                  "Firebase listener error for user products:",
+                  error
+                );
+                setProducts(standardProducts);
+              }
+            );
+
+            return () => {
+              unsubscribeUser();
+            };
           } else {
-            setProducts([]);
+            setProducts(standardProducts);
           }
         },
         (error) => {
-          console.error("Firebase listener error:", error);
+          console.error(
+            "Firebase listener error for standard products:",
+            error
+          );
         }
       );
+
+      return () => {
+        unsubscribeStandard();
+      };
     } catch (error) {
       console.error("Error setting up Firebase listener:", error);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !currentListId) return;
 
     try {
       const itemsPath = getItemsPath(user, currentListId);
+      if (!itemsPath) return; // No valid path
+
       const itemsRef = ref(database, itemsPath);
 
       onValue(
@@ -811,40 +829,33 @@ export default function useShoppingList() {
     showEditListModal,
     editListName,
     listMembers,
-    showQRModal,
-    qrCodeData,
     showMembersModal,
     showInviteCodeModal,
     inviteCodeInput,
     userListColor,
     userListFont,
+    listsLoading,
 
     // Computed values
     sortedItems,
     hasCompletedItems,
     hasItems,
 
-    // Refs and animations
-    qrCodeRef,
-    qrModalOpacity,
-
     // Functions
     setNewItem,
     setShowResults,
-    setCurrentListId,
     setShowListDropdown,
     setShowAddListModal,
     setNewListName,
     setShowBottomSheet,
     setShowEditListModal,
     setEditListName,
-    setShowQRModal,
-    setQrCodeData,
     setShowMembersModal,
     setShowInviteCodeModal,
     setInviteCodeInput,
     setUserListColor,
     setUserListFont,
+    setListsLoading,
 
     handleSearch,
     selectProduct,
@@ -861,16 +872,15 @@ export default function useShoppingList() {
     handleManualInviteCode,
 
     shareList,
-    sendEmailInvitation,
-    showQRCode,
-    closeQRModal,
-    saveQRCodeToGallery,
-    shareQRCode,
 
     openBottomSheet,
     closeBottomSheet,
 
     getCurrentListName,
     generateInviteLink,
+    setCurrentListIdWithSave: (() => {
+      console.log("Returning setCurrentListIdWithSave function");
+      return setCurrentListIdWithSave;
+    })(),
   };
 }

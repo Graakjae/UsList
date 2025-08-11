@@ -9,6 +9,8 @@ export default function MembersAvatars({ members, maxVisible = 3 }) {
   const visibleMembers = members.slice(0, maxVisible);
   const remainingCount = members.length - maxVisible;
 
+  console.log(members);
+
   return (
     <View style={styles.container}>
       <View style={styles.avatarsContainer}>

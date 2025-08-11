@@ -1,9 +1,6 @@
 import Modal from "@/components/ui/Modal";
 import {
-  faDownload,
   faEdit,
-  faEnvelope,
-  faQrcode,
   faShare,
   faTrash,
   faUsers,
@@ -13,16 +10,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useTranslation } from "react-i18next";
 import {
   FlatList,
-  Linking,
   Share,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import QRCode from "react-native-qrcode-svg";
-import Animated, { withSpring } from "react-native-reanimated";
-import ViewShot from "react-native-view-shot";
 
 export default function Modals({
   // Modal states
@@ -32,8 +25,6 @@ export default function Modals({
   setShowBottomSheet,
   showEditListModal,
   setShowEditListModal,
-  showQRModal,
-  setShowQRModal,
   showMembersModal,
   setShowMembersModal,
   showInviteCodeModal,
@@ -44,8 +35,6 @@ export default function Modals({
   setNewListName,
   editListName,
   setEditListName,
-  qrCodeData,
-  setQrCodeData,
   listMembers,
   inviteCodeInput,
   setInviteCodeInput,
@@ -54,9 +43,6 @@ export default function Modals({
   addNewList,
   saveListName,
   deleteList,
-  closeQRModal,
-  saveQRCodeToGallery,
-  shareQRCode,
   removeUserFromList,
   handleManualInviteCode,
   openBottomSheet,
@@ -65,8 +51,6 @@ export default function Modals({
   // Other props
   currentListId,
   getCurrentListName,
-  qrCodeRef,
-  qrModalOpacity,
   user,
   lists,
   sharedLists,
@@ -99,28 +83,6 @@ export default function Modals({
     } catch (error) {
       console.error("Error sharing list:", error);
     }
-  };
-
-  // Handle email invitation
-  const handleEmailInvitation = () => {
-    const inviteLink = generateInviteLink();
-    const subject = `Invitation til indkøbsliste: ${getCurrentListName()}`;
-    const body = `Hej!\n\nDu er inviteret til at deltage i min indkøbsliste "${getCurrentListName()}".\n\nKlik på dette link for at tilslutte dig: ${inviteLink}\n\nMed venlig hilsen`;
-
-    Linking.openURL(
-      `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
-        body
-      )}`
-    );
-  };
-
-  // Handle QR code
-  const handleQRCode = () => {
-    const inviteLink = generateInviteLink();
-    setQrCodeData(inviteLink);
-    setShowQRModal(true);
-    qrModalOpacity.value = withSpring(1, { damping: 15 });
-    closeBottomSheet();
   };
 
   // Handle invite code
@@ -210,26 +172,6 @@ export default function Modals({
 
           <TouchableOpacity
             style={styles.bottomSheetItem}
-            onPress={handleEmailInvitation}
-          >
-            <FontAwesomeIcon icon={faEnvelope} size={24} color="#333" />
-            <Text style={styles.bottomSheetItemText}>
-              {t("shopping.sendEmailInvitation")}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.bottomSheetItem}
-            onPress={handleQRCode}
-          >
-            <FontAwesomeIcon icon={faQrcode} size={24} color="#333" />
-            <Text style={styles.bottomSheetItemText}>
-              {t("shopping.qrCode")}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.bottomSheetItem}
             onPress={handleInviteCode}
           >
             <FontAwesomeIcon icon={faUsers} size={24} color="#333" />
@@ -311,57 +253,6 @@ export default function Modals({
           autoFocus={!currentListId}
         />
       </Modal>
-
-      {/* QR Code Modal */}
-      {showQRModal && (
-        <Animated.View
-          style={[styles.qrModalOverlay, { opacity: qrModalOpacity }]}
-        >
-          <View style={styles.qrModalContent}>
-            <Text style={styles.modalTitle}>{t("shopping.qrCodeTitle")}</Text>
-            <Text style={styles.qrModalSubtitle}>
-              {t("shopping.qrCodeSubtitle")}
-            </Text>
-
-            <ViewShot ref={qrCodeRef} style={styles.qrCodeContainer}>
-              <View style={styles.qrCodeWrapper}>
-                <QRCode
-                  value={qrCodeData}
-                  size={200}
-                  color="#000"
-                  backgroundColor="#fff"
-                />
-              </View>
-            </ViewShot>
-
-            <View style={styles.qrModalButtons}>
-              <TouchableOpacity
-                style={[styles.qrModalButton, styles.shareButton]}
-                onPress={shareQRCode}
-              >
-                <FontAwesomeIcon icon={faShare} size={20} color="#fff" />
-                <Text style={styles.qrModalButtonText}>
-                  {t("shopping.share")}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.qrModalButton, styles.saveButton]}
-                onPress={saveQRCodeToGallery}
-              >
-                <FontAwesomeIcon icon={faDownload} size={20} color="#fff" />
-                <Text style={styles.qrModalButtonText}>
-                  {t("shopping.save")}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity style={styles.closeButton} onPress={closeQRModal}>
-              <Text style={styles.closeButtonText}>{t("shopping.close")}</Text>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-      )}
 
       {/* Members Modal */}
       <Modal
@@ -480,87 +371,7 @@ const styles = {
     fontFamily: "Nunito-Regular",
     color: "#333",
   },
-  qrModalOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    zIndex: 9999,
-    paddingHorizontal: 20,
-  },
-  qrModalContent: {
-    backgroundColor: "white",
-    borderRadius: 16,
-    padding: 24,
-    width: "100%",
-    maxWidth: 400,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontFamily: "Baloo2-Bold",
-    color: "#333",
-    marginBottom: 20,
-    textAlign: "center",
-  },
-  qrModalSubtitle: {
-    fontSize: 14,
-    fontFamily: "Nunito-Regular",
-    color: "#666",
-    textAlign: "center",
-    marginBottom: 24,
-    lineHeight: 20,
-  },
-  qrCodeContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 24,
-  },
-  qrCodeWrapper: {
-    padding: 16,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  qrModalButtons: {
-    flexDirection: "row",
-    gap: 12,
-    marginBottom: 20,
-  },
-  qrModalButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    minWidth: 100,
-    justifyContent: "center",
-  },
-  shareButton: {
-    backgroundColor: "#4CAF50",
-  },
-  saveButton: {
-    backgroundColor: "#FFC0CB",
-  },
-  qrModalButtonText: {
-    fontSize: 16,
-    fontFamily: "Baloo2-Bold",
-    color: "#fff",
-  },
+
   closeButton: {
     paddingVertical: 12,
     paddingHorizontal: 24,

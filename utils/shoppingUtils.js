@@ -44,8 +44,8 @@ export const generateInviteLink = (user, currentListId, getCurrentListName) => {
 
 // Get items path based on list type
 export const getItemsPath = (user, currentListId) => {
-  if (currentListId === "default") {
-    return `users/${user.uid}/shoppingItems/${currentListId}`;
+  if (!currentListId) {
+    return null; // No list selected
   } else if (currentListId.includes("_")) {
     const [ownerId, listId] = currentListId.split("_");
     return `users/${ownerId}/shoppingItems/${listId}`;
@@ -56,8 +56,8 @@ export const getItemsPath = (user, currentListId) => {
 
 // Get item path based on list type
 export const getItemPath = (user, currentListId, itemId) => {
-  if (currentListId === "default") {
-    return `users/${user.uid}/shoppingItems/${currentListId}/${itemId}`;
+  if (!currentListId) {
+    return null; // No list selected
   } else if (currentListId.includes("_")) {
     const [ownerId, listId] = currentListId.split("_");
     return `users/${ownerId}/shoppingItems/${listId}/${itemId}`;

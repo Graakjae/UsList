@@ -34,6 +34,25 @@
         "displayName": {
           ".read": "auth != null && auth.uid == $userId",
           ".write": "auth != null && auth.uid == $userId"
+        },
+        "products": {
+          ".read": "auth != null && auth.uid == $userId",
+          ".write": "auth != null && auth.uid == $userId",
+          "$productId": {
+            ".validate": "newData.hasChildren(['name', 'category', 'createdBy'])",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length > 0"
+            },
+            "category": {
+              ".validate": "newData.isString() && newData.val().length > 0"
+            },
+            "createdBy": {
+              ".validate": "newData.isString() && newData.val() == auth.uid"
+            },
+            "isStandard": {
+              ".validate": "newData.isBoolean() && newData.val() == false"
+            }
+          }
         }
       }
     },
@@ -56,7 +75,7 @@
         }
       }
     },
-    "products": {
+    "standard_products": {
       ".read": true,
       ".write": false
     }
