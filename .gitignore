@@ -125,3 +125,15 @@ Desktop.ini
 firebase-debug.log
 firestore-debug.log
 ui-debug.log
+
+# Android
+android/
+
+# iOS
+ios/
+
+# Windows
+windows/
+
+# Cursor
+.cursorrules
