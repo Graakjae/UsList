@@ -70,7 +70,11 @@
     "removeUser": "Fjern bruger",
     "delete": "Slet",
     "errorSharingQRCode": "Kunne ikke dele QR-kode",
-    "errorEditingListName": "Kunne ikke redigere liste navn"
+    "errorEditingListName": "Kunne ikke redigere liste navn",
+    "owner": "Ejer",
+    "you": "Dig",
+    "loading": "Indlæser...",
+    "noLists": "Du har ingen lister"
   },
   "products": {
     "title": "Administrer produkter",

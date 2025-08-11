@@ -70,7 +70,11 @@
     "removeUser": "Remove user",
     "delete": "Delete",
     "errorSharingQRCode": "Could not share QR code",
-    "errorEditingListName": "Could not edit list name"
+    "errorEditingListName": "Could not edit list name",
+    "owner": "Owner",
+    "you": "You",
+    "loading": "Loading...",
+    "noLists": "You have no lists"
   },
   "products": {
     "title": "Manage Products",
