@@ -33,9 +33,13 @@ export default function ItemInput({
           editable={!!currentListId}
         />
         <TouchableOpacity
-          style={currentListId ? styles.addButton : styles.disabledAddButton}
+          style={
+            currentListId && newItem.trim()
+              ? styles.addButton
+              : styles.disabledAddButton
+          }
           onPress={addItem}
-          disabled={!currentListId}
+          disabled={!currentListId || !newItem.trim()}
         >
           <Text style={styles.addButtonText}>+</Text>
         </TouchableOpacity>
@@ -115,7 +119,8 @@ const styles = {
     alignItems: "center",
   },
   disabledAddButton: {
-    backgroundColor: "#ccc",
+    backgroundColor: "#FFC0CB",
+    opacity: 0.7,
     width: 50,
     height: 50,
     borderRadius: 25,

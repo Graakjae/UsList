@@ -70,9 +70,9 @@ const styles = {
     fontFamily: "Baloo2-Bold",
   },
   deleteCompletedButtonDisabled: {
-    backgroundColor: "#ccc",
+    opacity: 0.7,
   },
   deleteAllButtonDisabled: {
-    backgroundColor: "#ccc",
+    opacity: 0.7,
   },
 };
