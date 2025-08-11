@@ -10,12 +10,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useTranslation } from "react-i18next";
 import {
   FlatList,
+  Image,
   Share,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function Modals({
   // Modal states
@@ -57,6 +59,7 @@ export default function Modals({
   generateInviteLink,
 }) {
   const { t } = useTranslation();
+  const { user: currentUser } = useAuth();
 
   // Check if current user is owner of the list
   const isOwner = () => {
@@ -257,13 +260,19 @@ export default function Modals({
       {/* Members Modal */}
       <Modal
         visible={showMembersModal}
-        onClose={() => setShowMembersModal(false)}
+        onClose={() => {
+          setShowMembersModal(false);
+          openBottomSheet();
+        }}
         title={t("shopping.membersTitle")}
         buttons={[
           {
             text: t("shopping.close"),
             style: { backgroundColor: "#FFC0CB" },
-            onPress: () => setShowMembersModal(false),
+            onPress: () => {
+              setShowMembersModal(false);
+              openBottomSheet();
+            },
           },
         ]}
       >
@@ -274,12 +283,22 @@ export default function Modals({
             renderItem={({ item }) => (
               <View style={styles.memberItem}>
                 <View style={styles.memberInfo}>
-                  <Text style={styles.memberName}>
-                    {item.displayName ||
-                      item.email ||
-                      t("shopping.unknownUser")}
-                  </Text>
-                  <Text style={styles.memberEmail}>{item.email}</Text>
+                  <View style={styles.memberAvatar}>
+                    <Image
+                      source={
+                        item.photoURL
+                          ? { uri: item.photoURL }
+                          : require("../../assets/images/icon.png")
+                      }
+                      style={styles.memberAvatarImage}
+                    />
+                    <Text style={styles.memberName}>
+                      {item.displayName || t("shopping.unknownUser")}
+                      {item.isOwner && " (" + t("shopping.owner") + ")"}
+                      {item.id === currentUser?.uid &&
+                        " (" + t("shopping.you") + ")"}
+                    </Text>
+                  </View>
                 </View>
                 {isOwner() && (
                   <TouchableOpacity
@@ -399,16 +418,22 @@ const styles = {
   memberInfo: {
     flex: 1,
   },
+  memberAvatar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   memberName: {
     fontSize: 16,
     fontFamily: "Nunito-Regular",
     color: "#333",
   },
-  memberEmail: {
-    fontSize: 14,
-    fontFamily: "Nunito-Regular",
-    color: "#666",
-    marginTop: 2,
+  memberAvatarImage: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 8,
+    backgroundColor: "#f0f0f0",
   },
   removeMemberButton: {
     padding: 8,
