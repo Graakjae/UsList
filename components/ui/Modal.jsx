@@ -26,8 +26,16 @@ export default function Modal({
       transparent={transparent}
       onRequestClose={onRequestClose || onClose}
     >
-      <View style={[styles.overlay, overlayStyle]}>
-        <View style={[styles.container, contentStyle]}>
+      <TouchableOpacity
+        style={[styles.overlay, overlayStyle]}
+        activeOpacity={1}
+        onPress={onClose}
+      >
+        <TouchableOpacity
+          style={[styles.container, contentStyle]}
+          activeOpacity={1}
+          onPress={(e) => e.stopPropagation()}
+        >
           {title && <Text style={styles.title}>{title}</Text>}
 
           <View style={styles.content}>{children}</View>
@@ -52,8 +60,8 @@ export default function Modal({
               ))}
             </View>
           )}
-        </View>
-      </View>
+        </TouchableOpacity>
+      </TouchableOpacity>
     </RNModal>
   );
 }
