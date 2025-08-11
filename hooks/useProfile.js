@@ -1,5 +1,5 @@
 import * as ImagePicker from "expo-image-picker";
-import { ref as dbRef, get, set } from "firebase/database";
+import { ref as dbRef, get, set, update } from "firebase/database";
 import { useEffect, useState } from "react";
 import { database } from "../firebase";
 import { setLanguage } from "../utils/i18n";
@@ -105,7 +105,7 @@ export default function useProfile(user) {
         updateData.photoURL = newImage;
       }
 
-      await set(userRef, updateData);
+      await update(userRef, updateData);
 
       if (newImage) {
         setImage(newImage);

@@ -23,7 +23,6 @@ import {
 import { useAuth } from "./useAuth";
 
 export default function useShoppingList() {
-  console.log("useShoppingList hook initialized");
   const { user } = useAuth();
   const { t } = useTranslation();
   // State
@@ -89,6 +88,11 @@ export default function useShoppingList() {
 
   // Get current list name
   const getCurrentListName = () => {
+    // Show loading text when lists are loading
+    if (listsLoading) {
+      return t("shopping.loading");
+    }
+
     // If no lists exist, return empty
     if (lists.length === 0 && sharedLists.length === 0) {
       return "";
@@ -102,7 +106,17 @@ export default function useShoppingList() {
 
     // If not found in regular lists, check shared lists
     const sharedList = sharedLists.find((list) => list.id === currentListId);
-    return sharedList ? sharedList.name : "Liste";
+    if (sharedList) {
+      return sharedList.name;
+    }
+
+    // If currentListId exists but no matching list found, show loading
+    // This prevents showing "Liste" during transitions
+    if (currentListId) {
+      return t("shopping.loading");
+    }
+
+    return "";
   };
 
   // Generate invite link using utility function
@@ -303,6 +317,8 @@ export default function useShoppingList() {
         style: "destructive",
         onPress: async () => {
           try {
+            setListsLoading(true);
+
             const listRef = ref(
               database,
               `users/${user.uid}/shoppingLists/${listId}`
@@ -315,13 +331,29 @@ export default function useShoppingList() {
             );
             await remove(itemsRef);
 
-            // If this was the current list, clear the current list selection
+            // If this was the current list, select another list if available
             if (currentListId === listId) {
-              setCurrentListIdWithSave(null);
+              // Check if there are other lists available
+              const remainingLists = lists.filter((l) => l.id !== listId);
+              const hasOtherLists =
+                remainingLists.length > 0 || sharedLists.length > 0;
+
+              if (hasOtherLists) {
+                // Select first available list
+                if (remainingLists.length > 0) {
+                  setCurrentListIdWithSave(remainingLists[0].id);
+                } else if (sharedLists.length > 0) {
+                  setCurrentListIdWithSave(sharedLists[0].id);
+                }
+              } else {
+                // No lists left, clear selection
+                setCurrentListIdWithSave(null);
+              }
             }
           } catch (error) {
             console.error("Error deleting list:", error);
             Alert.alert("Fejl", "Kunne ikke slette listen");
+            setListsLoading(false);
           }
         },
       },
@@ -387,6 +419,8 @@ export default function useShoppingList() {
           style: "destructive",
           onPress: async () => {
             try {
+              setListsLoading(true);
+
               if (sharedList.isOwner) {
                 const listRef = ref(
                   database,
@@ -408,11 +442,32 @@ export default function useShoppingList() {
               await remove(sharedListRef);
 
               if (currentListId === sharedList.id) {
-                setCurrentListIdWithSave(null);
+                // Check if there are other lists available
+                const remainingLists = lists.filter(
+                  (l) => l.id !== sharedList.originalId
+                );
+                const remainingSharedLists = sharedLists.filter(
+                  (l) => l.id !== sharedList.id
+                );
+                const hasOtherLists =
+                  remainingLists.length > 0 || remainingSharedLists.length > 0;
+
+                if (hasOtherLists) {
+                  // Select first available list
+                  if (remainingLists.length > 0) {
+                    setCurrentListIdWithSave(remainingLists[0].id);
+                  } else if (remainingSharedLists.length > 0) {
+                    setCurrentListIdWithSave(remainingSharedLists[0].id);
+                  }
+                } else {
+                  // No lists left, clear selection
+                  setCurrentListIdWithSave(null);
+                }
               }
             } catch (error) {
               console.error("Error leaving/deleting shared list:", error);
               Alert.alert("Fejl", `Kunne ikke ${action} listen`);
+              setListsLoading(false);
             }
           },
         },
@@ -556,21 +611,118 @@ export default function useShoppingList() {
     if (!user || !currentListId) return;
 
     try {
+      // Determine the correct path for members
+      const sharedList = sharedLists.find((list) => list.id === currentListId);
+      const isSharedList = !!sharedList;
+
+      const ownerId = isSharedList ? sharedList.ownerId : user.uid;
+      const listId = isSharedList ? sharedList.originalId : currentListId;
+
       const membersRef = ref(
         database,
-        `users/${user.uid}/shoppingLists/${currentListId}/members`
+        `users/${ownerId}/shoppingLists/${listId}/members`
       );
-      const unsubscribe = onValue(membersRef, (snapshot) => {
+
+      const unsubscribe = onValue(membersRef, async (snapshot) => {
         const data = snapshot.val();
+        let membersArray = [];
+
         if (data) {
-          const membersArray = Object.entries(data).map(([id, member]) => ({
-            id,
-            ...member,
-          }));
-          setListMembers(membersArray);
-        } else {
-          setListMembers([]);
+          // Fetch user data for all members
+          const membersWithData = await Promise.all(
+            Object.entries(data).map(async ([id, member]) => {
+              try {
+                // Get user data from database
+                const [displayNameSnapshot, photoURLSnapshot] =
+                  await Promise.all([
+                    get(ref(database, `users/${id}/displayName`)),
+                    get(ref(database, `users/${id}/photoURL`)),
+                  ]);
+
+                return {
+                  id,
+                  ...member,
+                  displayName: displayNameSnapshot.exists()
+                    ? displayNameSnapshot.val()
+                    : member.displayName || member.email || "Ukendt bruger",
+                  photoURL: photoURLSnapshot.exists()
+                    ? photoURLSnapshot.val()
+                    : member.photoURL || null,
+                };
+              } catch (error) {
+                console.error(`Error fetching user data for ${id}:`, error);
+                return {
+                  id,
+                  ...member,
+                  displayName:
+                    member.displayName || member.email || "Ukendt bruger",
+                  photoURL: member.photoURL || null,
+                };
+              }
+            })
+          );
+          membersArray = membersWithData;
         }
+
+        // Add owner if not already present
+        const ownerExists = membersArray.some(
+          (member) => member.id === ownerId
+        );
+        if (!ownerExists) {
+          try {
+            // Get owner data from database using same logic as other members
+            const [ownerDisplayNameSnapshot, ownerPhotoURLSnapshot] =
+              await Promise.all([
+                get(ref(database, `users/${ownerId}/displayName`)),
+                get(ref(database, `users/${ownerId}/photoURL`)),
+              ]);
+
+            const ownerMember = {
+              id: ownerId,
+              displayName: ownerDisplayNameSnapshot.exists()
+                ? ownerDisplayNameSnapshot.val()
+                : isSharedList
+                ? sharedList.ownerName || ownerId || "Ukendt bruger"
+                : user.displayName ||
+                  user.email?.split("@")[0] ||
+                  ownerId ||
+                  "Ukendt bruger",
+              email: isSharedList ? "" : user.email || "",
+              photoURL: ownerPhotoURLSnapshot.exists()
+                ? ownerPhotoURLSnapshot.val()
+                : isSharedList
+                ? null
+                : user.photoURL || null,
+              isOwner: true,
+              joinedAt: isSharedList
+                ? sharedList.createdAt || Date.now()
+                : Date.now(),
+            };
+            membersArray.unshift(ownerMember);
+          } catch (error) {
+            console.error(`Error fetching owner data for ${ownerId}:`, error);
+            // Fallback to original logic if database fetch fails
+            const ownerMember = {
+              id: ownerId,
+              displayName: isSharedList
+                ? sharedList.ownerName || ownerId || "Ukendt bruger"
+                : user.displayName ||
+                  user.email?.split("@")[0] ||
+                  ownerId ||
+                  "Ukendt bruger",
+              email: isSharedList ? "" : user.email || "",
+              photoURL: isSharedList ? null : user.photoURL || null,
+              isOwner: true,
+              joinedAt: isSharedList
+                ? sharedList.createdAt || Date.now()
+                : Date.now(),
+            };
+            membersArray.unshift(ownerMember);
+          }
+        }
+
+        setListMembers(membersArray);
+        console.log("membersArray", membersArray);
       });
 
       return unsubscribe;
@@ -656,6 +808,46 @@ export default function useShoppingList() {
     };
   }, [user]);
 
+  // Auto-select first available list if no list is currently selected
+  useEffect(() => {
+    if (
+      !listsLoading &&
+      !currentListId &&
+      (lists.length > 0 || sharedLists.length > 0)
+    ) {
+      // First try to load the last selected list
+      const loadLastList = async () => {
+        setListsLoading(true);
+
+        const lastListId = await loadLastSelectedList();
+        if (lastListId) {
+          // Check if the last selected list still exists
+          const lastListExists =
+            lists.some((list) => list.id === lastListId) ||
+            sharedLists.some((list) => list.id === lastListId);
+          if (lastListExists) {
+            setCurrentListIdWithSave(lastListId);
+            // Don't set loading to false here - let the main useEffect handle it
+            return;
+          }
+        }
+
+        // If no last list or it doesn't exist, select first available list
+        if (lists.length > 0) {
+          // First priority: user's own lists
+          setCurrentListIdWithSave(lists[0].id);
+        } else if (sharedLists.length > 0) {
+          // Second priority: shared lists
+          setCurrentListIdWithSave(sharedLists[0].id);
+        }
+
+        // Don't set loading to false here - let the main useEffect handle it
+      };
+
+      loadLastList();
+    }
+  }, [listsLoading, currentListId, lists, sharedLists]);
+
   // Reset loading when user changes
   useEffect(() => {
     if (user) {
@@ -663,17 +855,35 @@ export default function useShoppingList() {
     }
   }, [user]);
 
+  // Set loading to false when a list is selected and exists
   useEffect(() => {
-    if (user && currentListId) {
-      loadListMembers();
+    if (currentListId && listsLoading) {
+      const listExists =
+        lists.some((list) => list.id === currentListId) ||
+        sharedLists.some((list) => list.id === currentListId);
+
+      if (listExists) {
+        setListsLoading(false);
+      }
     }
-  }, [user, currentListId]);
+  }, [currentListId, lists, sharedLists, listsLoading]);
 
   useEffect(() => {
-    if (showBottomSheet && user && currentListId) {
+    if (user && currentListId && (lists.length > 0 || sharedLists.length > 0)) {
       loadListMembers();
     }
-  }, [showBottomSheet, user, currentListId]);
+  }, [user, currentListId, lists, sharedLists]);
+
+  useEffect(() => {
+    if (
+      showBottomSheet &&
+      user &&
+      currentListId &&
+      (lists.length > 0 || sharedLists.length > 0)
+    ) {
+      loadListMembers();
+    }
+  }, [showBottomSheet, user, currentListId, lists, sharedLists]);
 
   useEffect(() => {
     if (showAddListModal) {
