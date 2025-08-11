@@ -63,8 +63,6 @@ export default function InviteCodeScreen() {
         `users/${ownerId}/shoppingLists/${listId}/members/${user.uid}`
       );
       await set(userMemberRef, {
-        email: user.email,
-        displayName: user.displayName || user.email,
         joinedAt: Date.now(),
       });
 

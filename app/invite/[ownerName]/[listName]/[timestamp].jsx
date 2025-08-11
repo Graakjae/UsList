@@ -60,8 +60,6 @@ export default function InviteHandler() {
         );
 
         await set(userMemberRef, {
-          email: user.email,
-          displayName: user.displayName || user.email,
           joinedAt: Date.now(),
         });
 
