@@ -38,7 +38,7 @@ export default function ListHeader({
             onPress={() => setShowListDropdown(!showListDropdown)}
           >
             <Text style={styles.title}>
-              {hasLists ? currentListName : "Du har ingen lister"}
+              {hasLists ? currentListName : t("shopping.noLists")}
             </Text>
             <FontAwesomeIcon icon={faChevronDown} size={16} color="#333" />
           </TouchableOpacity>
@@ -61,13 +61,12 @@ export default function ListHeader({
                 {lists.map((list) => (
                   <TouchableOpacity
                     key={list.id}
-                    style={styles.dropdownItem}
+                    style={
+                      currentListId === list.id
+                        ? [styles.dropdownItemSelected, styles.dropdownItem]
+                        : styles.dropdownItem
+                    }
                     onPress={() => {
-                      console.log("ListHeader: Switching to list:", list.id);
-                      console.log(
-                        "setCurrentListId function:",
-                        typeof setCurrentListId
-                      );
                       setCurrentListId(list.id);
                       setShowListDropdown(false);
                     }}
@@ -99,16 +98,15 @@ export default function ListHeader({
                 {sharedLists.map((sharedList) => (
                   <TouchableOpacity
                     key={sharedList.id}
-                    style={styles.dropdownItem}
+                    style={
+                      currentListId === sharedList.id
+                        ? [styles.dropdownItemSelected, styles.dropdownItem]
+                        : styles.dropdownItem
+                    }
                     onPress={() => selectSharedList(sharedList)}
                   >
                     <View style={styles.sharedListItem}>
                       <Text style={styles.dropdownText}>{sharedList.name}</Text>
-                      <Text style={styles.sharedListOwner}>
-                        {sharedList.isOwner
-                          ? "Du ejer denne liste"
-                          : `Ejet af ${sharedList.ownerName}`}
-                      </Text>
                     </View>
                     <TouchableOpacity
                       onPress={() => leaveSharedList(sharedList)}
@@ -203,6 +201,12 @@ const styles = {
     elevation: 5,
     zIndex: 1000,
   },
+  dropDownOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   dropdownItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -210,6 +214,9 @@ const styles = {
     padding: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
+  },
+  dropdownItemSelected: {
+    backgroundColor: "#f0f0f0",
   },
   dropdownText: {
     fontSize: 16,
