@@ -1,3 +1,4 @@
+import { getTranslatedCategoryName } from "@/utils/shoppingUtils";
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React from "react";
@@ -11,7 +12,13 @@ export default function ProductItem({
   canEdit,
   canDelete,
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  // Get translated category name
+  const translatedCategory = getTranslatedCategoryName(
+    product.category,
+    i18n.language
+  );
 
   return (
     <View style={[styles.productItem, !canEdit && styles.productItemReadOnly]}>
@@ -20,7 +27,7 @@ export default function ProductItem({
       )}
       <View style={styles.productInfo}>
         <Text style={styles.productName}>{product.name}</Text>
-        <Text style={styles.productCategory}>{product.category}</Text>
+        <Text style={styles.productCategory}>{translatedCategory}</Text>
         {product.subcategory && (
           <Text style={styles.productSubcategory}>{product.subcategory}</Text>
         )}

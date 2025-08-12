@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import Modal from "../ui/Modal";
+import CategorySelector from "./CategorySelector";
 
 export default function ProductModal({
   visible,
@@ -23,8 +24,6 @@ export default function ProductModal({
   setProductCategory,
   productSubcategory,
   setProductSubcategory,
-  productImage,
-  setProductImage,
   uploading,
   onChooseImage,
   newImage,
@@ -79,10 +78,9 @@ export default function ProductModal({
         placeholder={t("products.productName")}
       />
 
-      <TextInput
-        style={styles.input}
-        value={productCategory}
-        onChangeText={setProductCategory}
+      <CategorySelector
+        selectedCategory={productCategory}
+        onCategorySelect={setProductCategory}
         placeholder={t("products.category")}
       />
 

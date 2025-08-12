@@ -161,15 +161,21 @@ export default function useShoppingList() {
 
       const itemsRef = ref(database, itemsPath);
       const newItemRef = push(itemsRef);
-      set(newItemRef, {
+      const itemData = {
         name: product.name,
         category: product.category,
         subcategory: product.subcategory,
         completed: false,
-        icon_url: product.icon_url,
         color: userListColor || "#333",
         font: userListFont || "Baloo2-Bold",
-      })
+      };
+
+      // Only add icon_url if it exists and is not null/undefined
+      if (product.icon_url) {
+        itemData.icon_url = product.icon_url;
+      }
+
+      set(newItemRef, itemData)
         .then(() => {
           setNewItem("");
           setShowResults(false);
@@ -196,15 +202,21 @@ export default function useShoppingList() {
 
       const itemsRef = ref(database, itemsPath);
       const newItemRef = push(itemsRef);
-      set(newItemRef, {
+      const itemData = {
         name: matchingProduct ? matchingProduct.name : newItem,
         category: matchingProduct ? matchingProduct.category : "",
         subcategory: matchingProduct ? matchingProduct.subcategory : "",
         completed: false,
-        icon_url: matchingProduct ? matchingProduct.icon_url : "",
         color: userListColor || "#333",
         font: userListFont || "Baloo2-Bold",
-      })
+      };
+
+      // Only add icon_url if it exists and is not null/undefined
+      if (matchingProduct && matchingProduct.icon_url) {
+        itemData.icon_url = matchingProduct.icon_url;
+      }
+
+      set(newItemRef, itemData)
         .then(() => {
           setNewItem("");
           setShowResults(false);

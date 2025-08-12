@@ -10,6 +10,72 @@ export const categoryOrder = {
   "Snacks & Slik": 8,
   "Personlig Pleje": 9,
   Husholdning: 10,
+  Andet: 11,
+};
+
+// Category translations
+export const categoryTranslations = {
+  da: {
+    "Frugt & Grønt": "Frugt & Grønt",
+    "Kød & Fisk": "Kød & Fisk",
+    "Brød & Kager": "Brød & Kager",
+    Mejeri: "Mejeri",
+    Frost: "Frost",
+    Tørvarer: "Tørvarer",
+    Drikkevarer: "Drikkevarer",
+    "Snacks & Slik": "Snacks & Slik",
+    "Personlig Pleje": "Personlig Pleje",
+    Husholdning: "Husholdning",
+    Andet: "Andet",
+  },
+  en: {
+    "Frugt & Grønt": "Fruit & Vegetables",
+    "Kød & Fisk": "Meat & Fish",
+    "Brød & Kager": "Bread & Cakes",
+    Mejeri: "Dairy",
+    Frost: "Frozen",
+    Tørvarer: "Dry Goods",
+    Drikkevarer: "Beverages",
+    "Snacks & Slik": "Snacks & Candy",
+    "Personlig Pleje": "Personal Care",
+    Husholdning: "Household",
+    Andet: "Other",
+  },
+};
+
+// Get categories for current language
+export const getCategoriesForLanguage = (language = "da") => {
+  const translations =
+    categoryTranslations[language] || categoryTranslations.da;
+
+  return Object.keys(categoryOrder)
+    .sort((a, b) => categoryOrder[a] - categoryOrder[b])
+    .map((categoryKey) => ({
+      key: categoryKey,
+      label: translations[categoryKey] || categoryKey,
+    }));
+};
+
+// Get category key from translated label
+export const getCategoryKeyFromLabel = (label, language = "da") => {
+  const translations =
+    categoryTranslations[language] || categoryTranslations.da;
+
+  for (const [key, translation] of Object.entries(translations)) {
+    if (translation === label) {
+      return key;
+    }
+  }
+
+  // Fallback: return the label itself if no translation found
+  return label;
+};
+
+// Get translated category name from category key
+export const getTranslatedCategoryName = (categoryKey, language = "da") => {
+  const translations =
+    categoryTranslations[language] || categoryTranslations.da;
+  return translations[categoryKey] || categoryKey;
 };
 
 // Sort items by category

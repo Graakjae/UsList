@@ -96,6 +96,7 @@
     "deleteProduct": "Slet produkt",
     "deleteProductConfirm": "Er du sikker på, at du vil slette",
     "nameRequired": "Navn og kategori er påkrævet",
+    "selectCategory": "Vælg kategori",
     "saveError": "Kunne ikke gemme produktet",
     "deleteError": "Kunne ikke slette produktet",
     "imageError": "Kunne ikke vælge billede"

@@ -96,6 +96,7 @@
     "deleteProduct": "Delete product",
     "deleteProductConfirm": "Are you sure you want to delete",
     "nameRequired": "Name and category are required",
+    "selectCategory": "Select category",
     "saveError": "Could not save product",
     "deleteError": "Could not delete product",
     "imageError": "Could not select image"
