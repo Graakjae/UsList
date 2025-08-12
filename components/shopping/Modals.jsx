@@ -24,7 +24,6 @@ export default function Modals({
   showAddListModal,
   setShowAddListModal,
   showBottomSheet,
-  setShowBottomSheet,
   showEditListModal,
   setShowEditListModal,
   showMembersModal,
@@ -86,12 +85,6 @@ export default function Modals({
     } catch (error) {
       console.error("Error sharing list:", error);
     }
-  };
-
-  // Handle invite code
-  const handleInviteCode = () => {
-    setShowInviteCodeModal(true);
-    closeBottomSheet();
   };
 
   // Handle edit list
@@ -170,16 +163,6 @@ export default function Modals({
             <FontAwesomeIcon icon={faShare} size={24} color="#333" />
             <Text style={styles.bottomSheetItemText}>
               {t("shopping.shareList")}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.bottomSheetItem}
-            onPress={handleInviteCode}
-          >
-            <FontAwesomeIcon icon={faUsers} size={24} color="#333" />
-            <Text style={styles.bottomSheetItemText}>
-              {t("shopping.joinList")}
             </Text>
           </TouchableOpacity>
 

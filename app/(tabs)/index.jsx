@@ -105,12 +105,10 @@ export default function ShoppingScreen() {
             showListDropdown={showListDropdown}
             setShowListDropdown={setShowListDropdown}
             setCurrentListId={setCurrentListIdWithSave}
-            deleteList={deleteList}
             selectSharedList={selectSharedList}
             leaveSharedList={leaveSharedList}
             setShowAddListModal={setShowAddListModal}
             getCurrentListName={getCurrentListName}
-            setShowInviteCodeModal={setShowInviteCodeModal}
             openBottomSheet={openBottomSheet}
             listMembers={listMembers}
           />

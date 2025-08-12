@@ -17,12 +17,10 @@ export default function ListHeader({
   showListDropdown,
   setShowListDropdown,
   setCurrentListId,
-  deleteList,
   selectSharedList,
   leaveSharedList,
   setShowAddListModal,
   getCurrentListName,
-  setShowInviteCodeModal,
   openBottomSheet,
   listMembers,
 }) {
@@ -72,16 +70,6 @@ export default function ListHeader({
                     }}
                   >
                     <Text style={styles.dropdownText}>{list.name}</Text>
-                    <TouchableOpacity
-                      onPress={() => deleteList(list.id)}
-                      style={styles.deleteListButton}
-                    >
-                      <FontAwesomeIcon
-                        icon={faTrash}
-                        size={14}
-                        color="#F44336"
-                      />
-                    </TouchableOpacity>
                   </TouchableOpacity>
                 ))}
               </>

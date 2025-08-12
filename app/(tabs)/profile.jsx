@@ -4,10 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Alert, ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import ColorSelector from "@/components/profile/ColorSelector";
 import EditProfileModal from "@/components/profile/EditProfileModal";
-import FontSelector from "@/components/profile/FontSelector";
-import LanguageSelector from "@/components/profile/LanguageSelector";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileMenu from "@/components/profile/ProfileMenu";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,9 +20,6 @@ export default function ProfileScreen() {
     // State
     displayName,
     loading,
-    listColor,
-    listFont,
-    language,
     image,
     newImage,
     newDisplayName,
@@ -36,9 +30,6 @@ export default function ProfileScreen() {
     setIsEditingModal,
     chooseImage,
     updateProfile,
-    handleColorSelect,
-    handleFontSelect,
-    handleLanguageSelect,
   } = useProfile(user);
 
   const handleSignOut = () => {
@@ -59,6 +50,10 @@ export default function ProfileScreen() {
     router.push("/products");
   };
 
+  const handleSettings = () => {
+    router.push("/settings");
+  };
+
   return (
     <ScrollView style={[styles.container, { paddingTop: insets.top }]}>
       <ProfileHeader
@@ -68,21 +63,10 @@ export default function ProfileScreen() {
         onEditPress={() => setIsEditingModal(true)}
       />
 
-      <ColorSelector
-        selectedColor={listColor}
-        onColorSelect={handleColorSelect}
-      />
-
-      <FontSelector selectedFont={listFont} onFontSelect={handleFontSelect} />
-
-      <LanguageSelector
-        currentLanguage={language}
-        onLanguageSelect={handleLanguageSelect}
-      />
-
       <ProfileMenu
         onSignOut={handleSignOut}
         onManageProducts={handleManageProducts}
+        onSettings={handleSettings}
       />
 
       <EditProfileModal
