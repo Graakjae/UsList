@@ -32,7 +32,15 @@
           ".write": "auth != null && auth.uid == $userId"
         },
         "displayName": {
-          ".read": "auth != null && auth.uid == $userId",
+          ".read": "auth != null",
+          ".write": "auth != null && auth.uid == $userId"
+        },
+        "photoURL": {
+          ".read": "auth != null",
+          ".write": "auth != null && auth.uid == $userId"
+        },
+        "email": {
+          ".read": "auth != null",
           ".write": "auth != null && auth.uid == $userId"
         },
         "products": {

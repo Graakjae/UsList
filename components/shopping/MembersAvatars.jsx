@@ -57,7 +57,7 @@ export default function MembersAvatars({ members, maxVisible = 3 }) {
               source={
                 member.photoURL
                   ? { uri: member.photoURL }
-                  : require("../../assets/images/icon.png")
+                  : require("../../assets/images/default_user_icon.png")
               }
               style={styles.avatarImage}
             />
@@ -114,7 +114,7 @@ export default function MembersAvatars({ members, maxVisible = 3 }) {
                   source={
                     selectedMember.photoURL
                       ? { uri: selectedMember.photoURL }
-                      : require("../../assets/images/icon.png")
+                      : require("../../assets/images/default_user_icon.png")
                   }
                   style={styles.modalAvatarImage}
                 />

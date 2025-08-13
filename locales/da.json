@@ -74,7 +74,9 @@
     "owner": "Ejer",
     "you": "Dig",
     "loading": "Indlæser...",
-    "noLists": "Du har ingen lister"
+    "noLists": "Du har ingen lister",
+    "createListToStart": "Opret en liste for at komme i gang",
+    "createList": "Opret liste"
   },
   "products": {
     "title": "Administrer produkter",
@@ -109,11 +111,26 @@
     "login": "Log ind",
     "signup": "Opret konto",
     "email": "Email",
+    "name": "Navn",
     "password": "Adgangskode",
     "confirmPassword": "Bekræft adgangskode",
     "forgotPassword": "Glemt adgangskode?",
     "noAccount": "Har du ikke en konto?",
-    "hasAccount": "Har du allerede en konto?"
+    "hasAccount": "Har du allerede en konto?",
+    "welcome": "Velkommen til",
+    "appName": "Camilla & Frederiks App",
+    "loginSubtitle": "Log ind for at få adgang til dine indkøbslister og noter",
+    "signupSubtitle": "Få adgang til alle funktioner",
+    "loginError": "Login-fejl",
+    "loginFailed": "Kunne ikke logge ind",
+    "googleLoginError": "Google login-fejl",
+    "googleLoginFailed": "Kunne ikke logge ind med Google",
+    "signupError": "Oprettelse fejlede",
+    "signupFailed": "Kunne ikke oprette bruger",
+    "fillAllFields": "Udfyld alle felter",
+    "passwordsDontMatch": "Kodeordene matcher ikke",
+    "backToLogin": "Tilbage til login",
+    "createAccount": "Opret konto"
   },
   "common": {
     "loading": "Indlæser...",

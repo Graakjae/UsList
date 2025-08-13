@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontFamily: "Baloo2-Bold",
     color: "#333",
   },

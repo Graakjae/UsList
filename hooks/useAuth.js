@@ -5,9 +5,11 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged,
   signInWithEmailAndPassword,
+  updateProfile,
 } from "firebase/auth";
+import { push, ref, set } from "firebase/database";
 import { createContext, useContext, useEffect, useState } from "react";
-import { auth } from "../firebase";
+import { auth, database } from "../firebase";
 
 const AuthContext = createContext({});
 
@@ -39,9 +41,43 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signUpWithEmail = async (email, password) => {
+  const signUpWithEmail = async (email, password, displayName) => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      // Create user account
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      // Update profile with display name
+      if (displayName) {
+        await updateProfile(user, { displayName });
+      }
+
+      // Save displayName to users collection
+      if (displayName) {
+        const userRef = ref(database, `users/${user.uid}`);
+        await set(userRef, {
+          displayName: displayName,
+        });
+      }
+
+      // Create default shopping list
+      const listsRef = ref(database, `users/${user.uid}/shoppingLists`);
+      const newListRef = push(listsRef);
+      await set(newListRef, {
+        name: "List",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+
+      // Save the new list ID to AsyncStorage as the last selected list
+      await AsyncStorage.setItem(
+        `lastSelectedList_${user.uid}`,
+        newListRef.key
+      );
     } catch (error) {
       throw error;
     }

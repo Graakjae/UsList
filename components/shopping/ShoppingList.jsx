@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 
 export default function ShoppingList({
@@ -6,15 +7,18 @@ export default function ShoppingList({
   currentListId,
   setShowAddListModal,
 }) {
+  const { t } = useTranslation();
   if (!currentListId) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>Opret en liste for at komme i gang</Text>
+        <Text style={styles.emptyText}>{t("shopping.createListToStart")}</Text>
         <TouchableOpacity
           style={styles.createListButton}
           onPress={() => setShowAddListModal(true)}
         >
-          <Text style={styles.createListButtonText}>Opret liste</Text>
+          <Text style={styles.createListButtonText}>
+            {t("shopping.createList")}
+          </Text>
         </TouchableOpacity>
       </View>
     );

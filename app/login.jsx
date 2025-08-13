@@ -1,8 +1,6 @@
-import { faGoogle } from "@fortawesome/free-brands-svg-icons";
-import { faUser } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   StyleSheet,
@@ -16,6 +14,7 @@ import { useAuth } from "../hooks/useAuth";
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const {
     signInWithEmail,
     signInWithGoogle,
@@ -39,7 +38,7 @@ export default function LoginScreen() {
     try {
       await signInWithEmail(email, password);
     } catch (error) {
-      Alert.alert("Login-fejl", error.message || "Kunne ikke logge ind");
+      Alert.alert(t("auth.loginError"), error.message || t("auth.loginFailed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -51,8 +50,8 @@ export default function LoginScreen() {
       await signInWithGoogle();
     } catch (error) {
       Alert.alert(
-        "Google login-fejl",
-        error.message || "Kunne ikke logge ind med Google"
+        t("auth.googleLoginError"),
+        error.message || t("auth.googleLoginFailed")
       );
     } finally {
       setIsSubmitting(false);
@@ -64,7 +63,7 @@ export default function LoginScreen() {
     try {
       await signInAnonymously();
     } catch (error) {
-      Alert.alert("Fejl", "Der opstod en fejl under login. Prøv igen.");
+      Alert.alert(t("common.error"), t("auth.loginFailed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -74,17 +73,15 @@ export default function LoginScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title}>Velkommen til</Text>
-          <Text style={styles.appName}>Camilla & Frederiks App</Text>
-          <Text style={styles.subtitle}>
-            Log ind for at få adgang til dine indkøbslister og noter
-          </Text>
+          <Text style={styles.title}>{t("auth.welcome")}</Text>
+          <Text style={styles.appName}>{t("auth.appName")}</Text>
+          <Text style={styles.subtitle}>{t("auth.loginSubtitle")}</Text>
         </View>
 
         <View style={styles.formSection}>
           <TextInput
             style={styles.input}
-            placeholder="E-mail"
+            placeholder={t("auth.email")}
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
@@ -93,7 +90,7 @@ export default function LoginScreen() {
           />
           <TextInput
             style={styles.input}
-            placeholder="Kodeord"
+            placeholder={t("auth.password")}
             secureTextEntry
             value={password}
             onChangeText={setPassword}
@@ -102,9 +99,9 @@ export default function LoginScreen() {
           <TouchableOpacity
             style={styles.loginButton}
             onPress={handleEmailLogin}
-            disabled={isSubmitting || !email || !password}
+            disabled={isSubmitting}
           >
-            <Text style={styles.loginButtonText}>Log ind</Text>
+            <Text style={styles.loginButtonText}>{t("auth.login")}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -112,17 +109,17 @@ export default function LoginScreen() {
             onPress={() => router.push("/signup")}
             disabled={isSubmitting}
           >
-            <Text style={styles.linkButtonText}>Opret konto</Text>
+            <Text style={styles.linkButtonText}>{t("auth.signup")}</Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.dividerRow}>
+        {/* <View style={styles.dividerRow}>
           <View style={styles.divider} />
           <Text style={styles.dividerText}>eller</Text>
           <View style={styles.divider} />
-        </View>
+        </View> */}
 
-        <View style={styles.altLoginSection}>
+        {/* <View style={styles.altLoginSection}>
           <TouchableOpacity
             style={styles.googleButton}
             onPress={handleGoogleLogin}
@@ -140,7 +137,7 @@ export default function LoginScreen() {
             <FontAwesomeIcon icon={faUser} size={20} color="#FFC0CB" />
             <Text style={styles.anonymousButtonText}>Fortsæt som gæst</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
       </View>
     </View>
   );

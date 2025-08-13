@@ -67,7 +67,7 @@ export default function EditProfileModal({
                   ? { uri: newImage }
                   : image
                   ? { uri: image }
-                  : require("../../assets/images/icon.png")
+                  : require("../../assets/images/default_user_icon.png")
               }
             />
           </TouchableOpacity>

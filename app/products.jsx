@@ -71,6 +71,7 @@ export default function Products() {
           <FontAwesomeIcon icon={faArrowLeft} size={20} color="#333" />
         </TouchableOpacity>
         <Text style={styles.title}>{t("products.title")}</Text>
+        <View style={styles.placeholder} />
       </View>
 
       <ProductTabs activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -139,7 +140,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontFamily: "Baloo2-Bold",
     color: "#333",
+    textAlign: "center",
     flex: 1,
+  },
+  placeholder: {
+    width: 45,
   },
   addButton: {
     backgroundColor: "#FFC0CB",

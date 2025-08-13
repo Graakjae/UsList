@@ -69,7 +69,15 @@ export default function ListHeader({
                       setShowListDropdown(false);
                     }}
                   >
-                    <Text style={styles.dropdownText}>{list.name}</Text>
+                    <Text
+                      style={
+                        currentListId === list.id
+                          ? styles.dropdownSelectedText
+                          : styles.dropdownText
+                      }
+                    >
+                      {list.name}
+                    </Text>
                   </TouchableOpacity>
                 ))}
               </>
@@ -94,7 +102,15 @@ export default function ListHeader({
                     onPress={() => selectSharedList(sharedList)}
                   >
                     <View style={styles.sharedListItem}>
-                      <Text style={styles.dropdownText}>{sharedList.name}</Text>
+                      <Text
+                        style={
+                          currentListId === sharedList.id
+                            ? styles.dropdownSelectedText
+                            : styles.dropdownText
+                        }
+                      >
+                        {sharedList.name}
+                      </Text>
                     </View>
                     <TouchableOpacity
                       onPress={() => leaveSharedList(sharedList)}
@@ -204,12 +220,18 @@ const styles = {
     borderBottomColor: "#eee",
   },
   dropdownItemSelected: {
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#fff89d",
+    fontFamily: "Baloo2-Bold",
   },
   dropdownText: {
     fontSize: 16,
     fontFamily: "Nunito-Regular",
     color: "#333",
+  },
+  dropdownSelectedText: {
+    fontSize: 16,
+    fontFamily: "Baloo2-Medium",
+    color: "#000",
   },
   deleteListButton: {
     padding: 4,

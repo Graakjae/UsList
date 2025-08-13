@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.camillaogfrederik.app",
-      "icon": "./assets/images/ios/icon.png",
+      "icon": "./assets/images/icon.png",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSPhotoLibraryAddUsageDescription": "Denne app gemmer QR-koder i dit galleri for at dele dem med andre.",
@@ -25,7 +25,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.camillaogfrederik.app",
-      "icon": "./assets/images/android/icon.png",
+      "icon": "./assets/images/icon.png",
       "permissions": [
         "WRITE_EXTERNAL_STORAGE",
         "READ_EXTERNAL_STORAGE",

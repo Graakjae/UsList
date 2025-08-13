@@ -271,7 +271,7 @@ export default function Modals({
                       source={
                         item.photoURL
                           ? { uri: item.photoURL }
-                          : require("../../assets/images/icon.png")
+                          : require("../../assets/images/default_user_icon.png")
                       }
                       style={styles.memberAvatarImage}
                     />
@@ -283,7 +283,7 @@ export default function Modals({
                     </Text>
                   </View>
                 </View>
-                {isOwner() && (
+                {isOwner() && item.id !== currentUser?.uid && (
                   <TouchableOpacity
                     style={styles.removeMemberButton}
                     onPress={() => removeUserFromList(item.id)}

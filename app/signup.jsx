@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   StyleSheet,
@@ -13,30 +14,32 @@ import { useAuth } from "../hooks/useAuth";
 
 export default function SignupScreen() {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const { signUpWithEmail } = useAuth();
   const router = useRouter();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSignup = async () => {
-    if (!email || !password || !repeatPassword) {
-      Alert.alert("Fejl", "Udfyld alle felter");
+    if (!name || !email || !password || !repeatPassword) {
+      Alert.alert(t("common.error"), t("auth.fillAllFields"));
       return;
     }
     if (password !== repeatPassword) {
-      Alert.alert("Fejl", "Kodeordene matcher ikke");
+      Alert.alert(t("common.error"), t("auth.passwordsDontMatch"));
       return;
     }
     setIsSubmitting(true);
     try {
-      await signUpWithEmail(email, password);
+      await signUpWithEmail(email, password, name);
       router.replace("/(tabs)");
     } catch (error) {
       Alert.alert(
-        "Oprettelse fejlede",
-        error.message || "Kunne ikke oprette bruger"
+        t("auth.signupError"),
+        error.message || t("auth.signupFailed")
       );
     } finally {
       setIsSubmitting(false);
@@ -47,13 +50,21 @@ export default function SignupScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title}>Opret konto</Text>
-          <Text style={styles.subtitle}>Få adgang til alle funktioner</Text>
+          <Text style={styles.title}>{t("auth.createAccount")}</Text>
+          <Text style={styles.subtitle}>{t("auth.signupSubtitle")}</Text>
         </View>
         <View style={styles.formSection}>
           <TextInput
             style={styles.input}
-            placeholder="E-mail"
+            placeholder={t("auth.name")}
+            autoCapitalize="words"
+            value={name}
+            onChangeText={setName}
+            editable={!isSubmitting}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder={t("auth.email")}
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
@@ -62,7 +73,7 @@ export default function SignupScreen() {
           />
           <TextInput
             style={styles.input}
-            placeholder="Kodeord"
+            placeholder={t("auth.password")}
             secureTextEntry
             value={password}
             onChangeText={setPassword}
@@ -70,7 +81,7 @@ export default function SignupScreen() {
           />
           <TextInput
             style={styles.input}
-            placeholder="Gentag kodeord"
+            placeholder={t("auth.confirmPassword")}
             secureTextEntry
             value={repeatPassword}
             onChangeText={setRepeatPassword}
@@ -79,16 +90,18 @@ export default function SignupScreen() {
           <TouchableOpacity
             style={styles.signupButton}
             onPress={handleSignup}
-            disabled={isSubmitting || !email || !password || !repeatPassword}
+            disabled={isSubmitting}
           >
-            <Text style={styles.signupButtonText}>Opret konto</Text>
+            <Text style={styles.signupButtonText}>
+              {t("auth.createAccount")}
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.linkButton}
             onPress={() => router.replace("/login")}
             disabled={isSubmitting}
           >
-            <Text style={styles.linkButtonText}>Tilbage til login</Text>
+            <Text style={styles.linkButtonText}>{t("auth.backToLogin")}</Text>
           </TouchableOpacity>
         </View>
       </View>

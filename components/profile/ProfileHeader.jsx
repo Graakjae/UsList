@@ -1,8 +1,8 @@
 import { faUserEdit } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useTranslation } from "react-i18next";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function ProfileHeader({
   image,
@@ -17,7 +17,9 @@ export default function ProfileHeader({
       <View style={styles.imageContainer}>
         <Image
           source={
-            image ? { uri: image } : require("../../assets/images/icon.png")
+            image
+              ? { uri: image }
+              : require("../../assets/images/default_user_icon.png")
           }
           style={styles.profileImage}
         />
@@ -29,14 +31,12 @@ export default function ProfileHeader({
       <View style={styles.nameSection}>
         <View style={styles.nameContainer}>
           <Text style={styles.displayName}>
-            {displayName || t('profile.noName')}
+            {displayName || t("profile.noName")}
           </Text>
         </View>
       </View>
 
-      <Text style={styles.email}>
-        {email || t('profile.anonymousUser')}
-      </Text>
+      <Text style={styles.email}>{email || t("profile.anonymousUser")}</Text>
     </View>
   );
 }
