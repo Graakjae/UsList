@@ -1,14 +1,8 @@
+import Input from "@/components/ui/Input";
 import Modal from "@/components/ui/Modal";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Image,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function EditProfileModal({
   visible,
@@ -38,6 +32,7 @@ export default function EditProfileModal({
         {
           text: t("common.save"),
           style: { backgroundColor: "#FFC0CB" },
+          textStyle: { color: "#fff" },
           onPress: onSave,
           disabled: loading,
         },
@@ -75,8 +70,7 @@ export default function EditProfileModal({
 
         <Text style={styles.editProfileText}>{t("profile.yourName")}</Text>
         <View style={styles.editProfileInputContainer}>
-          <TextInput
-            style={styles.nameInput}
+          <Input
             value={newDisplayName}
             onChangeText={setNewDisplayName}
             placeholder={t("profile.yourName")}
@@ -106,14 +100,5 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     borderWidth: 3,
     borderColor: "#FFC0CB",
-  },
-  nameInput: {
-    fontSize: 24,
-    color: "#333",
-    borderBottomWidth: 1,
-    borderBottomColor: "#FFC0CB",
-    paddingBottom: 4,
-    minWidth: 150,
-    fontFamily: "Baloo2-Bold",
   },
 });

@@ -1,14 +1,8 @@
+import Input from "@/components/ui/Input";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Alert,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../hooks/useAuth";
 
@@ -54,16 +48,14 @@ export default function SignupScreen() {
           <Text style={styles.subtitle}>{t("auth.signupSubtitle")}</Text>
         </View>
         <View style={styles.formSection}>
-          <TextInput
-            style={styles.input}
+          <Input
             placeholder={t("auth.name")}
             autoCapitalize="words"
             value={name}
             onChangeText={setName}
             editable={!isSubmitting}
           />
-          <TextInput
-            style={styles.input}
+          <Input
             placeholder={t("auth.email")}
             autoCapitalize="none"
             keyboardType="email-address"
@@ -71,16 +63,14 @@ export default function SignupScreen() {
             onChangeText={setEmail}
             editable={!isSubmitting}
           />
-          <TextInput
-            style={styles.input}
+          <Input
             placeholder={t("auth.password")}
             secureTextEntry
             value={password}
             onChangeText={setPassword}
             editable={!isSubmitting}
           />
-          <TextInput
-            style={styles.input}
+          <Input
             placeholder={t("auth.confirmPassword")}
             secureTextEntry
             value={repeatPassword}
@@ -141,15 +131,7 @@ const styles = StyleSheet.create({
   formSection: {
     marginBottom: 24,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    marginBottom: 12,
-    fontFamily: "Nunito-Regular",
-  },
+
   signupButton: {
     backgroundColor: "#FFC0CB",
     paddingVertical: 16,

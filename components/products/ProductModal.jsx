@@ -2,14 +2,8 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Image,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Input from "../ui/Input";
 import Modal from "../ui/Modal";
 import CategorySelector from "./CategorySelector";
 
@@ -46,7 +40,8 @@ export default function ProductModal({
         },
         {
           text: uploading ? t("common.loading") : t("common.save"),
-          style: { backgroundColor: "#FFC0CB", color: "#fff" },
+          style: { backgroundColor: "#FFC0CB" },
+          textStyle: { color: "#fff" },
           onPress: onSave,
           disabled: uploading,
         },
@@ -71,8 +66,7 @@ export default function ProductModal({
         )}
       </TouchableOpacity>
 
-      <TextInput
-        style={styles.input}
+      <Input
         value={productName}
         onChangeText={setProductName}
         placeholder={t("products.productName")}
@@ -84,8 +78,7 @@ export default function ProductModal({
         placeholder={t("products.category")}
       />
 
-      <TextInput
-        style={styles.input}
+      <Input
         value={productSubcategory}
         onChangeText={setProductSubcategory}
         placeholder={t("products.subcategory")}
@@ -102,14 +95,7 @@ const styles = StyleSheet.create({
     width: "90%",
     maxWidth: 400,
   },
-  input: {
-    borderWidth: 2,
-    borderColor: "#FFC0CB",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 15,
-    fontSize: 16,
-  },
+
   imagePickerButton: {
     width: 120,
     height: 120,

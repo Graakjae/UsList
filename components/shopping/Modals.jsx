@@ -1,3 +1,4 @@
+import Input from "@/components/ui/Input";
 import Modal from "@/components/ui/Modal";
 import {
   faEdit,
@@ -13,7 +14,6 @@ import {
   Image,
   Share,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -128,12 +128,12 @@ export default function Modals({
           {
             text: "Opret",
             style: { backgroundColor: "#FFC0CB" },
+            textStyle: { color: "#fff" },
             onPress: addNewList,
           },
         ]}
       >
-        <TextInput
-          style={styles.modalInput}
+        <Input
           value={newListName}
           onChangeText={setNewListName}
           placeholder="Liste navn"
@@ -227,12 +227,12 @@ export default function Modals({
           {
             text: !currentListId ? t("shopping.create") : t("shopping.save"),
             style: { backgroundColor: "#FFC0CB" },
+            textStyle: { color: "#fff" },
             onPress: saveListName,
           },
         ]}
       >
-        <TextInput
-          style={styles.modalInput}
+        <Input
           value={editListName}
           onChangeText={setEditListName}
           placeholder={t("shopping.listName")}
@@ -252,6 +252,7 @@ export default function Modals({
           {
             text: t("shopping.close"),
             style: { backgroundColor: "#FFC0CB" },
+            textStyle: { color: "#fff" },
             onPress: () => {
               setShowMembersModal(false);
               openBottomSheet();
@@ -303,59 +304,11 @@ export default function Modals({
           <Text style={styles.noMembersText}>{t("shopping.noMembers")}</Text>
         )}
       </Modal>
-
-      {/* Invite Code Modal */}
-      <Modal
-        visible={showInviteCodeModal}
-        onClose={() => {
-          setShowInviteCodeModal(false);
-          setInviteCodeInput("");
-          openBottomSheet();
-        }}
-        title={t("shopping.joinList")}
-        buttons={[
-          {
-            text: t("shopping.cancel"),
-            style: { backgroundColor: "#f0f0f0" },
-            onPress: () => {
-              setShowInviteCodeModal(false);
-              setInviteCodeInput("");
-              openBottomSheet();
-            },
-          },
-          {
-            text: t("shopping.join"),
-            style: { backgroundColor: "#FFC0CB" },
-            onPress: handleManualInviteCode,
-          },
-        ]}
-      >
-        <Text style={styles.modalSubtitle}>
-          {t("shopping.enterInvitationCode")}
-        </Text>
-        <TextInput
-          style={styles.modalInput}
-          value={inviteCodeInput}
-          onChangeText={setInviteCodeInput}
-          placeholder={t("shopping.enterInvitationCode")}
-          autoFocus
-          autoCapitalize="none"
-        />
-      </Modal>
     </>
   );
 }
 
 const styles = {
-  modalInput: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    fontFamily: "Nunito-Regular",
-    marginBottom: 20,
-  },
   bottomSheetContent: {
     gap: 15,
   },
@@ -371,18 +324,6 @@ const styles = {
   bottomSheetItemText: {
     fontSize: 16,
     fontFamily: "Nunito-Regular",
-    color: "#333",
-  },
-
-  closeButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    backgroundColor: "#f0f0f0",
-  },
-  closeButtonText: {
-    fontSize: 16,
-    fontFamily: "Baloo2-Bold",
     color: "#333",
   },
   membersList: {
