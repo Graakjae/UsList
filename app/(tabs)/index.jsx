@@ -35,6 +35,8 @@ export default function ShoppingScreen() {
     showMembersModal,
     showInviteCodeModal,
     inviteCodeInput,
+    editingItemId,
+    editingItemName,
 
     // Computed values
     sortedItems,
@@ -61,11 +63,15 @@ export default function ShoppingScreen() {
     setShowInviteCodeModal,
     setInviteCodeInput,
     setCurrentListIdWithSave,
+    setEditingItemName,
 
     handleSearch,
     selectProduct,
     addItem,
     toggleItem,
+    startEditingItem,
+    saveEditedItem,
+    cancelEditingItem,
     deleteCompletedItems,
     deleteAllItems,
     addNewList,
@@ -128,6 +134,12 @@ export default function ShoppingScreen() {
             toggleItem={toggleItem}
             currentListId={currentListId}
             setShowAddListModal={setShowAddListModal}
+            editingItemId={editingItemId}
+            editingItemName={editingItemName}
+            setEditingItemName={setEditingItemName}
+            startEditingItem={startEditingItem}
+            saveEditedItem={saveEditedItem}
+            cancelEditingItem={cancelEditingItem}
           />
 
           <DeleteButtons

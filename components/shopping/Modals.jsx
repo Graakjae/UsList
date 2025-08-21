@@ -28,8 +28,6 @@ export default function Modals({
   setShowEditListModal,
   showMembersModal,
   setShowMembersModal,
-  showInviteCodeModal,
-  setShowInviteCodeModal,
 
   // Modal data
   newListName,
@@ -37,15 +35,12 @@ export default function Modals({
   editListName,
   setEditListName,
   listMembers,
-  inviteCodeInput,
-  setInviteCodeInput,
 
   // Functions
   addNewList,
   saveListName,
   deleteList,
   removeUserFromList,
-  handleManualInviteCode,
   openBottomSheet,
   closeBottomSheet,
 

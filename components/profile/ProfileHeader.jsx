@@ -35,8 +35,6 @@ export default function ProfileHeader({
           </Text>
         </View>
       </View>
-
-      <Text style={styles.email}>{email || t("profile.anonymousUser")}</Text>
     </View>
   );
 }
