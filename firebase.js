@@ -1,5 +1,4 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Constants from "expo-constants";
 import { initializeApp } from "firebase/app";
 import { getReactNativePersistence, initializeAuth } from "firebase/auth";
 import { getDatabase } from "firebase/database";
@@ -7,8 +6,7 @@ import { getStorage } from "firebase/storage";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey:
-    Constants.expoConfig?.extra?.firebaseApiKey || process.env.FIREBASE_API_KEY,
+  apiKey: "AIzaSyDcLu4qF6VRm3b31ulnXt45OEL6YD1DGvw",
   authDomain: "camilla-og-frederiks-app.firebaseapp.com",
   databaseURL:
     "https://camilla-og-frederiks-app-default-rtdb.europe-west1.firebasedatabase.app",

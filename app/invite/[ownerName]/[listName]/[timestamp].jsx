@@ -72,8 +72,6 @@ export default function InviteHandler() {
           originalId: listId,
           ownerId: ownerId,
           ownerName: listData.ownerName || "Ukendt bruger",
-          name: listData.name,
-          createdAt: listData.createdAt,
           isShared: true,
           isOwner: false,
         });

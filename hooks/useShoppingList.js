@@ -47,6 +47,8 @@ export default function useShoppingList() {
   const [inviteCodeInput, setInviteCodeInput] = useState("");
   const [userListColor, setUserListColor] = useState("#333");
   const [userListFont, setUserListFont] = useState("Baloo2-Bold");
+  const [editingItemId, setEditingItemId] = useState(null);
+  const [editingItemName, setEditingItemName] = useState("");
 
   // Custom setCurrentListId that saves to AsyncStorage
   const setCurrentListIdWithSave = (listId) => {
@@ -107,7 +109,7 @@ export default function useShoppingList() {
     // If not found in regular lists, check shared lists
     const sharedList = sharedLists.find((list) => list.id === currentListId);
     if (sharedList) {
-      return sharedList.name;
+      return sharedList.name; // This now contains the actual name from the owner's list
     }
 
     // If currentListId exists but no matching list found, show loading
@@ -243,6 +245,45 @@ export default function useShoppingList() {
         completed: !item.completed,
       });
     }
+  };
+
+  // Start editing item name
+  const startEditingItem = (item) => {
+    setEditingItemId(item.id);
+    setEditingItemName(item.name);
+  };
+
+  // Save edited item name
+  const saveEditedItem = () => {
+    if (!user || !currentListId || !editingItemId || !editingItemName.trim())
+      return;
+
+    try {
+      const itemPath = getItemPath(user, currentListId, editingItemId);
+      if (!itemPath) return; // No valid path
+
+      const itemRef = ref(database, itemPath);
+      update(itemRef, {
+        name: editingItemName.trim(),
+      })
+        .then(() => {
+          setEditingItemId(null);
+          setEditingItemName("");
+        })
+        .catch((error) => {
+          console.error("Error updating item name:", error);
+          Alert.alert(t("shopping.error"), t("shopping.errorUpdatingItemName"));
+        });
+    } catch (error) {
+      console.error("Error in saveEditedItem:", error);
+      Alert.alert(t("shopping.error"), t("shopping.errorUpdatingItemName"));
+    }
+  };
+
+  // Cancel editing item name
+  const cancelEditingItem = () => {
+    setEditingItemId(null);
+    setEditingItemName("");
   };
 
   // Delete completed items
@@ -391,13 +432,33 @@ export default function useShoppingList() {
         setCurrentListIdWithSave(newListId);
       } else {
         // Edit existing list
-        const listRef = ref(
-          database,
-          `users/${user.uid}/shoppingLists/${currentListId}`
-        );
-        await update(listRef, {
-          name: editListName.trim(),
-        });
+        if (currentListId.includes("_")) {
+          // This is a shared list
+          const [ownerId, listId] = currentListId.split("_");
+
+          // Only the owner can edit the list name
+          if (ownerId === user.uid) {
+            // Update the owner's list
+            const listRef = ref(
+              database,
+              `users/${user.uid}/shoppingLists/${listId}`
+            );
+            await update(listRef, {
+              name: editListName.trim(),
+            });
+
+            // No need to update shared_lists anymore since we fetch data dynamically
+          }
+        } else {
+          // This is a regular list
+          const listRef = ref(
+            database,
+            `users/${user.uid}/shoppingLists/${currentListId}`
+          );
+          await update(listRef, {
+            name: editListName.trim(),
+          });
+        }
       }
       setEditListName("");
       setShowEditListModal(false);
@@ -581,8 +642,6 @@ export default function useShoppingList() {
         ownerId: user.uid,
         ownerName:
           user.displayName || user.email?.split("@")[0] || "Ukendt bruger",
-        name: listData.name,
-        createdAt: listData.createdAt,
         isShared: true,
         isOwner: false,
       });
@@ -732,9 +791,7 @@ export default function useShoppingList() {
             membersArray.unshift(ownerMember);
           }
         }
-
         setListMembers(membersArray);
-        console.log("membersArray", membersArray);
       });
 
       return unsubscribe;
@@ -749,32 +806,75 @@ export default function useShoppingList() {
 
     try {
       const sharedListsRef = ref(database, `shared_lists/${user.uid}`);
+      let listUnsubscribers = [];
 
       const unsubscribe = onValue(sharedListsRef, (snapshot) => {
         const data = snapshot.val();
 
-        if (data) {
-          const sharedListsArray = Object.entries(data).map(
-            ([listId, listData]) => ({
-              id: listId,
-              originalId: listData.originalId,
-              ownerId: listData.ownerId,
-              ownerName: listData.ownerName,
-              name: listData.name,
-              createdAt: listData.createdAt,
-              isShared: true,
-              isOwner: listData.isOwner,
-            })
-          );
+        // Clean up existing list listeners
+        listUnsubscribers.forEach((unsub) => unsub());
+        listUnsubscribers = [];
 
-          setSharedLists(sharedListsArray);
+        if (data) {
+          // Set up listeners for each shared list to get real-time updates
+          Object.entries(data).forEach(([listId, listData]) => {
+            // Set up a listener for the actual list data
+            const actualListRef = ref(
+              database,
+              `users/${listData.ownerId}/shoppingLists/${listData.originalId}`
+            );
+
+            const listUnsubscribe = onValue(actualListRef, (listSnapshot) => {
+              if (listSnapshot.exists()) {
+                const actualListData = listSnapshot.val();
+
+                // Update the shared list with real data
+                const updatedSharedList = {
+                  id: listId,
+                  originalId: listData.originalId,
+                  ownerId: listData.ownerId,
+                  ownerName: listData.ownerName,
+                  name: actualListData.name,
+                  createdAt: actualListData.createdAt,
+                  isShared: true,
+                  isOwner: listData.isOwner,
+                };
+
+                // Update the sharedLists state
+                setSharedLists((prevLists) => {
+                  const existingIndex = prevLists.findIndex(
+                    (list) => list.id === listId
+                  );
+                  if (existingIndex >= 0) {
+                    // Update existing list
+                    const newLists = [...prevLists];
+                    newLists[existingIndex] = updatedSharedList;
+                    return newLists;
+                  } else {
+                    // Add new list
+                    return [...prevLists, updatedSharedList];
+                  }
+                });
+              } else {
+                // List no longer exists, remove it from sharedLists
+                setSharedLists((prevLists) =>
+                  prevLists.filter((list) => list.id !== listId)
+                );
+              }
+            });
+
+            listUnsubscribers.push(listUnsubscribe);
+          });
         } else {
           setSharedLists([]);
         }
-        // Loading is set to false in the main lists useEffect
       });
 
-      return unsubscribe;
+      // Return cleanup function that cleans up both the main listener and all list listeners
+      return () => {
+        unsubscribe();
+        listUnsubscribers.forEach((unsub) => unsub());
+      };
     } catch (error) {
       console.error("Error in loadSharedLists:", error);
     }
@@ -1057,6 +1157,8 @@ export default function useShoppingList() {
     userListColor,
     userListFont,
     listsLoading,
+    editingItemId,
+    editingItemName,
 
     // Computed values
     sortedItems,
@@ -1078,11 +1180,16 @@ export default function useShoppingList() {
     setUserListColor,
     setUserListFont,
     setListsLoading,
+    setEditingItemId,
+    setEditingItemName,
 
     handleSearch,
     selectProduct,
     addItem,
     toggleItem,
+    startEditingItem,
+    saveEditedItem,
+    cancelEditingItem,
     deleteCompletedItems,
     deleteAllItems,
     addNewList,
@@ -1101,7 +1208,6 @@ export default function useShoppingList() {
     getCurrentListName,
     generateInviteLink,
     setCurrentListIdWithSave: (() => {
-      console.log("Returning setCurrentListIdWithSave function");
       return setCurrentListIdWithSave;
     })(),
   };

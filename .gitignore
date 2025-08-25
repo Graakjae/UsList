@@ -137,3 +137,6 @@ windows/
 
 # Cursor
 .cursorrules
+
+# SECURITY SETUP
+security_setup.md
