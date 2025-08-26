@@ -14,11 +14,11 @@ export default function ShoppingScreen() {
 
   const {
     // State
-    items,
     newItem,
     searchResults,
     showResults,
-    products,
+    editSearchResults,
+    showEditResults,
     lists,
     sharedLists,
     currentListId,
@@ -48,9 +48,6 @@ export default function ShoppingScreen() {
     qrModalOpacity,
 
     // Functions
-    setNewItem,
-    setShowResults,
-    setCurrentListId,
     setShowListDropdown,
     setShowAddListModal,
     setNewListName,
@@ -66,7 +63,9 @@ export default function ShoppingScreen() {
     setEditingItemName,
 
     handleSearch,
+    handleEditSearch,
     selectProduct,
+    selectEditProduct,
     addItem,
     toggleItem,
     startEditingItem,
@@ -82,9 +81,6 @@ export default function ShoppingScreen() {
     removeUserFromList,
     handleManualInviteCode,
 
-    shareList,
-    sendEmailInvitation,
-    showQRCode,
     closeQRModal,
     saveQRCodeToGallery,
     shareQRCode,
@@ -140,6 +136,10 @@ export default function ShoppingScreen() {
             startEditingItem={startEditingItem}
             saveEditedItem={saveEditedItem}
             cancelEditingItem={cancelEditingItem}
+            editSearchResults={editSearchResults}
+            showEditResults={showEditResults}
+            handleEditSearch={handleEditSearch}
+            selectEditProduct={selectEditProduct}
           />
 
           <DeleteButtons

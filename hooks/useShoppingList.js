@@ -49,6 +49,8 @@ export default function useShoppingList() {
   const [userListFont, setUserListFont] = useState("Baloo2-Bold");
   const [editingItemId, setEditingItemId] = useState(null);
   const [editingItemName, setEditingItemName] = useState("");
+  const [editSearchResults, setEditSearchResults] = useState([]);
+  const [showEditResults, setShowEditResults] = useState(false);
 
   // Custom setCurrentListId that saves to AsyncStorage
   const setCurrentListIdWithSave = (listId) => {
@@ -151,6 +153,28 @@ export default function useShoppingList() {
       setSearchResults([]);
       setShowResults(false);
     }
+  };
+
+  // Search function for editing
+  const handleEditSearch = (text) => {
+    setEditingItemName(text);
+    if (text.length > 0) {
+      const filtered = products.filter((product) =>
+        product.name.toLowerCase().includes(text.toLowerCase())
+      );
+      setEditSearchResults(filtered);
+      setShowEditResults(true);
+    } else {
+      setEditSearchResults([]);
+      setShowEditResults(false);
+    }
+  };
+
+  // Select product from edit search results
+  const selectEditProduct = (product) => {
+    setEditingItemName(product.name);
+    setEditSearchResults([]);
+    setShowEditResults(false);
   };
 
   // Select product from search results
@@ -259,16 +283,39 @@ export default function useShoppingList() {
       return;
 
     try {
+      const matchingProduct = products.find(
+        (product) =>
+          product.name.toLowerCase() === editingItemName.trim().toLowerCase()
+      );
+
       const itemPath = getItemPath(user, currentListId, editingItemId);
       if (!itemPath) return; // No valid path
 
       const itemRef = ref(database, itemPath);
-      update(itemRef, {
-        name: editingItemName.trim(),
-      })
+      const updateData = {
+        name: matchingProduct ? matchingProduct.name : editingItemName.trim(),
+      };
+
+      // Only add category, subcategory, and icon_url if product matches
+      if (matchingProduct) {
+        updateData.category = matchingProduct.category || "";
+        updateData.subcategory = matchingProduct.subcategory || "";
+        if (matchingProduct.icon_url) {
+          updateData.icon_url = matchingProduct.icon_url;
+        }
+      } else {
+        // Remove category, subcategory, and icon_url if no matching product
+        updateData.category = "";
+        updateData.subcategory = "";
+        updateData.icon_url = null;
+      }
+
+      update(itemRef, updateData)
         .then(() => {
           setEditingItemId(null);
           setEditingItemName("");
+          setEditSearchResults([]);
+          setShowEditResults(false);
         })
         .catch((error) => {
           console.error("Error updating item name:", error);
@@ -284,6 +331,8 @@ export default function useShoppingList() {
   const cancelEditingItem = () => {
     setEditingItemId(null);
     setEditingItemName("");
+    setEditSearchResults([]);
+    setShowEditResults(false);
   };
 
   // Delete completed items
@@ -1159,6 +1208,8 @@ export default function useShoppingList() {
     listsLoading,
     editingItemId,
     editingItemName,
+    editSearchResults,
+    showEditResults,
 
     // Computed values
     sortedItems,
@@ -1182,9 +1233,13 @@ export default function useShoppingList() {
     setListsLoading,
     setEditingItemId,
     setEditingItemName,
+    setEditSearchResults,
+    setShowEditResults,
 
     handleSearch,
+    handleEditSearch,
     selectProduct,
+    selectEditProduct,
     addItem,
     toggleItem,
     startEditingItem,
