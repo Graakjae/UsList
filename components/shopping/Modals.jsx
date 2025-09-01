@@ -21,17 +21,15 @@ import { useAuth } from "../../hooks/useAuth";
 
 export default function Modals({
   // Modal states
-  showAddListModal,
-  setShowAddListModal,
   showBottomSheet,
   showEditListModal,
   setShowEditListModal,
+  isCreatingList,
+  setIsCreatingList,
   showMembersModal,
   setShowMembersModal,
 
   // Modal data
-  newListName,
-  setNewListName,
   editListName,
   setEditListName,
   listMembers,
@@ -75,7 +73,7 @@ export default function Modals({
     try {
       const inviteLink = generateInviteLink();
       await Share.share({
-        message: `Hej! Du er inviteret til at deltage i min indkøbsliste "${getCurrentListName()}". Klik på linket for at tilslutte dig: ${inviteLink}`,
+        message: `Hej! Du er inviteret til at deltage i min liste "${getCurrentListName()}". Klik på linket for at tilslutte dig: ${inviteLink}`,
       });
     } catch (error) {
       console.error("Error sharing list:", error);
@@ -84,6 +82,7 @@ export default function Modals({
 
   // Handle edit list
   const handleEditList = () => {
+    setIsCreatingList(false);
     setEditListName(getCurrentListName());
     setShowEditListModal(true);
     closeBottomSheet();
@@ -101,38 +100,56 @@ export default function Modals({
     closeBottomSheet();
   };
 
+  // Handle save list name (create or edit)
+  const handleSaveListName = () => {
+    if (isCreatingList) {
+      addNewList();
+    } else {
+      saveListName();
+    }
+  };
+
+  // Handle close list name modal
+  const handleCloseListNameModal = () => {
+    setShowEditListModal(false);
+    setEditListName("");
+    if (isCreatingList) {
+      setIsCreatingList(false);
+    } else if (currentListId) {
+      openBottomSheet();
+    }
+  };
+
   return (
     <>
-      {/* Add List Modal */}
+      {/* Combined Create/Edit List Modal */}
       <Modal
-        visible={showAddListModal}
-        onClose={() => {
-          setShowAddListModal(false);
-          setNewListName("");
-        }}
-        title="Opret ny liste"
+        visible={showEditListModal}
+        onClose={handleCloseListNameModal}
+        title={
+          isCreatingList
+            ? t("shopping.createNewList")
+            : t("shopping.editListName")
+        }
         buttons={[
           {
-            text: "Annuller",
+            text: t("shopping.cancel"),
             style: { backgroundColor: "#f0f0f0" },
-            onPress: () => {
-              setShowAddListModal(false);
-              setNewListName("");
-            },
+            onPress: handleCloseListNameModal,
           },
           {
-            text: "Opret",
+            text: isCreatingList ? t("shopping.create") : t("shopping.save"),
             style: { backgroundColor: "#FFC0CB" },
             textStyle: { color: "#fff" },
-            onPress: addNewList,
+            onPress: handleSaveListName,
           },
         ]}
       >
         <Input
-          value={newListName}
-          onChangeText={setNewListName}
-          placeholder="Liste navn"
-          autoFocus
+          value={editListName}
+          onChangeText={setEditListName}
+          placeholder={t("shopping.listName")}
+          autoFocus={isCreatingList}
         />
       </Modal>
 
@@ -196,43 +213,6 @@ export default function Modals({
             </>
           )}
         </View>
-      </Modal>
-
-      {/* Edit List Name Modal */}
-      <Modal
-        visible={showEditListModal}
-        onClose={() => {
-          setShowEditListModal(false);
-          setEditListName("");
-          openBottomSheet();
-        }}
-        title={
-          !currentListId ? t("shopping.createList") : t("shopping.editListName")
-        }
-        buttons={[
-          {
-            text: t("shopping.cancel"),
-            style: { backgroundColor: "#f0f0f0" },
-            onPress: () => {
-              setShowEditListModal(false);
-              setEditListName("");
-              openBottomSheet();
-            },
-          },
-          {
-            text: !currentListId ? t("shopping.create") : t("shopping.save"),
-            style: { backgroundColor: "#FFC0CB" },
-            textStyle: { color: "#fff" },
-            onPress: saveListName,
-          },
-        ]}
-      >
-        <Input
-          value={editListName}
-          onChangeText={setEditListName}
-          placeholder={t("shopping.listName")}
-          autoFocus={!currentListId}
-        />
       </Modal>
 
       {/* Members Modal */}

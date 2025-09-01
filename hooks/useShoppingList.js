@@ -36,10 +36,10 @@ export default function useShoppingList() {
   const [currentListId, setCurrentListId] = useState(null);
   const [listsLoading, setListsLoading] = useState(true);
   const [showListDropdown, setShowListDropdown] = useState(false);
-  const [showAddListModal, setShowAddListModal] = useState(false);
-  const [newListName, setNewListName] = useState("");
+
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [showEditListModal, setShowEditListModal] = useState(false);
+  const [isCreatingList, setIsCreatingList] = useState(false);
   const [editListName, setEditListName] = useState("");
   const [listMembers, setListMembers] = useState([]);
   const [showMembersModal, setShowMembersModal] = useState(false);
@@ -54,11 +54,8 @@ export default function useShoppingList() {
 
   // Custom setCurrentListId that saves to AsyncStorage
   const setCurrentListIdWithSave = (listId) => {
-    console.log("setCurrentListIdWithSave called with:", listId);
-    console.log("Current user:", user?.uid);
     setCurrentListId(listId);
     saveLastSelectedList(listId);
-    console.log("setCurrentListIdWithSave completed");
   };
 
   // Save last selected list
@@ -133,7 +130,7 @@ export default function useShoppingList() {
     try {
       const inviteLink = generateInviteLink();
       await Share.share({
-        message: `Hej! Du er inviteret til at deltage i min indkøbsliste "${getCurrentListName()}". Klik på linket for at tilslutte dig: ${inviteLink}`,
+        message: `Hej! Du er inviteret til at deltage i min liste "${getCurrentListName()}". Klik på linket for at tilslutte dig: ${inviteLink}`,
       });
     } catch (error) {
       console.error("Error sharing list:", error);
@@ -384,7 +381,7 @@ export default function useShoppingList() {
 
   // Add new list
   const addNewList = async () => {
-    if (!user || !newListName.trim()) return;
+    if (!user || !editListName.trim()) return;
 
     try {
       const listsRef = ref(database, `users/${user.uid}/shoppingLists`);
@@ -392,20 +389,28 @@ export default function useShoppingList() {
       const newListId = newListRef.key;
 
       await set(newListRef, {
-        name: newListName.trim(),
+        name: editListName.trim(),
         createdAt: Date.now(),
       });
 
-      setNewListName("");
+      setEditListName("");
       setCurrentListIdWithSave(newListId);
 
       setTimeout(() => {
-        setShowAddListModal(false);
+        setShowEditListModal(false);
+        setIsCreatingList(false);
       }, 100);
     } catch (error) {
       console.error("Error adding list:", error);
       Alert.alert("Fejl", "Kunne ikke oprette ny liste");
     }
+  };
+
+  // Handle create new list (opens the combined modal)
+  const handleCreateNewList = () => {
+    setEditListName("");
+    setIsCreatingList(true);
+    setShowEditListModal(true);
   };
 
   // Delete list
@@ -1047,12 +1052,6 @@ export default function useShoppingList() {
   }, [showBottomSheet, user, currentListId, lists, sharedLists]);
 
   useEffect(() => {
-    if (showAddListModal) {
-      setNewListName("");
-    }
-  }, [showAddListModal]);
-
-  useEffect(() => {
     try {
       // Load standard products
       const standardProductsRef = ref(database, "standard_products");
@@ -1194,10 +1193,10 @@ export default function useShoppingList() {
     sharedLists,
     currentListId,
     showListDropdown,
-    showAddListModal,
-    newListName,
+
     showBottomSheet,
     showEditListModal,
+    isCreatingList,
     editListName,
     listMembers,
     showMembersModal,
@@ -1220,10 +1219,10 @@ export default function useShoppingList() {
     setNewItem,
     setShowResults,
     setShowListDropdown,
-    setShowAddListModal,
-    setNewListName,
+
     setShowBottomSheet,
     setShowEditListModal,
+    setIsCreatingList,
     setEditListName,
     setShowMembersModal,
     setShowInviteCodeModal,
@@ -1248,6 +1247,7 @@ export default function useShoppingList() {
     deleteCompletedItems,
     deleteAllItems,
     addNewList,
+    handleCreateNewList,
     deleteList,
     saveListName,
     selectSharedList,

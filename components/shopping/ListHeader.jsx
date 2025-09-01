@@ -19,7 +19,7 @@ export default function ListHeader({
   setCurrentListId,
   selectSharedList,
   leaveSharedList,
-  setShowAddListModal,
+  onCreateNewList,
   getCurrentListName,
   openBottomSheet,
   listMembers,
@@ -130,7 +130,7 @@ export default function ListHeader({
             <TouchableOpacity
               style={styles.addListButton}
               onPress={() => {
-                setShowAddListModal(true);
+                onCreateNewList();
                 setShowListDropdown(false);
               }}
             >

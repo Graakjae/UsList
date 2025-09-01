@@ -5,11 +5,15 @@ import Modals from "@/components/shopping/Modals";
 import ShoppingList from "@/components/shopping/ShoppingList";
 import { useAuth } from "@/hooks/useAuth";
 import useShoppingList from "@/hooks/useShoppingList";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  View,
+} from "react-native";
 
 export default function ShoppingScreen() {
-  const insets = useSafeAreaInsets();
   const { user } = useAuth();
 
   const {
@@ -24,10 +28,9 @@ export default function ShoppingScreen() {
     currentListId,
     listsLoading,
     showListDropdown,
-    showAddListModal,
-    newListName,
     showBottomSheet,
     showEditListModal,
+    isCreatingList,
     editListName,
     listMembers,
     showQRModal,
@@ -49,10 +52,9 @@ export default function ShoppingScreen() {
 
     // Functions
     setShowListDropdown,
-    setShowAddListModal,
-    setNewListName,
     setShowBottomSheet,
     setShowEditListModal,
+    setIsCreatingList,
     setEditListName,
     setShowQRModal,
     setQrCodeData,
@@ -74,6 +76,7 @@ export default function ShoppingScreen() {
     deleteCompletedItems,
     deleteAllItems,
     addNewList,
+    handleCreateNewList,
     deleteList,
     saveListName,
     selectSharedList,
@@ -93,7 +96,11 @@ export default function ShoppingScreen() {
   } = useShoppingList();
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+    >
       {listsLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FFC0CB" />
@@ -109,7 +116,7 @@ export default function ShoppingScreen() {
             setCurrentListId={setCurrentListIdWithSave}
             selectSharedList={selectSharedList}
             leaveSharedList={leaveSharedList}
-            setShowAddListModal={setShowAddListModal}
+            onCreateNewList={handleCreateNewList}
             getCurrentListName={getCurrentListName}
             openBottomSheet={openBottomSheet}
             listMembers={listMembers}
@@ -125,22 +132,24 @@ export default function ShoppingScreen() {
             currentListId={currentListId}
           />
 
-          <ShoppingList
-            sortedItems={sortedItems}
-            toggleItem={toggleItem}
-            currentListId={currentListId}
-            setShowAddListModal={setShowAddListModal}
-            editingItemId={editingItemId}
-            editingItemName={editingItemName}
-            setEditingItemName={setEditingItemName}
-            startEditingItem={startEditingItem}
-            saveEditedItem={saveEditedItem}
-            cancelEditingItem={cancelEditingItem}
-            editSearchResults={editSearchResults}
-            showEditResults={showEditResults}
-            handleEditSearch={handleEditSearch}
-            selectEditProduct={selectEditProduct}
-          />
+          <View style={styles.contentContainer}>
+            <ShoppingList
+              sortedItems={sortedItems}
+              toggleItem={toggleItem}
+              currentListId={currentListId}
+              onCreateNewList={handleCreateNewList}
+              editingItemId={editingItemId}
+              editingItemName={editingItemName}
+              setEditingItemName={setEditingItemName}
+              startEditingItem={startEditingItem}
+              saveEditedItem={saveEditedItem}
+              cancelEditingItem={cancelEditingItem}
+              editSearchResults={editSearchResults}
+              showEditResults={showEditResults}
+              handleEditSearch={handleEditSearch}
+              selectEditProduct={selectEditProduct}
+            />
+          </View>
 
           <DeleteButtons
             hasItems={hasItems}
@@ -152,12 +161,12 @@ export default function ShoppingScreen() {
 
           <Modals
             // Modal states
-            showAddListModal={showAddListModal}
-            setShowAddListModal={setShowAddListModal}
             showBottomSheet={showBottomSheet}
             setShowBottomSheet={setShowBottomSheet}
             showEditListModal={showEditListModal}
             setShowEditListModal={setShowEditListModal}
+            isCreatingList={isCreatingList}
+            setIsCreatingList={setIsCreatingList}
             showQRModal={showQRModal}
             setShowQRModal={setShowQRModal}
             showMembersModal={showMembersModal}
@@ -165,8 +174,6 @@ export default function ShoppingScreen() {
             showInviteCodeModal={showInviteCodeModal}
             setShowInviteCodeModal={setShowInviteCodeModal}
             // Modal data
-            newListName={newListName}
-            setNewListName={setNewListName}
             editListName={editListName}
             setEditListName={setEditListName}
             qrCodeData={qrCodeData}
@@ -197,7 +204,7 @@ export default function ShoppingScreen() {
           />
         </>
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -206,6 +213,9 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: "#fff",
+  },
+  contentContainer: {
+    flex: 1,
   },
   loadingContainer: {
     flex: 1,

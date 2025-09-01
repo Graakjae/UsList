@@ -49,8 +49,10 @@ const styles = {
     right: 0,
     flexDirection: "row",
     justifyContent: "space-between",
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     gap: 10,
+    backgroundColor: "#fff",
   },
   deleteButton: {
     flex: 1,

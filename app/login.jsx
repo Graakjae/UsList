@@ -52,17 +52,6 @@ export default function LoginScreen() {
     }
   };
 
-  const handleAnonymousSignIn = async () => {
-    setIsSubmitting(true);
-    try {
-      await signInAnonymously();
-    } catch (error) {
-      Alert.alert(t("common.error"), t("auth.loginFailed"));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.content}>

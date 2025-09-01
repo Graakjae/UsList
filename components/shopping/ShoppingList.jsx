@@ -16,10 +16,9 @@ export default function ShoppingList({
   sortedItems,
   toggleItem,
   currentListId,
-  setShowAddListModal,
+  onCreateNewList,
   editingItemId,
   editingItemName,
-  setEditingItemName,
   startEditingItem,
   saveEditedItem,
   cancelEditingItem,
@@ -62,7 +61,7 @@ export default function ShoppingList({
         <Text style={styles.emptyText}>{t("shopping.createListToStart")}</Text>
         <TouchableOpacity
           style={styles.createListButton}
-          onPress={() => setShowAddListModal(true)}
+          onPress={onCreateNewList}
         >
           <Text style={styles.createListButtonText}>
             {t("shopping.createList")}
@@ -233,10 +232,10 @@ const styles = {
   container: {
     flex: 1,
     position: "relative",
+    backgroundColor: "#fff89d",
   },
   listContainer: {
     flex: 1,
-    backgroundColor: "#fff89d",
     marginBottom: 60,
   },
   noteLine: {
