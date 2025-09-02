@@ -22,7 +22,7 @@ export default function TabLayout() {
           title: t("navigation.shoppingList"),
           headerShown: false,
           headerMode: "none",
-          tabBarIcon: ({ color }) => <ListIcon color={color} size={24} />,
+          tabBarIcon: ({ color }) => <ListIcon color={color} size={30} />,
         }}
       />
 
@@ -31,7 +31,7 @@ export default function TabLayout() {
         options={{
           title: t("navigation.profile"),
           headerShown: false,
-          tabBarIcon: ({ color }) => <ProfileIcon color={color} size={24} />,
+          tabBarIcon: ({ color }) => <ProfileIcon color={color} size={30} />,
         }}
       />
     </Tabs>
