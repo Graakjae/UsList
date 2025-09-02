@@ -106,7 +106,8 @@
     "selectCategory": "Select category",
     "saveError": "Could not save product",
     "deleteError": "Could not delete product",
-    "imageError": "Could not select image"
+    "imageError": "Could not select image",
+    "invalidCategory": "Invalid category"
   },
   "navigation": {
     "shoppingList": "Shopping List",

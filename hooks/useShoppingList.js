@@ -14,6 +14,7 @@ import { Alert, Share } from "react-native";
 import { database } from "../firebase";
 import {
   generateInviteLink as generateInviteLinkUtil,
+  getCategoriesForLanguage,
   getItemPath,
   getItemsPath,
   hasItems as hasItemsUtil,
@@ -24,7 +25,7 @@ import { useAuth } from "./useAuth";
 
 export default function useShoppingList() {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   // State
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState("");
@@ -82,10 +83,41 @@ export default function useShoppingList() {
     }
   };
 
+  // Helper function til at hente oversat tekst
+  const getTranslatedText = (product, field) => {
+    const currentLanguage = i18n.language;
+
+    // Først prøv at hente fra oversættelser
+    if (product.translations && product.translations[currentLanguage]) {
+      return product.translations[currentLanguage][field] || "";
+    }
+
+    // Fallback til dansk hvis oversættelse ikke findes
+    if (product.translations && product.translations.da) {
+      return product.translations.da[field] || "";
+    }
+
+    // Fallback til original felt (for bagudkompatibilitet)
+    return product[field] || "";
+  };
+
   // Computed values using utility functions
-  const sortedItems = sortItemsByCategory(items);
+  const sortedItems = sortItemsByCategory(items, i18n.language);
   const hasCompletedItems = isItemCompleted(items);
   const hasItems = hasItemsUtil(items);
+
+  // Get available categories for current language
+  const getAvailableCategories = () => {
+    return getCategoriesForLanguage(i18n.language);
+  };
+
+  // Get category options for dropdown/selection
+  const getCategoryOptions = () => {
+    return getAvailableCategories().map((cat) => ({
+      label: cat.label,
+      value: cat.label,
+    }));
+  };
 
   // Get current list name
   const getCurrentListName = () => {
@@ -1067,9 +1099,13 @@ export default function useShoppingList() {
           if (data) {
             standardProducts = Object.entries(data).map(([id, item]) => ({
               id: `standard_${id}`,
-              ...item,
+              name: getTranslatedText(item, "name"),
+              category: getTranslatedText(item, "category"),
+              subcategory: getTranslatedText(item, "subcategory"),
+              icon_url: item.icon_url || null,
               isStandard: true,
               createdBy: "system",
+              translations: item.translations || null,
             }));
           }
 
@@ -1083,9 +1119,13 @@ export default function useShoppingList() {
                 if (userData) {
                   userProducts = Object.entries(userData).map(([id, item]) => ({
                     id: `user_${id}`,
-                    ...item,
+                    name: getTranslatedText(item, "name"),
+                    category: getTranslatedText(item, "category"),
+                    subcategory: getTranslatedText(item, "subcategory"),
+                    icon_url: item.icon_url || null,
                     isStandard: false,
                     createdBy: user.uid,
+                    translations: item.translations || null,
                   }));
                 }
 
@@ -1123,7 +1163,7 @@ export default function useShoppingList() {
     } catch (error) {
       console.error("Error setting up Firebase listener:", error);
     }
-  }, [user]);
+  }, [user, i18n.language]); // Tilføj i18n.language som dependency
 
   useEffect(() => {
     if (!user || !currentListId) return;
@@ -1219,6 +1259,8 @@ export default function useShoppingList() {
     setNewItem,
     setShowResults,
     setShowListDropdown,
+    getAvailableCategories,
+    getCategoryOptions,
 
     setShowBottomSheet,
     setShowEditListModal,

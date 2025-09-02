@@ -61,11 +61,6 @@ export default function MembersAvatars({ members, maxVisible = 3 }) {
               }
               style={styles.avatarImage}
             />
-            {member.isOwner && (
-              <View style={styles.ownerIndicator}>
-                <Text style={styles.ownerIndicatorText}>👑</Text>
-              </View>
-            )}
           </TouchableOpacity>
         ))}
         {remainingCount > 0 && (
@@ -212,21 +207,5 @@ const styles = StyleSheet.create({
     fontFamily: "Baloo2-Bold",
     color: "#333",
     textAlign: "center",
-  },
-  ownerIndicator: {
-    position: "absolute",
-    bottom: -2,
-    right: -2,
-    backgroundColor: "#FFD700",
-    borderRadius: 8,
-    width: 16,
-    height: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#fff",
-  },
-  ownerIndicatorText: {
-    fontSize: 8,
   },
 });

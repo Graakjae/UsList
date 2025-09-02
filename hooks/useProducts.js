@@ -5,11 +5,12 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
 import { database } from "../firebase";
+import { getCategoriesForLanguage } from "../utils/shoppingUtils";
 import { useAuth } from "./useAuth";
 
 export default function useProducts() {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation(); // Tilføj i18n for at få adgang til nuværende sprog
   const [standardProducts, setStandardProducts] = useState([]);
   const [userProducts, setUserProducts] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -20,17 +21,51 @@ export default function useProducts() {
   const [productImage, setProductImage] = useState(null);
   const [uploading, setUploading] = useState(false);
 
-  const categoryOrder = {
-    "Frugt & Grønt": 1,
-    "Kød & Fisk": 2,
-    "Brød & Kager": 3,
-    Mejeri: 4,
-    Frost: 5,
-    Tørvarer: 6,
-    Drikkevarer: 7,
-    "Snacks & Slik": 8,
-    "Personlig Pleje": 9,
-    Husholdning: 10,
+  // Get category order based on current language
+  const getCategoryOrder = () => {
+    const categories = getCategoriesForLanguage(i18n.language);
+    const order = {};
+    categories.forEach((category, index) => {
+      order[category.label] = index + 1;
+    });
+    return order;
+  };
+
+  // Get available categories for current language
+  const getAvailableCategories = () => {
+    return getCategoriesForLanguage(i18n.language);
+  };
+
+  // Validate if category exists in current language
+  const isValidCategory = (category) => {
+    const availableCategories = getAvailableCategories();
+    return availableCategories.some((cat) => cat.label === category);
+  };
+
+  // Get category options for dropdown/selection
+  const getCategoryOptions = () => {
+    return getAvailableCategories().map((cat) => ({
+      label: cat.label,
+      value: cat.label,
+    }));
+  };
+
+  // Helper function til at hente oversat tekst
+  const getTranslatedText = (product, field) => {
+    const currentLanguage = i18n.language;
+
+    // Først prøv at hente fra oversættelser
+    if (product.translations && product.translations[currentLanguage]) {
+      return product.translations[currentLanguage][field] || "";
+    }
+
+    // Fallback til dansk hvis oversættelse ikke findes
+    if (product.translations && product.translations.da) {
+      return product.translations.da[field] || "";
+    }
+
+    // Fallback til original felt (for bagudkompatibilitet)
+    return product[field] || "";
   };
 
   // Load standard products
@@ -42,12 +77,13 @@ export default function useProducts() {
         if (data) {
           const itemsArray = Object.entries(data).map(([index, item]) => ({
             id: `standard_${index}`,
-            name: item.name,
-            category: item.category,
-            subcategory: item.subcategory || "",
+            name: getTranslatedText(item, "name"),
+            category: getTranslatedText(item, "category"),
+            subcategory: getTranslatedText(item, "subcategory"),
             icon_url: item.icon_url || null,
             isStandard: true,
             createdBy: "system",
+            translations: item.translations || null, // Behold oversættelser for fremtidig brug
           }));
           setStandardProducts(itemsArray);
         } else {
@@ -59,7 +95,7 @@ export default function useProducts() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [i18n.language]); // Tilføj i18n.language som dependency så produkterne opdateres når sproget skifter
 
   // Load user products
   useEffect(() => {
@@ -72,12 +108,13 @@ export default function useProducts() {
         if (data) {
           const itemsArray = Object.entries(data).map(([index, item]) => ({
             id: `user_${index}`,
-            name: item.name,
-            category: item.category,
-            subcategory: item.subcategory || "",
+            name: getTranslatedText(item, "name"),
+            category: getTranslatedText(item, "category"),
+            subcategory: getTranslatedText(item, "subcategory"),
             icon_url: item.icon_url || null,
             isStandard: false,
             createdBy: user.uid,
+            translations: item.translations || null, // Behold oversættelser for fremtidig brug
           }));
           setUserProducts(itemsArray);
         } else {
@@ -89,7 +126,7 @@ export default function useProducts() {
     });
 
     return () => unsubscribe();
-  }, [user?.uid]);
+  }, [user?.uid, i18n.language]); // Tilføj i18n.language som dependency
 
   const openAddModal = () => {
     setEditingProduct(null);
@@ -158,11 +195,36 @@ export default function useProducts() {
       icon_url: product.icon_url || null,
       createdBy: product.createdBy,
       isStandard: product.isStandard,
+      translations: product.translations || null,
     });
 
-    setProductName(product.name);
-    setProductCategory(product.category);
-    setProductSubcategory(product.subcategory || "");
+    // Hent oversat tekst for det nuværende sprog
+    const currentLanguage = i18n.language;
+    if (product.translations && product.translations[currentLanguage]) {
+      setProductName(
+        product.translations[currentLanguage].name || product.name
+      );
+      setProductCategory(
+        product.translations[currentLanguage].category || product.category
+      );
+      setProductSubcategory(
+        product.translations[currentLanguage].subcategory ||
+          product.subcategory ||
+          ""
+      );
+    } else if (product.translations && product.translations.da) {
+      // Fallback til dansk hvis oversættelse for nuværende sprog ikke findes
+      setProductName(product.translations.da.name || product.name);
+      setProductCategory(product.translations.da.category || product.category);
+      setProductSubcategory(
+        product.translations.da.subcategory || product.subcategory || ""
+      );
+    } else {
+      // Fallback til original felter
+      setProductName(product.name);
+      setProductCategory(product.category);
+      setProductSubcategory(product.subcategory || "");
+    }
     setProductImage(product.icon_url || null);
     setIsModalVisible(true);
   };
@@ -176,14 +238,35 @@ export default function useProducts() {
     setUploading(true);
     try {
       const productData = {
-        name: productName.trim(),
-        category: productCategory.trim(),
-        subcategory: productSubcategory.trim(),
+        translations: {
+          // Behold eksisterende oversættelser hvis vi redigerer
+          ...(editingProduct?.translations || {}),
+          // Altid inkluder dansk som fallback
+          da: {
+            name: productName.trim(),
+            category: productCategory.trim(),
+            subcategory: productSubcategory.trim(),
+          },
+          // Tilføj oversættelse for det aktuelle sprog hvis det ikke er dansk
+          ...(i18n.language !== "da"
+            ? {
+                [i18n.language]: {
+                  name: productName.trim(),
+                  category: productCategory.trim(),
+                  subcategory: productSubcategory.trim(),
+                },
+              }
+            : {}),
+        },
         icon_url: productImage || null,
         createdBy: user?.uid,
         isStandard: false,
         updatedAt: Date.now(),
       };
+
+      console.log("Saving product data:", JSON.stringify(productData, null, 2));
+      console.log("User UID:", user?.uid);
+      console.log("Current language:", i18n.language);
 
       if (editingProduct && editingProduct.id !== undefined) {
         // Extract the actual product ID from the combined ID
@@ -202,6 +285,11 @@ export default function useProducts() {
       setEditingProduct(null);
     } catch (error) {
       console.error("Error saving product:", error);
+      console.error("Error details:", {
+        message: error.message,
+        code: error.code,
+        stack: error.stack,
+      });
       Alert.alert(t("common.error"), t("products.saveError"));
     } finally {
       setUploading(false);
@@ -257,6 +345,7 @@ export default function useProducts() {
   };
 
   const getSortedProducts = (products) => {
+    const categoryOrder = getCategoryOrder();
     return [...products].sort((a, b) => {
       const categoryA = categoryOrder[a.category] || 999;
       const categoryB = categoryOrder[b.category] || 999;
@@ -292,5 +381,8 @@ export default function useProducts() {
     canDeleteProduct,
     getSortedProducts,
     chooseProductImage,
+    getAvailableCategories,
+    isValidCategory,
+    getCategoryOptions,
   };
 }

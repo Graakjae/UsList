@@ -50,7 +50,6 @@ export default function EditProfileModal({
         >
           <TouchableOpacity
             onPress={() => {
-              console.log("Image pressed, calling onChooseImage");
               onChooseImage();
             }}
             style={{ flex: 1 }}

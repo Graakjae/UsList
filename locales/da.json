@@ -106,7 +106,8 @@
     "selectCategory": "Vælg kategori",
     "saveError": "Kunne ikke gemme produktet",
     "deleteError": "Kunne ikke slette produktet",
-    "imageError": "Kunne ikke vælge billede"
+    "imageError": "Kunne ikke vælge billede",
+    "invalidCategory": "Ugyldig kategori"
   },
   "navigation": {
     "shoppingList": "Indkøbsliste",

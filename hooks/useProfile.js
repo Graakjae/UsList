@@ -75,9 +75,10 @@ export default function useProfile(user) {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        base64: true,
+        mediaTypes: "images",
         allowsEditing: true,
         quality: 0.3,
+        base64: true,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {

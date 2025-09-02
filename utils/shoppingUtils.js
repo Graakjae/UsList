@@ -78,11 +78,15 @@ export const getTranslatedCategoryName = (categoryKey, language = "da") => {
   return translations[categoryKey] || categoryKey;
 };
 
-// Sort items by category
-export const sortItemsByCategory = (items) => {
+// Sort items by category - now handles translated categories
+export const sortItemsByCategory = (items, language = "da") => {
   return [...items].sort((a, b) => {
-    const categoryA = categoryOrder[a.category] || 999;
-    const categoryB = categoryOrder[b.category] || 999;
+    // Get category key from translated category name
+    const categoryKeyA = getCategoryKeyFromLabel(a.category, language);
+    const categoryKeyB = getCategoryKeyFromLabel(b.category, language);
+
+    const categoryA = categoryOrder[categoryKeyA] || 999;
+    const categoryB = categoryOrder[categoryKeyB] || 999;
     return categoryA - categoryB;
   });
 };
