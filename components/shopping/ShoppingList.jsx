@@ -101,7 +101,7 @@ export default function ShoppingList({
                     styles.editInput,
                     {
                       color: item.color || "#333",
-                      fontFamily: item.font || "Baloo2-Bold",
+                      fontFamily: item.font || "Baloo2-Medium",
                     },
                   ]}
                   value={editingItemName}
@@ -141,7 +141,7 @@ export default function ShoppingList({
                   styles.itemText,
                   {
                     color: item.color || "#333",
-                    fontFamily: item.font || "Baloo2-Bold",
+                    fontFamily: item.font || "Baloo2-Medium",
                   },
                   item.completed && styles.completedText,
                 ]}
@@ -278,7 +278,7 @@ const styles = {
   },
   itemText: {
     fontSize: 16,
-    fontFamily: "Nunito-Bold",
+    fontFamily: "Nunito-Medium",
     color: "#333",
   },
   completedText: {
@@ -302,7 +302,7 @@ const styles = {
     fontSize: 18,
     color: "#555",
     textAlign: "center",
-    fontFamily: "Nunito-Bold",
+    fontFamily: "Nunito-Medium",
   },
   createListButton: {
     backgroundColor: "#FFC0CB",
@@ -313,7 +313,7 @@ const styles = {
   },
   createListButtonText: {
     fontSize: 16,
-    fontFamily: "Nunito-Bold",
+    fontFamily: "Nunito-Medium",
     color: "white",
   },
   editContainer: {

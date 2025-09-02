@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const fontOptions = [
-  { label: "Baloo2", value: "Baloo2-Bold", fontFamily: "Baloo2-Bold" },
+  { label: "Baloo2", value: "Baloo2-Medium", fontFamily: "Baloo2-Medium" },
   { label: "Nunito", value: "Nunito-Regular", fontFamily: "Nunito-Regular" },
   {
     label: "SpaceMono",
