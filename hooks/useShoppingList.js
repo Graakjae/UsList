@@ -1,57 +1,42 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-  get,
-  onValue,
-  push,
-  ref,
-  remove,
-  set,
-  update,
-} from "firebase/database";
+import { onValue, push, ref, remove, set, update } from "firebase/database";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Share } from "react-native";
+import { Alert } from "react-native";
 import { database } from "../firebase";
 import {
-  generateInviteLink as generateInviteLinkUtil,
   getCategoriesForLanguage,
-  getItemPath,
   getItemsPath,
   hasItems as hasItemsUtil,
   isItemCompleted,
   sortItemsByCategory,
 } from "../utils/shoppingUtils";
 import { useAuth } from "./useAuth";
+import useInviteSystem from "./useInviteSystem";
+import useListItems from "./useListItems";
+import useListMembers from "./useListMembers";
 
 export default function useShoppingList() {
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
-  // State
-  const [items, setItems] = useState([]);
+
+  // Core state
   const [newItem, setNewItem] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const [products, setProducts] = useState([]);
   const [lists, setLists] = useState([]);
-  const [sharedLists, setSharedLists] = useState([]);
   const [currentListId, setCurrentListId] = useState(null);
   const [listsLoading, setListsLoading] = useState(true);
   const [showListDropdown, setShowListDropdown] = useState(false);
 
+  // UI state
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [showEditListModal, setShowEditListModal] = useState(false);
   const [isCreatingList, setIsCreatingList] = useState(false);
   const [editListName, setEditListName] = useState("");
-  const [listMembers, setListMembers] = useState([]);
-  const [showMembersModal, setShowMembersModal] = useState(false);
-  const [showInviteCodeModal, setShowInviteCodeModal] = useState(false);
-  const [inviteCodeInput, setInviteCodeInput] = useState("");
   const [userListColor, setUserListColor] = useState("#333");
   const [userListFont, setUserListFont] = useState("Baloo2-Bold");
-  const [editingItemId, setEditingItemId] = useState(null);
-  const [editingItemName, setEditingItemName] = useState("");
-  const [editSearchResults, setEditSearchResults] = useState([]);
-  const [showEditResults, setShowEditResults] = useState(false);
 
   // Custom setCurrentListId that saves to AsyncStorage
   const setCurrentListIdWithSave = (listId) => {
@@ -101,11 +86,6 @@ export default function useShoppingList() {
     return product[field] || "";
   };
 
-  // Computed values using utility functions
-  const sortedItems = sortItemsByCategory(items, i18n.language);
-  const hasCompletedItems = isItemCompleted(items);
-  const hasItems = hasItemsUtil(items);
-
   // Get available categories for current language
   const getAvailableCategories = () => {
     return getCategoriesForLanguage(i18n.language);
@@ -127,7 +107,7 @@ export default function useShoppingList() {
     }
 
     // If no lists exist, return empty
-    if (lists.length === 0 && sharedLists.length === 0) {
+    if (lists.length === 0 && (inviteSystem?.sharedLists?.length || 0) === 0) {
       return "";
     }
 
@@ -138,35 +118,19 @@ export default function useShoppingList() {
     }
 
     // If not found in regular lists, check shared lists
-    const sharedList = sharedLists.find((list) => list.id === currentListId);
+    const sharedList = inviteSystem?.sharedLists?.find(
+      (list) => list.id === currentListId
+    );
     if (sharedList) {
-      return sharedList.name; // This now contains the actual name from the owner's list
+      return sharedList.name;
     }
 
     // If currentListId exists but no matching list found, show loading
-    // This prevents showing "Liste" during transitions
     if (currentListId) {
       return t("shopping.loading");
     }
 
     return "";
-  };
-
-  // Generate invite link using utility function
-  const generateInviteLink = () => {
-    return generateInviteLinkUtil(user, currentListId, getCurrentListName);
-  };
-
-  // Share list
-  const shareList = async () => {
-    try {
-      const inviteLink = generateInviteLink();
-      await Share.share({
-        message: `Hej! Du er inviteret til at deltage i min liste "${getCurrentListName()}". Klik på linket for at tilslutte dig: ${inviteLink}`,
-      });
-    } catch (error) {
-      console.error("Error sharing list:", error);
-    }
   };
 
   // Search function
@@ -182,233 +146,6 @@ export default function useShoppingList() {
       setSearchResults([]);
       setShowResults(false);
     }
-  };
-
-  // Search function for editing
-  const handleEditSearch = (text) => {
-    setEditingItemName(text);
-    if (text.length > 0) {
-      const filtered = products.filter((product) =>
-        product.name.toLowerCase().includes(text.toLowerCase())
-      );
-      setEditSearchResults(filtered);
-      setShowEditResults(true);
-    } else {
-      setEditSearchResults([]);
-      setShowEditResults(false);
-    }
-  };
-
-  // Select product from edit search results
-  const selectEditProduct = (product) => {
-    setEditingItemName(product.name);
-    setEditSearchResults([]);
-    setShowEditResults(false);
-  };
-
-  // Select product from search results
-  const selectProduct = (product) => {
-    if (!user || !currentListId) return;
-
-    try {
-      const itemsPath = getItemsPath(user, currentListId);
-      if (!itemsPath) return; // No valid path
-
-      const itemsRef = ref(database, itemsPath);
-      const newItemRef = push(itemsRef);
-      const itemData = {
-        name: product.name,
-        category: product.category,
-        subcategory: product.subcategory,
-        completed: false,
-        color: userListColor || "#333",
-        font: userListFont || "Baloo2-Bold",
-      };
-
-      // Only add icon_url if it exists and is not null/undefined
-      if (product.icon_url) {
-        itemData.icon_url = product.icon_url;
-      }
-
-      set(newItemRef, itemData)
-        .then(() => {
-          setNewItem("");
-          setShowResults(false);
-        })
-        .catch((error) => {
-          console.error("Error adding item:", error);
-        });
-    } catch (error) {
-      console.error("Error in selectProduct:", error);
-    }
-  };
-
-  // Add item
-  const addItem = () => {
-    if (!user || !newItem.trim() || !currentListId) return;
-
-    try {
-      const matchingProduct = products.find(
-        (product) => product.name.toLowerCase() === newItem.trim().toLowerCase()
-      );
-
-      const itemsPath = getItemsPath(user, currentListId);
-      if (!itemsPath) return; // No valid path
-
-      const itemsRef = ref(database, itemsPath);
-      const newItemRef = push(itemsRef);
-      const itemData = {
-        name: matchingProduct ? matchingProduct.name : newItem,
-        category: matchingProduct ? matchingProduct.category : "",
-        subcategory: matchingProduct ? matchingProduct.subcategory : "",
-        completed: false,
-        color: userListColor || "#333",
-        font: userListFont || "Baloo2-Bold",
-      };
-
-      // Only add icon_url if it exists and is not null/undefined
-      if (matchingProduct && matchingProduct.icon_url) {
-        itemData.icon_url = matchingProduct.icon_url;
-      }
-
-      set(newItemRef, itemData)
-        .then(() => {
-          setNewItem("");
-          setShowResults(false);
-        })
-        .catch((error) => {
-          console.error("Error adding item:", error);
-        });
-    } catch (error) {
-      console.error("Error in addItem:", error);
-    }
-  };
-
-  // Toggle item completion
-  const toggleItem = (id) => {
-    if (!user || !currentListId) return;
-
-    const itemPath = getItemPath(user, currentListId, id);
-    if (!itemPath) return; // No valid path
-
-    const itemRef = ref(database, itemPath);
-    const item = items.find((item) => item.id === id);
-    if (item) {
-      update(itemRef, {
-        completed: !item.completed,
-      });
-    }
-  };
-
-  // Start editing item name
-  const startEditingItem = (item) => {
-    setEditingItemId(item.id);
-    setEditingItemName(item.name);
-  };
-
-  // Save edited item name
-  const saveEditedItem = () => {
-    if (!user || !currentListId || !editingItemId || !editingItemName.trim())
-      return;
-
-    try {
-      const matchingProduct = products.find(
-        (product) =>
-          product.name.toLowerCase() === editingItemName.trim().toLowerCase()
-      );
-
-      const itemPath = getItemPath(user, currentListId, editingItemId);
-      if (!itemPath) return; // No valid path
-
-      const itemRef = ref(database, itemPath);
-      const updateData = {
-        name: matchingProduct ? matchingProduct.name : editingItemName.trim(),
-      };
-
-      // Only add category, subcategory, and icon_url if product matches
-      if (matchingProduct) {
-        updateData.category = matchingProduct.category || "";
-        updateData.subcategory = matchingProduct.subcategory || "";
-        if (matchingProduct.icon_url) {
-          updateData.icon_url = matchingProduct.icon_url;
-        }
-      } else {
-        // Remove category, subcategory, and icon_url if no matching product
-        updateData.category = "";
-        updateData.subcategory = "";
-        updateData.icon_url = null;
-      }
-
-      update(itemRef, updateData)
-        .then(() => {
-          setEditingItemId(null);
-          setEditingItemName("");
-          setEditSearchResults([]);
-          setShowEditResults(false);
-        })
-        .catch((error) => {
-          console.error("Error updating item name:", error);
-          Alert.alert(t("shopping.error"), t("shopping.errorUpdatingItemName"));
-        });
-    } catch (error) {
-      console.error("Error in saveEditedItem:", error);
-      Alert.alert(t("shopping.error"), t("shopping.errorUpdatingItemName"));
-    }
-  };
-
-  // Cancel editing item name
-  const cancelEditingItem = () => {
-    setEditingItemId(null);
-    setEditingItemName("");
-    setEditSearchResults([]);
-    setShowEditResults(false);
-  };
-
-  // Delete completed items
-  const deleteCompletedItems = () => {
-    if (!user || !currentListId) return;
-
-    Alert.alert(
-      t("shopping.deleteCompleted"),
-      t("shopping.deleteCompletedConfirm"),
-      [
-        { text: t("shopping.cancel"), style: "cancel" },
-        {
-          text: t("shopping.delete"),
-          style: "destructive",
-          onPress: () => {
-            const completedItems = items.filter((item) => item.completed);
-            completedItems.forEach((item) => {
-              const itemPath = getItemPath(user, currentListId, item.id);
-              if (itemPath) {
-                const itemRef = ref(database, itemPath);
-                remove(itemRef);
-              }
-            });
-          },
-        },
-      ]
-    );
-  };
-
-  // Delete all items
-  const deleteAllItems = () => {
-    if (!user || !currentListId) return;
-
-    Alert.alert(t("shopping.deleteAll"), t("shopping.deleteAllConfirm"), [
-      { text: t("shopping.cancel"), style: "cancel" },
-      {
-        text: t("shopping.delete"),
-        style: "destructive",
-        onPress: () => {
-          const itemsPath = getItemsPath(user, currentListId);
-          if (itemsPath) {
-            const itemsRef = ref(database, itemsPath);
-            remove(itemsRef);
-          }
-        },
-      },
-    ]);
   };
 
   // Add new list
@@ -475,14 +212,15 @@ export default function useShoppingList() {
               // Check if there are other lists available
               const remainingLists = lists.filter((l) => l.id !== listId);
               const hasOtherLists =
-                remainingLists.length > 0 || sharedLists.length > 0;
+                remainingLists.length > 0 ||
+                (inviteSystem?.sharedLists?.length || 0) > 0;
 
               if (hasOtherLists) {
                 // Select first available list
                 if (remainingLists.length > 0) {
                   setCurrentListIdWithSave(remainingLists[0].id);
-                } else if (sharedLists.length > 0) {
-                  setCurrentListIdWithSave(sharedLists[0].id);
+                } else if (inviteSystem?.sharedLists?.length > 0) {
+                  setCurrentListIdWithSave(inviteSystem.sharedLists[0].id);
                 }
               } else {
                 // No lists left, clear selection
@@ -532,8 +270,6 @@ export default function useShoppingList() {
             await update(listRef, {
               name: editListName.trim(),
             });
-
-            // No need to update shared_lists anymore since we fetch data dynamically
           }
         } else {
           // This is a regular list
@@ -555,205 +291,6 @@ export default function useShoppingList() {
     }
   };
 
-  // Select shared list
-  const selectSharedList = (sharedList) => {
-    setCurrentListIdWithSave(sharedList.id);
-    setShowListDropdown(false);
-  };
-
-  // Leave shared list
-  const leaveSharedList = (sharedList) => {
-    const action = sharedList.isOwner ? "slette" : "forlade";
-    const title = sharedList.isOwner
-      ? t("shopping.deleteList")
-      : t("shopping.leaveList");
-
-    Alert.alert(
-      title,
-      `Er du sikker på, at du vil ${action} "${sharedList.name}"?`,
-      [
-        { text: t("shopping.cancel"), style: "cancel" },
-        {
-          text: sharedList.isOwner ? t("shopping.delete") : t("shopping.leave"),
-          style: "destructive",
-          onPress: async () => {
-            try {
-              setListsLoading(true);
-
-              if (sharedList.isOwner) {
-                const listRef = ref(
-                  database,
-                  `users/${user.uid}/shoppingLists/${sharedList.originalId}`
-                );
-                await remove(listRef);
-              } else {
-                const memberRef = ref(
-                  database,
-                  `users/${sharedList.ownerId}/shoppingLists/${sharedList.originalId}/members/${user.uid}`
-                );
-                await remove(memberRef);
-              }
-
-              const sharedListRef = ref(
-                database,
-                `shared_lists/${user.uid}/${sharedList.id}`
-              );
-              await remove(sharedListRef);
-
-              if (currentListId === sharedList.id) {
-                // Check if there are other lists available
-                const remainingLists = lists.filter(
-                  (l) => l.id !== sharedList.originalId
-                );
-                const remainingSharedLists = sharedLists.filter(
-                  (l) => l.id !== sharedList.id
-                );
-                const hasOtherLists =
-                  remainingLists.length > 0 || remainingSharedLists.length > 0;
-
-                if (hasOtherLists) {
-                  // Select first available list
-                  if (remainingLists.length > 0) {
-                    setCurrentListIdWithSave(remainingLists[0].id);
-                  } else if (remainingSharedLists.length > 0) {
-                    setCurrentListIdWithSave(remainingSharedLists[0].id);
-                  }
-                } else {
-                  // No lists left, clear selection
-                  setCurrentListIdWithSave(null);
-                }
-              }
-            } catch (error) {
-              console.error("Error leaving/deleting shared list:", error);
-              Alert.alert("Fejl", `Kunne ikke ${action} listen`);
-              setListsLoading(false);
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  // Remove user from list
-  const removeUserFromList = (userId) => {
-    if (!user || !currentListId) return;
-
-    Alert.alert(t("shopping.removeUser"), t("shopping.removeUserConfirm"), [
-      { text: t("shopping.cancel"), style: "cancel" },
-      {
-        text: t("shopping.remove"),
-        style: "destructive",
-        onPress: async () => {
-          try {
-            const memberRef = ref(
-              database,
-              `users/${user.uid}/shoppingLists/${currentListId}/members/${userId}`
-            );
-            await remove(memberRef);
-          } catch (error) {
-            console.error("Error removing user:", error);
-            Alert.alert("Fejl", "Kunne ikke fjerne bruger");
-          }
-        },
-      },
-    ]);
-  };
-
-  // Handle manual invite code
-  const handleManualInviteCode = async () => {
-    if (!inviteCodeInput.trim()) return;
-
-    try {
-      const parts = inviteCodeInput.trim().split("_");
-      if (parts.length < 3) {
-        Alert.alert(t("shopping.error"), t("shopping.invalidInviteCode"));
-        return;
-      }
-
-      const [ownerName, listName, timestamp] = parts;
-
-      const cleanOwnerName = ownerName
-        .replace(/[^a-zA-Z0-9æøåÆØÅ\s-]/g, "")
-        .replace(/\s+/g, "-")
-        .toLowerCase();
-
-      const cleanListName = listName
-        .replace(/[^a-zA-Z0-9æøåÆØÅ\s-]/g, "")
-        .replace(/\s+/g, "-")
-        .toLowerCase();
-
-      const listRef = ref(
-        database,
-        `users/${user.uid}/shoppingLists/${cleanOwnerName}-${cleanListName}-${timestamp}`
-      );
-      const listSnapshot = await get(listRef);
-
-      if (!listSnapshot.exists()) {
-        Alert.alert(t("shopping.error"), t("shopping.listNotFound"));
-        return;
-      }
-
-      const listData = listSnapshot.val();
-
-      const membersRef = ref(
-        database,
-        `users/${user.uid}/shoppingLists/${cleanOwnerName}-${cleanListName}-${timestamp}/members`
-      );
-      const membersSnapshot = await get(membersRef);
-
-      if (membersSnapshot.exists() && membersSnapshot.val()[user.uid]) {
-        Alert.alert(t("shopping.info"), t("shopping.alreadyMember"));
-        setShowInviteCodeModal(false);
-        setInviteCodeInput("");
-        return;
-      }
-
-      const userMemberRef = ref(
-        database,
-        `users/${user.uid}/shoppingLists/${cleanOwnerName}-${cleanListName}-${timestamp}/members/${user.uid}`
-      );
-
-      await set(userMemberRef, {
-        email: user.email,
-        displayName: user.displayName || user.email,
-        joinedAt: Date.now(),
-      });
-
-      const sharedListRef = ref(
-        database,
-        `shared_lists/${user.uid}/${cleanOwnerName}-${cleanListName}-${timestamp}`
-      );
-      await set(sharedListRef, {
-        originalId: `${cleanOwnerName}-${cleanListName}-${timestamp}`,
-        ownerId: user.uid,
-        ownerName:
-          user.displayName || user.email?.split("@")[0] || "Ukendt bruger",
-        isShared: true,
-        isOwner: false,
-      });
-
-      Alert.alert(t("shopping.success"), t("shopping.joinedList"));
-      setShowInviteCodeModal(false);
-      setInviteCodeInput("");
-
-      setCurrentListIdWithSave(
-        `${cleanOwnerName}-${cleanListName}-${timestamp}`
-      );
-    } catch (error) {
-      console.error("Error handling invite code:", error);
-
-      let errorMessage = t("shopping.errorJoiningList");
-
-      if (error.message.includes("Permission denied")) {
-        errorMessage = t("shopping.errorJoiningListPermissionDenied");
-      } else if (error.message.includes("not found")) {
-        errorMessage = t("shopping.errorJoiningListNotFound");
-      }
-
-      Alert.alert(t("shopping.error"), errorMessage);
-    }
-  };
-
   // Bottom sheet functions
   const openBottomSheet = () => {
     setShowBottomSheet(true);
@@ -763,327 +300,35 @@ export default function useShoppingList() {
     setShowBottomSheet(false);
   };
 
-  // Load list members
-  const loadListMembers = () => {
-    if (!user || !currentListId) return;
-
-    try {
-      // Determine the correct path for members
-      const sharedList = sharedLists.find((list) => list.id === currentListId);
-      const isSharedList = !!sharedList;
-
-      const ownerId = isSharedList ? sharedList.ownerId : user.uid;
-      const listId = isSharedList ? sharedList.originalId : currentListId;
-
-      const membersRef = ref(
-        database,
-        `users/${ownerId}/shoppingLists/${listId}/members`
-      );
-
-      const unsubscribe = onValue(membersRef, async (snapshot) => {
-        const data = snapshot.val();
-        let membersArray = [];
-
-        if (data) {
-          // Fetch user data for all members
-          const membersWithData = await Promise.all(
-            Object.entries(data).map(async ([id, member]) => {
-              try {
-                // Get user data from database
-                const [displayNameSnapshot, photoURLSnapshot] =
-                  await Promise.all([
-                    get(ref(database, `users/${id}/displayName`)),
-                    get(ref(database, `users/${id}/photoURL`)),
-                  ]);
-
-                return {
-                  id,
-                  ...member,
-                  displayName: displayNameSnapshot.exists()
-                    ? displayNameSnapshot.val()
-                    : member.displayName || member.email || "Ukendt bruger",
-                  photoURL: photoURLSnapshot.exists()
-                    ? photoURLSnapshot.val()
-                    : member.photoURL || null,
-                };
-              } catch (error) {
-                console.error(`Error fetching user data for ${id}:`, error);
-                return {
-                  id,
-                  ...member,
-                  displayName:
-                    member.displayName || member.email || "Ukendt bruger",
-                  photoURL: member.photoURL || null,
-                };
-              }
-            })
-          );
-          membersArray = membersWithData;
-        }
-
-        // Add owner if not already present
-        const ownerExists = membersArray.some(
-          (member) => member.id === ownerId
-        );
-        if (!ownerExists) {
-          try {
-            // Get owner data from database using same logic as other members
-            const [ownerDisplayNameSnapshot, ownerPhotoURLSnapshot] =
-              await Promise.all([
-                get(ref(database, `users/${ownerId}/displayName`)),
-                get(ref(database, `users/${ownerId}/photoURL`)),
-              ]);
-
-            const ownerMember = {
-              id: ownerId,
-              displayName: ownerDisplayNameSnapshot.exists()
-                ? ownerDisplayNameSnapshot.val()
-                : isSharedList
-                ? sharedList.ownerName || ownerId || "Ukendt bruger"
-                : user.displayName ||
-                  user.email?.split("@")[0] ||
-                  ownerId ||
-                  "Ukendt bruger",
-              email: isSharedList ? "" : user.email || "",
-              photoURL: ownerPhotoURLSnapshot.exists()
-                ? ownerPhotoURLSnapshot.val()
-                : isSharedList
-                ? null
-                : user.photoURL || null,
-              isOwner: true,
-              joinedAt: isSharedList
-                ? sharedList.createdAt || Date.now()
-                : Date.now(),
-            };
-            membersArray.unshift(ownerMember);
-          } catch (error) {
-            console.error(`Error fetching owner data for ${ownerId}:`, error);
-            // Fallback to original logic if database fetch fails
-            const ownerMember = {
-              id: ownerId,
-              displayName: isSharedList
-                ? sharedList.ownerName || ownerId || "Ukendt bruger"
-                : user.displayName ||
-                  user.email?.split("@")[0] ||
-                  ownerId ||
-                  "Ukendt bruger",
-              email: isSharedList ? "" : user.email || "",
-              photoURL: isSharedList ? null : user.photoURL || null,
-              isOwner: true,
-              joinedAt: isSharedList
-                ? sharedList.createdAt || Date.now()
-                : Date.now(),
-            };
-            membersArray.unshift(ownerMember);
-          }
-        }
-        setListMembers(membersArray);
-      });
-
-      return unsubscribe;
-    } catch (error) {
-      console.error("Error loading list members:", error);
-    }
-  };
-
-  // Load shared lists
-  const loadSharedLists = () => {
+  // Load lists
+  const loadLists = () => {
     if (!user) return;
 
     try {
-      const sharedListsRef = ref(database, `shared_lists/${user.uid}`);
-      let listUnsubscribers = [];
-
-      const unsubscribe = onValue(sharedListsRef, (snapshot) => {
+      const listsRef = ref(database, `users/${user.uid}/shoppingLists`);
+      const listsUnsubscribe = onValue(listsRef, (snapshot) => {
         const data = snapshot.val();
-
-        // Clean up existing list listeners
-        listUnsubscribers.forEach((unsub) => unsub());
-        listUnsubscribers = [];
-
         if (data) {
-          // Set up listeners for each shared list to get real-time updates
-          Object.entries(data).forEach(([listId, listData]) => {
-            // Set up a listener for the actual list data
-            const actualListRef = ref(
-              database,
-              `users/${listData.ownerId}/shoppingLists/${listData.originalId}`
-            );
-
-            const listUnsubscribe = onValue(actualListRef, (listSnapshot) => {
-              if (listSnapshot.exists()) {
-                const actualListData = listSnapshot.val();
-
-                // Update the shared list with real data
-                const updatedSharedList = {
-                  id: listId,
-                  originalId: listData.originalId,
-                  ownerId: listData.ownerId,
-                  ownerName: listData.ownerName,
-                  name: actualListData.name,
-                  createdAt: actualListData.createdAt,
-                  isShared: true,
-                  isOwner: listData.isOwner,
-                };
-
-                // Update the sharedLists state
-                setSharedLists((prevLists) => {
-                  const existingIndex = prevLists.findIndex(
-                    (list) => list.id === listId
-                  );
-                  if (existingIndex >= 0) {
-                    // Update existing list
-                    const newLists = [...prevLists];
-                    newLists[existingIndex] = updatedSharedList;
-                    return newLists;
-                  } else {
-                    // Add new list
-                    return [...prevLists, updatedSharedList];
-                  }
-                });
-              } else {
-                // List no longer exists, remove it from sharedLists
-                setSharedLists((prevLists) =>
-                  prevLists.filter((list) => list.id !== listId)
-                );
-              }
-            });
-
-            listUnsubscribers.push(listUnsubscribe);
-          });
+          const listsArray = Object.entries(data).map(([id, list]) => ({
+            id,
+            ...list,
+          }));
+          setLists(listsArray);
         } else {
-          setSharedLists([]);
+          setLists([]);
+          setCurrentListIdWithSave(null);
         }
+        setListsLoading(false);
       });
 
-      // Return cleanup function that cleans up both the main listener and all list listeners
-      return () => {
-        unsubscribe();
-        listUnsubscribers.forEach((unsub) => unsub());
-      };
+      return listsUnsubscribe;
     } catch (error) {
-      console.error("Error in loadSharedLists:", error);
+      console.error("Error loading lists:", error);
     }
   };
 
-  // Effects
-  useEffect(() => {
-    if (!user) return;
-
-    // Load last selected list
-    const loadLastList = async () => {
-      const lastListId = await loadLastSelectedList();
-      if (lastListId) {
-        setCurrentListId(lastListId);
-      }
-    };
-    loadLastList();
-
-    const listsRef = ref(database, `users/${user.uid}/shoppingLists`);
-    const listsUnsubscribe = onValue(listsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const listsArray = Object.entries(data).map(([id, list]) => ({
-          id,
-          ...list,
-        }));
-        setLists(listsArray);
-      } else {
-        // No lists exist - this is now allowed
-        setLists([]);
-        setCurrentListIdWithSave(null);
-      }
-      setListsLoading(false);
-    });
-
-    const sharedListsUnsubscribe = loadSharedLists();
-
-    return () => {
-      listsUnsubscribe();
-      if (sharedListsUnsubscribe) {
-        sharedListsUnsubscribe();
-      }
-    };
-  }, [user]);
-
-  // Auto-select first available list if no list is currently selected
-  useEffect(() => {
-    if (
-      !listsLoading &&
-      !currentListId &&
-      (lists.length > 0 || sharedLists.length > 0)
-    ) {
-      // First try to load the last selected list
-      const loadLastList = async () => {
-        setListsLoading(true);
-
-        const lastListId = await loadLastSelectedList();
-        if (lastListId) {
-          // Check if the last selected list still exists
-          const lastListExists =
-            lists.some((list) => list.id === lastListId) ||
-            sharedLists.some((list) => list.id === lastListId);
-          if (lastListExists) {
-            setCurrentListIdWithSave(lastListId);
-            // Don't set loading to false here - let the main useEffect handle it
-            return;
-          }
-        }
-
-        // If no last list or it doesn't exist, select first available list
-        if (lists.length > 0) {
-          // First priority: user's own lists
-          setCurrentListIdWithSave(lists[0].id);
-        } else if (sharedLists.length > 0) {
-          // Second priority: shared lists
-          setCurrentListIdWithSave(sharedLists[0].id);
-        }
-
-        // Don't set loading to false here - let the main useEffect handle it
-      };
-
-      loadLastList();
-    }
-  }, [listsLoading, currentListId, lists, sharedLists]);
-
-  // Reset loading when user changes
-  useEffect(() => {
-    if (user) {
-      setListsLoading(true);
-    }
-  }, [user]);
-
-  // Set loading to false when a list is selected and exists
-  useEffect(() => {
-    if (currentListId && listsLoading) {
-      const listExists =
-        lists.some((list) => list.id === currentListId) ||
-        sharedLists.some((list) => list.id === currentListId);
-
-      if (listExists) {
-        setListsLoading(false);
-      }
-    }
-  }, [currentListId, lists, sharedLists, listsLoading]);
-
-  useEffect(() => {
-    if (user && currentListId && (lists.length > 0 || sharedLists.length > 0)) {
-      loadListMembers();
-    }
-  }, [user, currentListId, lists, sharedLists]);
-
-  useEffect(() => {
-    if (
-      showBottomSheet &&
-      user &&
-      currentListId &&
-      (lists.length > 0 || sharedLists.length > 0)
-    ) {
-      loadListMembers();
-    }
-  }, [showBottomSheet, user, currentListId, lists, sharedLists]);
-
-  useEffect(() => {
+  // Load products
+  const loadProducts = () => {
     try {
       // Load standard products
       const standardProductsRef = ref(database, "standard_products");
@@ -1163,41 +408,10 @@ export default function useShoppingList() {
     } catch (error) {
       console.error("Error setting up Firebase listener:", error);
     }
-  }, [user, i18n.language]); // Tilføj i18n.language som dependency
+  };
 
-  useEffect(() => {
-    if (!user || !currentListId) return;
-
-    try {
-      const itemsPath = getItemsPath(user, currentListId);
-      if (!itemsPath) return; // No valid path
-
-      const itemsRef = ref(database, itemsPath);
-
-      onValue(
-        itemsRef,
-        (snapshot) => {
-          const data = snapshot.val();
-          if (data) {
-            const itemsArray = Object.entries(data).map(([id, item]) => ({
-              id,
-              ...item,
-            }));
-            setItems(itemsArray);
-          } else {
-            setItems([]);
-          }
-        },
-        (error) => {
-          console.error("Firebase listener error:", error);
-        }
-      );
-    } catch (error) {
-      console.error("Error setting up Firebase listener:", error);
-    }
-  }, [user, currentListId]);
-
-  useEffect(() => {
+  // Load user settings
+  const loadUserSettings = () => {
     if (user) {
       const colorRef = ref(database, `users/${user.uid}/settings/listColor`);
       const unsubscribeColor = onValue(colorRef, (snapshot) => {
@@ -1220,35 +434,277 @@ export default function useShoppingList() {
         unsubscribeFont();
       };
     }
+  };
+
+  // Initialize other hooks first
+  const inviteSystem = useInviteSystem(
+    currentListId,
+    getCurrentListName,
+    lists,
+    setCurrentListIdWithSave
+  );
+
+  const listMembers = useListMembers(
+    currentListId,
+    inviteSystem?.sharedLists || []
+  );
+  const listItems = useListItems(
+    currentListId,
+    products,
+    userListColor,
+    userListFont
+  );
+
+  // Select product from search results
+  const selectProduct = (product) => {
+    if (!user || !currentListId) return;
+
+    try {
+      const itemsPath = getItemsPath(user, currentListId);
+      if (!itemsPath) return; // No valid path
+
+      const itemsRef = ref(database, itemsPath);
+      const newItemRef = push(itemsRef);
+      const itemData = {
+        name: product.name,
+        category: product.category,
+        subcategory: product.subcategory,
+        completed: false,
+        color: userListColor || "#333",
+        font: userListFont || "Baloo2-Bold",
+      };
+
+      // Only add icon_url if it exists and is not null/undefined
+      if (product.icon_url) {
+        itemData.icon_url = product.icon_url;
+      }
+
+      set(newItemRef, itemData)
+        .then(() => {
+          setNewItem("");
+          setShowResults(false);
+        })
+        .catch((error) => {
+          console.error("Error adding item:", error);
+        });
+    } catch (error) {
+      console.error("Error in selectProduct:", error);
+    }
+  };
+  const addItem = () => {
+    if (!user || !newItem.trim() || !currentListId) return;
+
+    try {
+      const matchingProduct = products.find(
+        (product) => product.name.toLowerCase() === newItem.trim().toLowerCase()
+      );
+
+      const itemsPath = getItemsPath(user, currentListId);
+      if (!itemsPath) return; // No valid path
+
+      const itemsRef = ref(database, itemsPath);
+      const newItemRef = push(itemsRef);
+      const itemData = {
+        name: matchingProduct ? matchingProduct.name : newItem,
+        category: matchingProduct ? matchingProduct.category : "",
+        subcategory: matchingProduct ? matchingProduct.subcategory : "",
+        completed: false,
+        color: userListColor || "#333",
+        font: userListFont || "Baloo2-Bold",
+      };
+
+      // Only add icon_url if it exists and is not null/undefined
+      if (matchingProduct && matchingProduct.icon_url) {
+        itemData.icon_url = matchingProduct.icon_url;
+      }
+
+      set(newItemRef, itemData)
+        .then(() => {
+          setNewItem("");
+          setShowResults(false);
+        })
+        .catch((error) => {
+          console.error("Error adding item:", error);
+        });
+    } catch (error) {
+      console.error("Error in addItem:", error);
+    }
+  };
+
+  // Effects
+  useEffect(() => {
+    if (!user) return;
+
+    // Load last selected list
+    const loadLastList = async () => {
+      const lastListId = await loadLastSelectedList();
+      if (lastListId) {
+        setCurrentListId(lastListId);
+      }
+    };
+    loadLastList();
+
+    const listsUnsubscribe = loadLists();
+    const productsUnsubscribe = loadProducts();
+    const settingsUnsubscribe = loadUserSettings();
+    const sharedListsUnsubscribe = inviteSystem.loadSharedLists();
+
+    return () => {
+      if (listsUnsubscribe) listsUnsubscribe();
+      if (productsUnsubscribe) productsUnsubscribe();
+      if (settingsUnsubscribe) settingsUnsubscribe();
+      if (sharedListsUnsubscribe) sharedListsUnsubscribe();
+    };
   }, [user]);
 
+  // Auto-select first available list if no list is currently selected
+  useEffect(() => {
+    if (
+      !listsLoading &&
+      !currentListId &&
+      (lists.length > 0 || (inviteSystem?.sharedLists?.length || 0) > 0)
+    ) {
+      // First try to load the last selected list
+      const loadLastList = async () => {
+        setListsLoading(true);
+
+        const lastListId = await loadLastSelectedList();
+        if (lastListId) {
+          // Check if the last selected list still exists
+          const lastListExists =
+            lists.some((list) => list.id === lastListId) ||
+            inviteSystem?.sharedLists?.some((list) => list.id === lastListId) ||
+            false;
+          if (lastListExists) {
+            setCurrentListIdWithSave(lastListId);
+            return;
+          }
+        }
+
+        // If no last list or it doesn't exist, select first available list
+        if (lists.length > 0) {
+          // First priority: user's own lists
+          setCurrentListIdWithSave(lists[0].id);
+        } else if (inviteSystem?.sharedLists?.length > 0) {
+          // Second priority: shared lists
+          setCurrentListIdWithSave(inviteSystem.sharedLists[0].id);
+        }
+      };
+
+      loadLastList();
+    }
+  }, [listsLoading, currentListId, lists, inviteSystem?.sharedLists]);
+
+  // Reset loading when user changes
+  useEffect(() => {
+    if (user) {
+      setListsLoading(true);
+    }
+  }, [user]);
+
+  // Set loading to false when a list is selected and exists
+  useEffect(() => {
+    if (currentListId && listsLoading) {
+      const listExists =
+        lists.some((list) => list.id === currentListId) ||
+        inviteSystem?.sharedLists?.some((list) => list.id === currentListId) ||
+        false;
+
+      if (listExists) {
+        setListsLoading(false);
+      }
+    }
+  }, [currentListId, lists, inviteSystem?.sharedLists, listsLoading]);
+
+  // Load list members when currentListId changes
+  useEffect(() => {
+    if (
+      user &&
+      currentListId &&
+      (lists.length > 0 || (inviteSystem?.sharedLists?.length || 0) > 0)
+    ) {
+      listMembers.loadListMembers();
+    }
+  }, [user, currentListId, lists, inviteSystem?.sharedLists]);
+
+  // Load list members when bottom sheet opens
+  useEffect(() => {
+    if (
+      showBottomSheet &&
+      user &&
+      currentListId &&
+      (lists.length > 0 || (inviteSystem?.sharedLists?.length || 0) > 0)
+    ) {
+      listMembers.loadListMembers();
+    }
+  }, [showBottomSheet, user, currentListId, lists, inviteSystem?.sharedLists]);
+
+  // Load items when currentListId changes
+  useEffect(() => {
+    if (!user || !currentListId) return;
+
+    try {
+      const itemsPath = getItemsPath(user, currentListId);
+      if (!itemsPath) return; // No valid path
+
+      const itemsRef = ref(database, itemsPath);
+
+      onValue(
+        itemsRef,
+        (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            const itemsArray = Object.entries(data).map(([id, item]) => ({
+              id,
+              ...item,
+            }));
+            listItems.setItems(itemsArray);
+          } else {
+            listItems.setItems([]);
+          }
+        },
+        (error) => {
+          console.error("Firebase listener error:", error);
+        }
+      );
+    } catch (error) {
+      console.error("Error setting up Firebase listener:", error);
+    }
+  }, [user, currentListId]);
+
+  // Computed values
+  const sortedItems = sortItemsByCategory(listItems.items, i18n.language);
+  const hasCompletedItems = isItemCompleted(listItems.items);
+  const hasItems = hasItemsUtil(listItems.items);
+
   return {
-    // State
-    items,
+    // Core state
     newItem,
+    setNewItem,
     searchResults,
+    setSearchResults,
     showResults,
+    setShowResults,
     products,
     lists,
-    sharedLists,
     currentListId,
-    showListDropdown,
-
-    showBottomSheet,
-    showEditListModal,
-    isCreatingList,
-    editListName,
-    listMembers,
-    showMembersModal,
-    showInviteCodeModal,
-    inviteCodeInput,
-    userListColor,
-    userListFont,
     listsLoading,
-    editingItemId,
-    editingItemName,
-    editSearchResults,
-    showEditResults,
+    showListDropdown,
+    setShowListDropdown,
+
+    // UI state
+    showBottomSheet,
+    setShowBottomSheet,
+    showEditListModal,
+    setShowEditListModal,
+    isCreatingList,
+    setIsCreatingList,
+    editListName,
+    setEditListName,
+    userListColor,
+    setUserListColor,
+    userListFont,
+    setUserListFont,
 
     // Computed values
     sortedItems,
@@ -1256,56 +712,23 @@ export default function useShoppingList() {
     hasItems,
 
     // Functions
-    setNewItem,
-    setShowResults,
-    setShowListDropdown,
     getAvailableCategories,
     getCategoryOptions,
-
-    setShowBottomSheet,
-    setShowEditListModal,
-    setIsCreatingList,
-    setEditListName,
-    setShowMembersModal,
-    setShowInviteCodeModal,
-    setInviteCodeInput,
-    setUserListColor,
-    setUserListFont,
-    setListsLoading,
-    setEditingItemId,
-    setEditingItemName,
-    setEditSearchResults,
-    setShowEditResults,
-
     handleSearch,
-    handleEditSearch,
     selectProduct,
-    selectEditProduct,
     addItem,
-    toggleItem,
-    startEditingItem,
-    saveEditedItem,
-    cancelEditingItem,
-    deleteCompletedItems,
-    deleteAllItems,
     addNewList,
     handleCreateNewList,
     deleteList,
     saveListName,
-    selectSharedList,
-    leaveSharedList,
-    removeUserFromList,
-    handleManualInviteCode,
-
-    shareList,
-
     openBottomSheet,
     closeBottomSheet,
-
     getCurrentListName,
-    generateInviteLink,
-    setCurrentListIdWithSave: (() => {
-      return setCurrentListIdWithSave;
-    })(),
+    setCurrentListIdWithSave,
+
+    // Spread other hooks
+    ...inviteSystem,
+    ...listMembers,
+    ...listItems,
   };
 }

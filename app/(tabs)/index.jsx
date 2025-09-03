@@ -5,6 +5,7 @@ import ShoppingList from "@/components/shopping/ShoppingList";
 import ShoppingModals from "@/components/shopping/ShoppingModals";
 import { useAuth } from "@/hooks/useAuth";
 import useShoppingList from "@/hooks/useShoppingList";
+
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -33,11 +34,8 @@ export default function ShoppingScreen() {
     isCreatingList,
     editListName,
     listMembers,
-    showQRModal,
-    qrCodeData,
     showMembersModal,
     showInviteCodeModal,
-    inviteCodeInput,
     editingItemId,
     editingItemName,
 
@@ -46,21 +44,14 @@ export default function ShoppingScreen() {
     hasCompletedItems,
     hasItems,
 
-    // Refs and animations
-    qrCodeRef,
-    qrModalOpacity,
-
     // Functions
     setShowListDropdown,
     setShowBottomSheet,
     setShowEditListModal,
     setIsCreatingList,
     setEditListName,
-    setShowQRModal,
-    setQrCodeData,
     setShowMembersModal,
     setShowInviteCodeModal,
-    setInviteCodeInput,
     setCurrentListIdWithSave,
     setEditingItemName,
 
@@ -82,11 +73,6 @@ export default function ShoppingScreen() {
     selectSharedList,
     leaveSharedList,
     removeUserFromList,
-    handleManualInviteCode,
-
-    closeQRModal,
-    saveQRCodeToGallery,
-    shareQRCode,
 
     openBottomSheet,
     closeBottomSheet,
@@ -167,8 +153,6 @@ export default function ShoppingScreen() {
             setShowEditListModal={setShowEditListModal}
             isCreatingList={isCreatingList}
             setIsCreatingList={setIsCreatingList}
-            showQRModal={showQRModal}
-            setShowQRModal={setShowQRModal}
             showMembersModal={showMembersModal}
             setShowMembersModal={setShowMembersModal}
             showInviteCodeModal={showInviteCodeModal}
@@ -176,27 +160,17 @@ export default function ShoppingScreen() {
             // Modal data
             editListName={editListName}
             setEditListName={setEditListName}
-            qrCodeData={qrCodeData}
-            setQrCodeData={setQrCodeData}
             listMembers={listMembers}
-            inviteCodeInput={inviteCodeInput}
-            setInviteCodeInput={setInviteCodeInput}
             // Functions
             addNewList={addNewList}
             saveListName={saveListName}
             deleteList={deleteList}
-            closeQRModal={closeQRModal}
-            saveQRCodeToGallery={saveQRCodeToGallery}
-            shareQRCode={shareQRCode}
             removeUserFromList={removeUserFromList}
-            handleManualInviteCode={handleManualInviteCode}
             openBottomSheet={openBottomSheet}
             closeBottomSheet={closeBottomSheet}
             // Other props
             currentListId={currentListId}
             getCurrentListName={getCurrentListName}
-            qrCodeRef={qrCodeRef}
-            qrModalOpacity={qrModalOpacity}
             user={user}
             lists={lists}
             sharedLists={sharedLists}

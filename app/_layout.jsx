@@ -66,8 +66,6 @@ function RootLayoutNav() {
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="invite/[code]" />
-        <Stack.Screen name="invite/[inviteCode]" />
         <Stack.Screen name="invite/[ownerName]/[listName]/[timestamp]" />
         <Stack.Screen name="login" />
         <Stack.Screen name="signup" />

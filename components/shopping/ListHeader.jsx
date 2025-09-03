@@ -99,7 +99,10 @@ export default function ListHeader({
                         ? [styles.dropdownItemSelected, styles.dropdownItem]
                         : styles.dropdownItem
                     }
-                    onPress={() => selectSharedList(sharedList)}
+                    onPress={() => {
+                      selectSharedList(sharedList);
+                      setShowListDropdown(false);
+                    }}
                   >
                     <View style={styles.sharedListItem}>
                       <Text
