@@ -1,8 +1,8 @@
 import DeleteButtons from "@/components/shopping/DeleteButtons";
 import ItemInput from "@/components/shopping/ItemInput";
 import ListHeader from "@/components/shopping/ListHeader";
-import Modals from "@/components/shopping/Modals";
 import ShoppingList from "@/components/shopping/ShoppingList";
+import ShoppingModals from "@/components/shopping/ShoppingModals";
 import { useAuth } from "@/hooks/useAuth";
 import useShoppingList from "@/hooks/useShoppingList";
 import {
@@ -159,7 +159,7 @@ export default function ShoppingScreen() {
             currentListId={currentListId}
           />
 
-          <Modals
+          <ShoppingModals
             // Modal states
             showBottomSheet={showBottomSheet}
             setShowBottomSheet={setShowBottomSheet}

@@ -19,7 +19,7 @@ import {
 } from "react-native";
 import { useAuth } from "../../hooks/useAuth";
 
-export default function Modals({
+export default function ShoppingModals({
   // Modal states
   showBottomSheet,
   showEditListModal,
