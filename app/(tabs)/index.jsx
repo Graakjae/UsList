@@ -6,13 +6,7 @@ import ShoppingModals from "@/components/shopping/ShoppingModals";
 import { useAuth } from "@/hooks/useAuth";
 import useShoppingList from "@/hooks/useShoppingList";
 
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  View,
-} from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 export default function ShoppingScreen() {
   const { user } = useAuth();
@@ -82,11 +76,7 @@ export default function ShoppingScreen() {
   } = useShoppingList();
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
-    >
+    <View style={styles.container}>
       {listsLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FFC0CB" />
@@ -116,6 +106,7 @@ export default function ShoppingScreen() {
             searchResults={searchResults}
             selectProduct={selectProduct}
             currentListId={currentListId}
+            isEditing={editingItemId !== null}
           />
 
           <View style={styles.contentContainer}>
@@ -178,7 +169,7 @@ export default function ShoppingScreen() {
           />
         </>
       )}
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 

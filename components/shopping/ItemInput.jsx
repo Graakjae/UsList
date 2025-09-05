@@ -16,6 +16,7 @@ export default function ItemInput({
   searchResults,
   selectProduct,
   currentListId,
+  isEditing,
 }) {
   const { t } = useTranslation();
 
@@ -30,7 +31,9 @@ export default function ItemInput({
           onSubmitEditing={addItem}
           blurOnSubmit={false}
           returnKeyType="done"
-          editable={!!currentListId}
+          editable={!isEditing}
+          autoFocus={false}
+          focusable={!isEditing}
         />
         <TouchableOpacity
           style={
@@ -39,7 +42,7 @@ export default function ItemInput({
               : styles.disabledAddButton
           }
           onPress={addItem}
-          disabled={!currentListId || !newItem.trim()}
+          disabled={!currentListId || !newItem.trim() || isEditing}
         >
           <Text style={styles.addButtonText}>+</Text>
         </TouchableOpacity>
