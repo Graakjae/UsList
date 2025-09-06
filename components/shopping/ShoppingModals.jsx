@@ -150,6 +150,7 @@ export default function ShoppingModals({
           onChangeText={setEditListName}
           placeholder={t("shopping.listName")}
           autoFocus={isCreatingList}
+          maxLength={30}
         />
       </Modal>
 

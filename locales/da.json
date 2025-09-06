@@ -81,7 +81,8 @@
     "loading": "Indlæser...",
     "noLists": "Du har ingen lister",
     "createListToStart": "Opret en liste for at komme i gang",
-    "createList": "Opret liste"
+    "createList": "Opret liste",
+    "charactersRemaining": "tegn tilbage"
   },
   "products": {
     "title": "Administrer produkter",

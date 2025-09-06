@@ -81,7 +81,8 @@
     "loading": "Loading...",
     "noLists": "You have no lists",
     "createListToStart": "Create a list to get started",
-    "createList": "Create list"
+    "createList": "Create list",
+    "charactersRemaining": "characters remaining"
   },
   "products": {
     "title": "Manage Products",

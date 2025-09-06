@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, TextInput } from "react-native";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 
 export default function Input({
   value,
@@ -12,40 +12,54 @@ export default function Input({
   autoFocus = false,
   autoCapitalize = "none",
   style,
+  maxLength,
   ...props
 }) {
   const [isFocused, setIsFocused] = useState(false);
-
   return (
-    <TextInput
-      style={[
-        styles.input,
-        !editable && styles.disabledInput,
-        isFocused && editable && styles.inputFocused,
-        style,
-      ]}
-      value={value}
-      onChangeText={onChangeText}
-      placeholder={placeholder}
-      onSubmitEditing={onSubmitEditing}
-      blurOnSubmit={blurOnSubmit}
-      returnKeyType={returnKeyType}
-      editable={editable}
-      autoFocus={autoFocus}
-      autoCapitalize={autoCapitalize}
-      onFocus={() => setIsFocused(true)}
-      onBlur={() => setIsFocused(false)}
-      {...props}
-    />
+    <View style={styles.inputContainer}>
+      <TextInput
+        style={[
+          styles.input,
+          !editable && styles.disabledInput,
+          isFocused && editable && styles.inputFocused,
+          style,
+        ]}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        onSubmitEditing={onSubmitEditing}
+        blurOnSubmit={blurOnSubmit}
+        returnKeyType={returnKeyType}
+        editable={editable}
+        autoFocus={autoFocus}
+        autoCapitalize={autoCapitalize}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        maxLength={maxLength}
+        {...props}
+      />
+
+      {value.length > maxLength - 10 && (
+        <Text style={styles.charCounterInInput}>
+          {value.length} / {maxLength}
+        </Text>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  inputContainer: {
+    marginBottom: 10,
+    position: "relative",
+  },
   input: {
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 8,
     padding: 12,
+    paddingRight: 40,
     fontFamily: "Nunito-Regular",
     fontSize: 16,
     backgroundColor: "#fff",
@@ -58,5 +72,14 @@ const styles = StyleSheet.create({
   },
   inputFocused: {
     borderColor: "#FFC0CB",
+  },
+  charCounterInInput: {
+    position: "absolute",
+    right: 12,
+    top: 12,
+    fontSize: 12,
+    fontFamily: "Nunito-Regular",
+    color: "#999",
+    backgroundColor: "transparent",
   },
 });

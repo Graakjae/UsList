@@ -19,22 +19,31 @@ export default function ItemInput({
   isEditing,
 }) {
   const { t } = useTranslation();
+  const MAX_LENGTH = 50;
 
   return (
     <>
       <View style={styles.inputContainer}>
-        <TextInput
-          style={currentListId ? styles.input : styles.disabledInput}
-          value={newItem}
-          onChangeText={handleSearch}
-          placeholder={t("shopping.addItem")}
-          onSubmitEditing={addItem}
-          blurOnSubmit={false}
-          returnKeyType="done"
-          editable={!isEditing}
-          autoFocus={false}
-          focusable={!isEditing}
-        />
+        <View style={styles.inputWrapper}>
+          <TextInput
+            style={currentListId ? styles.input : styles.disabledInput}
+            value={newItem}
+            onChangeText={handleSearch}
+            placeholder={t("shopping.addItem")}
+            onSubmitEditing={addItem}
+            blurOnSubmit={false}
+            returnKeyType="done"
+            editable={!isEditing}
+            autoFocus={false}
+            focusable={!isEditing}
+            maxLength={MAX_LENGTH}
+          />
+          {newItem.length > 40 && (
+            <Text style={styles.charCounterInInput}>
+              {newItem.length} / {MAX_LENGTH}
+            </Text>
+          )}
+        </View>
         <TouchableOpacity
           style={
             currentListId && newItem.trim()
@@ -90,23 +99,26 @@ const styles = {
     flexDirection: "row",
     marginBottom: 20,
   },
-  input: {
+  inputWrapper: {
     flex: 1,
+    position: "relative",
+    marginRight: 10,
+  },
+  input: {
     borderWidth: 2,
     borderColor: "#FFC0CB",
     borderRadius: 8,
     padding: 12,
-    marginRight: 10,
+    paddingRight: 58,
     fontFamily: "Nunito-Regular",
     fontSize: 16,
   },
   disabledInput: {
-    flex: 1,
     borderWidth: 2,
     borderColor: "#ccc",
     borderRadius: 8,
     padding: 12,
-    marginRight: 10,
+    paddingRight: 40,
     fontFamily: "Nunito-Regular",
     fontSize: 16,
     backgroundColor: "#f0f0f0",
@@ -180,5 +192,18 @@ const styles = {
     fontSize: 16,
     fontFamily: "Nunito-Regular",
     color: "#666",
+  },
+  charCounterInInput: {
+    position: "absolute",
+    right: 12,
+    top: 16,
+    fontSize: 12,
+    fontFamily: "Nunito-Regular",
+    color: "#999",
+    backgroundColor: "transparent",
+  },
+  charCounterWarning: {
+    color: "#ff6b6b",
+    fontWeight: "bold",
   },
 };
