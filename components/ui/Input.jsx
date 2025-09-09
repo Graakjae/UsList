@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     borderRadius: 8,
     padding: 12,
-    paddingRight: 40,
+    paddingRight: 58,
     fontFamily: "Nunito-Regular",
     fontSize: 16,
     backgroundColor: "#fff",
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
   charCounterInInput: {
     position: "absolute",
     right: 12,
-    top: 12,
+    top: 16,
     fontSize: 12,
     fontFamily: "Nunito-Regular",
     color: "#999",

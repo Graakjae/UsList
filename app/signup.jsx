@@ -66,6 +66,7 @@ export default function SignupScreen() {
             value={name}
             onChangeText={setName}
             editable={!isSubmitting}
+            maxLength={50}
           />
           <Input
             placeholder={t("auth.email")}

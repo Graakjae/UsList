@@ -73,6 +73,7 @@ export default function EditProfileModal({
             value={newDisplayName}
             onChangeText={setNewDisplayName}
             placeholder={t("profile.yourName")}
+            maxLength={50}
           />
         </View>
       </View>
