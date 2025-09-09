@@ -35,7 +35,7 @@ export default function ListHeader({
             style={styles.listSelector}
             onPress={() => setShowListDropdown(!showListDropdown)}
           >
-            <Text style={styles.title}>
+            <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
               {hasLists ? currentListName : t("shopping.noLists")}
             </Text>
             <FontAwesomeIcon icon={faChevronDown} size={16} color="#333" />
@@ -175,9 +175,10 @@ const styles = {
     borderRadius: 20,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontFamily: "Baloo2-Bold",
     color: "#333",
+    maxWidth: "90%",
   },
   titleContainer: {
     flex: 1,
