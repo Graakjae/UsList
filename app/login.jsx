@@ -2,7 +2,14 @@ import Input from "@/components/ui/Input";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../hooks/useAuth";
 
@@ -54,7 +61,12 @@ export default function LoginScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.content}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.header}>
           <Text style={styles.title}>{t("auth.welcome")}</Text>
           <Text style={styles.appName}>{t("auth.appName")}</Text>
@@ -119,7 +131,7 @@ export default function LoginScreen() {
             <Text style={styles.anonymousButtonText}>Fortsæt som gæst</Text>
           </TouchableOpacity>
         </View> */}
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -129,11 +141,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
-  content: {
+  scrollView: {
     flex: 1,
+  },
+  content: {
+    flexGrow: 1,
     justifyContent: "center",
     paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingBottom: 300,
+    paddingTop: 120,
+    minHeight: "100%",
   },
   header: {
     alignItems: "center",
