@@ -14,6 +14,9 @@ export default function TabLayout() {
         tabBarActiveTintColor: "#FFC0CB",
         headerShown: false,
         headerMode: "none",
+        tabBarLabelStyle: {
+          fontFamily: "Baloo2-Bold",
+        },
       }}
     >
       <Tabs.Screen
@@ -21,7 +24,6 @@ export default function TabLayout() {
         options={{
           title: t("navigation.shoppingList"),
           headerShown: false,
-          headerMode: "none",
           tabBarIcon: ({ color }) => <ListIcon color={color} size={30} />,
         }}
       />
