@@ -8,7 +8,7 @@ export default function useProfile(user) {
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
   const [listColor, setListColor] = useState("#333");
-  const [listFont, setListFont] = useState("Baloo2-Bold");
+  const [listFont, setListFont] = useState("Baloo2-Medium");
   const [language, setLanguageState] = useState("da");
   const [image, setImage] = useState("");
   const [newImage, setNewImage] = useState();

@@ -36,7 +36,7 @@ export default function useShoppingList() {
   const [isCreatingList, setIsCreatingList] = useState(false);
   const [editListName, setEditListName] = useState("");
   const [userListColor, setUserListColor] = useState("#333");
-  const [userListFont, setUserListFont] = useState("Baloo2-Bold");
+  const [userListFont, setUserListFont] = useState("Baloo2-Medium");
 
   // Custom setCurrentListId that saves to AsyncStorage
   const setCurrentListIdWithSave = (listId) => {
@@ -426,7 +426,7 @@ export default function useShoppingList() {
         if (snapshot.exists()) {
           setUserListFont(snapshot.val());
         } else {
-          setUserListFont("Baloo2-Bold");
+          setUserListFont("Baloo2-Medium");
         }
       });
       return () => {
@@ -471,7 +471,7 @@ export default function useShoppingList() {
         subcategory: product.subcategory,
         completed: false,
         color: userListColor || "#333",
-        font: userListFont || "Baloo2-Bold",
+        font: userListFont || "Baloo2-Medium",
       };
 
       // Only add icon_url if it exists and is not null/undefined
@@ -510,7 +510,7 @@ export default function useShoppingList() {
         subcategory: matchingProduct ? matchingProduct.subcategory : "",
         completed: false,
         color: userListColor || "#333",
-        font: userListFont || "Baloo2-Bold",
+        font: userListFont || "Baloo2-Medium",
       };
 
       // Only add icon_url if it exists and is not null/undefined
