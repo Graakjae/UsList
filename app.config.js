@@ -29,11 +29,7 @@ export default {
         backgroundColor: "#ffffff",
       },
     },
-    web: {
-      bundler: "metro",
-      output: "static",
-      favicon: "./assets/images/favicon.png",
-    },
+
     plugins: ["expo-router"],
     experiments: {
       typedRoutes: true,
