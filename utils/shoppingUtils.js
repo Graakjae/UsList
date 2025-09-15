@@ -116,24 +116,40 @@ export const generateInviteLink = (user, currentListId, getCurrentListName) => {
 export const getItemsPath = (user, currentListId) => {
   if (!currentListId) {
     return null; // No list selected
-  } else if (currentListId.includes("_")) {
+  } else if (
+    currentListId.includes("_") &&
+    currentListId.split("_").length === 2
+  ) {
+    // Only treat as shared list if it has exactly one underscore and looks like "ownerId_listId"
     const [ownerId, listId] = currentListId.split("_");
-    return `users/${ownerId}/shoppingItems/${listId}`;
-  } else {
-    return `users/${user.uid}/shoppingItems/${currentListId}`;
+    // Additional check: ownerId should look like a Firebase UID (28 characters, alphanumeric)
+    if (ownerId.length >= 20 && /^[a-zA-Z0-9]+$/.test(ownerId)) {
+      return `users/${ownerId}/shoppingItems/${listId}`;
+    }
   }
+
+  // Default to regular list (user's own list)
+  return `users/${user.uid}/shoppingItems/${currentListId}`;
 };
 
 // Get item path based on list type
 export const getItemPath = (user, currentListId, itemId) => {
   if (!currentListId) {
     return null; // No list selected
-  } else if (currentListId.includes("_")) {
+  } else if (
+    currentListId.includes("_") &&
+    currentListId.split("_").length === 2
+  ) {
+    // Only treat as shared list if it has exactly one underscore and looks like "ownerId_listId"
     const [ownerId, listId] = currentListId.split("_");
-    return `users/${ownerId}/shoppingItems/${listId}/${itemId}`;
-  } else {
-    return `users/${user.uid}/shoppingItems/${currentListId}/${itemId}`;
+    // Additional check: ownerId should look like a Firebase UID (28 characters, alphanumeric)
+    if (ownerId.length >= 20 && /^[a-zA-Z0-9]+$/.test(ownerId)) {
+      return `users/${ownerId}/shoppingItems/${listId}/${itemId}`;
+    }
   }
+
+  // Default to regular list (user's own list)
+  return `users/${user.uid}/shoppingItems/${currentListId}/${itemId}`;
 };
 
 // Check if item is completed

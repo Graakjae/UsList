@@ -256,31 +256,38 @@ export default function useShoppingList() {
         setCurrentListIdWithSave(newListId);
       } else {
         // Edit existing list
-        if (currentListId.includes("_")) {
-          // This is a shared list
+        // First check if it's a properly formatted shared list
+        if (
+          currentListId.includes("_") &&
+          currentListId.split("_").length === 2
+        ) {
           const [ownerId, listId] = currentListId.split("_");
-
-          // Only the owner can edit the list name
-          if (ownerId === user.uid) {
-            // Update the owner's list
-            const listRef = ref(
-              database,
-              `users/${user.uid}/shoppingLists/${listId}`
-            );
-            await update(listRef, {
-              name: editListName.trim(),
-            });
+          // Additional check: ownerId should look like a Firebase UID
+          if (ownerId.length >= 20 && /^[a-zA-Z0-9]+$/.test(ownerId)) {
+            // This is a shared list
+            // Only the owner can edit the list name
+            if (ownerId === user.uid) {
+              // Update the owner's list
+              const listRef = ref(
+                database,
+                `users/${user.uid}/shoppingLists/${listId}`
+              );
+              await update(listRef, {
+                name: editListName.trim(),
+              });
+            }
+            return; // Exit early for shared lists
           }
-        } else {
-          // This is a regular list
-          const listRef = ref(
-            database,
-            `users/${user.uid}/shoppingLists/${currentListId}`
-          );
-          await update(listRef, {
-            name: editListName.trim(),
-          });
         }
+
+        // This is a regular list (user's own list)
+        const listRef = ref(
+          database,
+          `users/${user.uid}/shoppingLists/${currentListId}`
+        );
+        await update(listRef, {
+          name: editListName.trim(),
+        });
       }
       setEditListName("");
       setShowEditListModal(false);

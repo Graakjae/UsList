@@ -57,15 +57,25 @@ export default function ShoppingModals({
   const isOwner = () => {
     if (!user || !currentListId) return false;
 
-    if (currentListId.includes("_")) {
-      // Shared list
-      const sharedList = sharedLists.find((list) => list.id === currentListId);
-      return sharedList && sharedList.ownerId === user.uid;
-    } else {
-      // User's own list - if it exists in their lists array, they own it
-      const list = lists.find((list) => list.id === currentListId);
-      return !!list; // If the list exists in user's lists, they own it
+    // First check if it's in user's own lists
+    const ownList = lists.find((list) => list.id === currentListId);
+    if (ownList) {
+      return true; // User owns this list
     }
+
+    // Then check if it's a shared list (with proper format: ownerId_listId)
+    if (currentListId.includes("_") && currentListId.split("_").length === 2) {
+      const [ownerId, listId] = currentListId.split("_");
+      // Additional check: ownerId should look like a Firebase UID
+      if (ownerId.length >= 20 && /^[a-zA-Z0-9]+$/.test(ownerId)) {
+        const sharedList = sharedLists.find(
+          (list) => list.id === currentListId
+        );
+        return sharedList && sharedList.ownerId === user.uid;
+      }
+    }
+
+    return false; // Not found in either own lists or shared lists
   };
 
   // Handle share list
