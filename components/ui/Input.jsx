@@ -10,7 +10,7 @@ export default function Input({
   returnKeyType = "done",
   editable = true,
   autoFocus = false,
-  autoCapitalize = "none",
+  autoCapitalize = "sentences",
   style,
   maxLength,
   ...props
