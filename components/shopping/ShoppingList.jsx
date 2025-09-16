@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
+import { getCategoryIcon } from "../../utils/shoppingUtils";
 import EditItemModal from "./EditItemModal";
 
 export default function ShoppingList({
@@ -17,8 +18,10 @@ export default function ShoppingList({
   showEditResults,
   handleEditSearch,
   selectEditProduct,
+  selectedCategory,
+  setSelectedCategory,
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const flatListRef = useRef(null);
 
   if (!currentListId) {
@@ -57,25 +60,32 @@ export default function ShoppingList({
                 fontFamily: item.font || "Baloo2-Medium",
               },
               item.completed && styles.completedText,
+              !item.category && styles.noCategoryText,
             ]}
           >
             {item.name}
           </Text>
-          {item.icon_url && (
-            <Image
-              source={
-                item.icon_url.startsWith("data:")
-                  ? { uri: item.icon_url }
-                  : {
-                      uri: `data:image/png;base64,${
-                        item.icon_url.split(",")[1]
-                      }`,
-                    }
-              }
-              style={styles.productImage}
-              resizeMode="contain"
-            />
-          )}
+          <View style={styles.itemRightContent}>
+            {item.icon_url ? (
+              <Image
+                source={
+                  item.icon_url.startsWith("data:")
+                    ? { uri: item.icon_url }
+                    : {
+                        uri: `data:image/png;base64,${
+                          item.icon_url.split(",")[1]
+                        }`,
+                      }
+                }
+                style={styles.productImage}
+                resizeMode="contain"
+              />
+            ) : (
+              <Text style={styles.categoryIcon}>
+                {item.category ? getCategoryIcon(item.category) : "❓"}
+              </Text>
+            )}
+          </View>
         </TouchableOpacity>
       </View>
     );
@@ -105,6 +115,8 @@ export default function ShoppingList({
         showEditResults={showEditResults}
         selectEditProduct={selectEditProduct}
         item={editingItem}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
       />
     </View>
   );
@@ -149,6 +161,11 @@ const styles = {
     paddingVertical: 16,
     paddingHorizontal: 12,
   },
+  itemRightContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   itemText: {
     fontSize: 16,
     fontFamily: "Nunito-Medium",
@@ -157,6 +174,16 @@ const styles = {
   completedText: {
     textDecorationLine: "line-through",
     color: "red",
+  },
+  noCategoryText: {
+    fontStyle: "italic",
+  },
+  categoryIcon: {
+    fontSize: 20,
+    width: 25,
+    height: 25,
+    textAlign: "center",
+    lineHeight: 25,
   },
   productImage: {
     width: 25,
