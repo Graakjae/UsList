@@ -3,7 +3,12 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
 import { database } from "../firebase";
-import { getItemPath, getItemsPath } from "../utils/shoppingUtils";
+import {
+  getItemPath,
+  getItemsPath,
+  getSuggestedCategory,
+  updateCategoryMemory,
+} from "../utils/shoppingUtils";
 import { useAuth } from "./useAuth";
 
 export default function useListItems(
@@ -21,6 +26,7 @@ export default function useListItems(
   const [editingItemName, setEditingItemName] = useState("");
   const [editSearchResults, setEditSearchResults] = useState([]);
   const [showEditResults, setShowEditResults] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   // Search function for editing
   const handleEditSearch = (text) => {
@@ -61,13 +67,29 @@ export default function useListItems(
   };
 
   // Start editing item name
-  const startEditingItem = (item) => {
+  const startEditingItem = async (item) => {
     setEditingItemId(item.id);
     setEditingItemName(item.name);
+    setSelectedCategory(item.category || "");
+
+    // Get suggested category from memory
+    if (user && item.name) {
+      try {
+        const suggestedCategory = await getSuggestedCategory(
+          user.uid,
+          item.name
+        );
+        if (suggestedCategory && !item.category) {
+          setSelectedCategory(suggestedCategory);
+        }
+      } catch (error) {
+        console.error("Error getting suggested category:", error);
+      }
+    }
   };
 
-  // Save edited item name
-  const saveEditedItem = () => {
+  // Save edited item (with optional category)
+  const saveEditedItem = async (category = null) => {
     if (!user || !currentListId || !editingItemId || !editingItemName.trim())
       return;
 
@@ -81,33 +103,55 @@ export default function useListItems(
       if (!itemPath) return; // No valid path
 
       const itemRef = ref(database, itemPath);
+      const finalItemName = matchingProduct
+        ? matchingProduct.name
+        : editingItemName.trim();
+
+      // Use provided category, or fall back to product category, or empty
+      let finalCategory = "";
+      if (category) {
+        finalCategory = category;
+      } else if (matchingProduct) {
+        finalCategory = matchingProduct.category || "";
+      }
+
       const updateData = {
-        name: matchingProduct ? matchingProduct.name : editingItemName.trim(),
+        name: finalItemName,
+        category: finalCategory,
       };
 
-      // Only add category, subcategory, and icon_url if product matches
+      // Only add subcategory and icon_url if product matches
       if (matchingProduct) {
-        updateData.category = matchingProduct.category || "";
         updateData.subcategory = matchingProduct.subcategory || "";
         if (matchingProduct.icon_url) {
           updateData.icon_url = matchingProduct.icon_url;
         }
       } else {
-        // Remove category, subcategory, and icon_url if no matching product
-        updateData.category = "";
+        // Remove subcategory and icon_url if no matching product
         updateData.subcategory = "";
         updateData.icon_url = null;
+      }
+
+      // Save category memory if category is provided
+      if (category && finalItemName) {
+        try {
+          await updateCategoryMemory(user.uid, finalItemName, category);
+        } catch (memoryError) {
+          console.error("Error saving category memory:", memoryError);
+          // Don't fail the main operation if memory saving fails
+        }
       }
 
       update(itemRef, updateData)
         .then(() => {
           setEditingItemId(null);
           setEditingItemName("");
+          setSelectedCategory("");
           setEditSearchResults([]);
           setShowEditResults(false);
         })
         .catch((error) => {
-          console.error("Error updating item name:", error);
+          console.error("Error updating item:", error);
           Alert.alert(t("shopping.error"), t("shopping.errorUpdatingItemName"));
         });
     } catch (error) {
@@ -120,6 +164,7 @@ export default function useListItems(
   const cancelEditingItem = () => {
     setEditingItemId(null);
     setEditingItemName("");
+    setSelectedCategory("");
     setEditSearchResults([]);
     setShowEditResults(false);
   };
@@ -183,6 +228,8 @@ export default function useListItems(
     setEditSearchResults,
     showEditResults,
     setShowEditResults,
+    selectedCategory,
+    setSelectedCategory,
 
     // Functions
     handleEditSearch,

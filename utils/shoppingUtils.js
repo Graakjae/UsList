@@ -1,3 +1,6 @@
+import { get, ref, set, update } from "firebase/database";
+import { database } from "../firebase";
+
 // Category order for sorting items
 export const categoryOrder = {
   "Frugt & Grønt": 1,
@@ -43,6 +46,21 @@ export const categoryTranslations = {
   },
 };
 
+// Category icons mapping
+export const categoryIcons = {
+  "Frugt & Grønt": "🥬",
+  "Kød & Fisk": "🥩",
+  "Brød & Kager": "🍞",
+  Mejeri: "🥛",
+  Frost: "❄️",
+  Tørvarer: "📦",
+  Drikkevarer: "🥤",
+  "Snacks & Slik": "🍭",
+  "Personlig Pleje": "🧴",
+  Husholdning: "🧽",
+  Andet: "❓",
+};
+
 // Get categories for current language
 export const getCategoriesForLanguage = (language = "da") => {
   const translations =
@@ -78,15 +96,15 @@ export const getTranslatedCategoryName = (categoryKey, language = "da") => {
   return translations[categoryKey] || categoryKey;
 };
 
-// Sort items by category - now handles translated categories
+// Get category icon from category key
+export const getCategoryIcon = (categoryKey) => {
+  return categoryIcons[categoryKey] || "❓";
+};
+
 export const sortItemsByCategory = (items, language = "da") => {
   return [...items].sort((a, b) => {
-    // Get category key from translated category name
-    const categoryKeyA = getCategoryKeyFromLabel(a.category, language);
-    const categoryKeyB = getCategoryKeyFromLabel(b.category, language);
-
-    const categoryA = categoryOrder[categoryKeyA] || 999;
-    const categoryB = categoryOrder[categoryKeyB] || 999;
+    const categoryA = categoryOrder[a.category] || 999;
+    const categoryB = categoryOrder[b.category] || 999;
     return categoryA - categoryB;
   });
 };
@@ -160,4 +178,75 @@ export const isItemCompleted = (items) => {
 // Check if list has items
 export const hasItems = (items) => {
   return items.length > 0;
+};
+
+// Category Memory Functions
+
+// Save category memory for a user
+export const saveCategoryMemory = async (userId, itemName, category) => {
+  try {
+    const categoryMemoryRef = ref(
+      database,
+      `users/${userId}/categoryMemory/${itemName}`
+    );
+    await set(categoryMemoryRef, {
+      category: category,
+      lastUsed: Date.now(),
+    });
+  } catch (error) {
+    console.error("Error saving category memory:", error);
+  }
+};
+
+// Update category memory (update timestamp)
+export const updateCategoryMemory = async (userId, itemName, category) => {
+  try {
+    const categoryMemoryRef = ref(
+      database,
+      `users/${userId}/categoryMemory/${itemName}`
+    );
+    const snapshot = await get(categoryMemoryRef);
+
+    if (snapshot.exists()) {
+      await update(categoryMemoryRef, {
+        category: category,
+        lastUsed: Date.now(),
+      });
+    } else {
+      // If doesn't exist, create new entry
+      await saveCategoryMemory(userId, itemName, category);
+    }
+  } catch (error) {
+    console.error("Error updating category memory:", error);
+  }
+};
+
+// Get category memory for an item
+export const getCategoryMemory = async (userId, itemName) => {
+  try {
+    const categoryMemoryRef = ref(
+      database,
+      `users/${userId}/categoryMemory/${itemName}`
+    );
+    const snapshot = await get(categoryMemoryRef);
+
+    if (snapshot.exists()) {
+      return snapshot.val();
+    }
+    return null;
+  } catch (error) {
+    console.error("Error getting category memory:", error);
+    return null;
+  }
+};
+
+// Get suggested category for an item based on memory
+export const getSuggestedCategory = async (userId, itemName) => {
+  try {
+    const memory = await getCategoryMemory(userId, itemName);
+    return memory ? memory.category : null;
+  } catch (error) {
+    console.error("Error getting suggested category:", error);
+    return null;
+  }
 };

@@ -58,6 +58,19 @@
               ".validate": "newData.isBoolean() && newData.val() == false"
             }
           }
+        },
+        "categoryMemory": {
+          ".read": "auth != null && auth.uid == $userId",
+          ".write": "auth != null && auth.uid == $userId",
+          "$itemName": {
+            ".validate": "newData.hasChildren(['category', 'lastUsed'])",
+            "category": {
+              ".validate": "newData.isString() && newData.val().length > 0"
+            },
+            "lastUsed": {
+              ".validate": "newData.isNumber()"
+            }
+          }
         }
       }
     },

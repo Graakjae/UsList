@@ -32,6 +32,8 @@ export default function ShoppingScreen() {
     showInviteCodeModal,
     editingItemId,
     editingItemName,
+    selectedCategory,
+    setSelectedCategory,
 
     // Computed values
     sortedItems,
@@ -125,6 +127,8 @@ export default function ShoppingScreen() {
               showEditResults={showEditResults}
               handleEditSearch={handleEditSearch}
               selectEditProduct={selectEditProduct}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
             />
           </View>
 

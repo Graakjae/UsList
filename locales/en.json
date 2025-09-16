@@ -81,7 +81,17 @@
     "noLists": "You have no lists",
     "createListToStart": "Create a list to get started",
     "createList": "Create list",
-    "charactersRemaining": "characters remaining"
+    "charactersRemaining": "characters remaining",
+    "selectCategory": "Select category",
+    "addCategory": "Add category",
+    "noCategory": "No category",
+    "categoryRequired": "Category is required",
+    "editItem": "Edit item",
+    "itemName": "Item name",
+    "categoryMemory": "Category memory",
+    "suggestedCategory": "Suggested category",
+    "rememberCategory": "Remember category for next time",
+    "categoryRemembered": "Category saved to memory"
   },
   "products": {
     "title": "Manage Products",

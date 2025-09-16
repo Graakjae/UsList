@@ -7,9 +7,11 @@ import { database } from "../firebase";
 import {
   getCategoriesForLanguage,
   getItemsPath,
+  getSuggestedCategory,
   hasItems as hasItemsUtil,
   isItemCompleted,
   sortItemsByCategory,
+  updateCategoryMemory,
 } from "../utils/shoppingUtils";
 import { useAuth } from "./useAuth";
 import useInviteSystem from "./useInviteSystem";
@@ -463,7 +465,7 @@ export default function useShoppingList() {
   );
 
   // Select product from search results
-  const selectProduct = (product) => {
+  const selectProduct = async (product) => {
     if (!user || !currentListId) return;
 
     try {
@@ -472,9 +474,24 @@ export default function useShoppingList() {
 
       const itemsRef = ref(database, itemsPath);
       const newItemRef = push(itemsRef);
+
+      // Check for suggested category from memory
+      let finalCategory = product.category;
+      try {
+        const suggestedCategory = await getSuggestedCategory(
+          user.uid,
+          product.name
+        );
+        if (suggestedCategory) {
+          finalCategory = suggestedCategory;
+        }
+      } catch (error) {
+        console.error("Error getting suggested category:", error);
+      }
+
       const itemData = {
         name: product.name,
-        category: product.category,
+        category: finalCategory,
         subcategory: product.subcategory,
         completed: false,
         color: userListColor || "#333",
@@ -484,6 +501,16 @@ export default function useShoppingList() {
       // Only add icon_url if it exists and is not null/undefined
       if (product.icon_url) {
         itemData.icon_url = product.icon_url;
+      }
+
+      // Save category memory if category differs from product category
+      if (finalCategory && finalCategory !== product.category) {
+        try {
+          await updateCategoryMemory(user.uid, product.name, finalCategory);
+        } catch (memoryError) {
+          console.error("Error saving category memory:", memoryError);
+          // Don't fail the main operation if memory saving fails
+        }
       }
 
       set(newItemRef, itemData)
@@ -498,7 +525,7 @@ export default function useShoppingList() {
       console.error("Error in selectProduct:", error);
     }
   };
-  const addItem = () => {
+  const addItem = async () => {
     if (!user || !newItem.trim() || !currentListId) return;
 
     try {
@@ -511,9 +538,27 @@ export default function useShoppingList() {
 
       const itemsRef = ref(database, itemsPath);
       const newItemRef = push(itemsRef);
+      const finalItemName = matchingProduct
+        ? matchingProduct.name
+        : newItem.trim();
+
+      // Get suggested category from memory (always check, even for standard products)
+      let finalCategory = matchingProduct ? matchingProduct.category : "Andet";
+      try {
+        const suggestedCategory = await getSuggestedCategory(
+          user.uid,
+          finalItemName
+        );
+        if (suggestedCategory) {
+          finalCategory = suggestedCategory;
+        }
+      } catch (error) {
+        console.error("Error getting suggested category:", error);
+      }
+
       const itemData = {
-        name: matchingProduct ? matchingProduct.name : newItem,
-        category: matchingProduct ? matchingProduct.category : "",
+        name: finalItemName,
+        category: finalCategory,
         subcategory: matchingProduct ? matchingProduct.subcategory : "",
         completed: false,
         color: userListColor || "#333",
@@ -523,6 +568,19 @@ export default function useShoppingList() {
       // Only add icon_url if it exists and is not null/undefined
       if (matchingProduct && matchingProduct.icon_url) {
         itemData.icon_url = matchingProduct.icon_url;
+      }
+
+      // Save category memory if category differs from standard product category
+      const standardCategory = matchingProduct
+        ? matchingProduct.category
+        : "Andet";
+      if (finalCategory && finalCategory !== standardCategory) {
+        try {
+          await updateCategoryMemory(user.uid, finalItemName, finalCategory);
+        } catch (memoryError) {
+          console.error("Error saving category memory:", memoryError);
+          // Don't fail the main operation if memory saving fails
+        }
       }
 
       set(newItemRef, itemData)

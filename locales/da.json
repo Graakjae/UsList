@@ -81,7 +81,17 @@
     "noLists": "Du har ingen lister",
     "createListToStart": "Opret en liste for at komme i gang",
     "createList": "Opret liste",
-    "charactersRemaining": "tegn tilbage"
+    "charactersRemaining": "tegn tilbage",
+    "selectCategory": "Vælg kategori",
+    "addCategory": "Tilføj kategori",
+    "noCategory": "Ingen kategori",
+    "categoryRequired": "Kategori er påkrævet",
+    "editItem": "Rediger vare",
+    "itemName": "Vare navn",
+    "categoryMemory": "Kategori hukommelse",
+    "suggestedCategory": "Foreslået kategori",
+    "rememberCategory": "Husk kategori til næste gang",
+    "categoryRemembered": "Kategori gemt til hukommelse"
   },
   "products": {
     "title": "Administrer produkter",
