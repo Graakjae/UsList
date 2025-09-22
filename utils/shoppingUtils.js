@@ -5,15 +5,17 @@ import { database } from "../firebase";
 export const categoryOrder = {
   "Frugt & Grønt": 1,
   "Kød & Fisk": 2,
-  "Brød & Kager": 3,
+  Brød: 3,
+  Kager: 4,
   Mejeri: 4,
   Frost: 5,
   Tørvarer: 6,
   Drikkevarer: 7,
-  "Snacks & Slik": 8,
-  "Personlig Pleje": 9,
+  Snacks: 8,
+  "Personlig pleje": 9,
   Husholdning: 10,
-  Andet: 11,
+  Kolonial: 11,
+  Andet: 12,
 };
 
 // Category translations
@@ -21,44 +23,71 @@ export const categoryTranslations = {
   da: {
     "Frugt & Grønt": "Frugt & Grønt",
     "Kød & Fisk": "Kød & Fisk",
-    "Brød & Kager": "Brød & Kager",
+    Brød: "Brød",
+    Kager: "Kager",
     Mejeri: "Mejeri",
     Frost: "Frost",
     Tørvarer: "Tørvarer",
     Drikkevarer: "Drikkevarer",
-    "Snacks & Slik": "Snacks & Slik",
-    "Personlig Pleje": "Personlig Pleje",
+    Snacks: "Snacks",
+    "Personlig pleje": "Personlig pleje",
     Husholdning: "Husholdning",
+    Kolonial: "Kolonial",
     Andet: "Andet",
   },
   en: {
     "Frugt & Grønt": "Fruit & Vegetables",
     "Kød & Fisk": "Meat & Fish",
-    "Brød & Kager": "Bread & Cakes",
+    Brød: "Bread",
+    Kager: "Cakes",
     Mejeri: "Dairy",
     Frost: "Frozen",
     Tørvarer: "Dry Goods",
     Drikkevarer: "Beverages",
-    "Snacks & Slik": "Snacks & Candy",
-    "Personlig Pleje": "Personal Care",
+    Snacks: "Snacks",
+    "Personlig pleje": "Personal Care",
     Husholdning: "Household",
+    Kolonial: "Pantry",
     Andet: "Other",
   },
 };
 
+// Units definitions
+export const units = {
+  g: { label: "g", name: "gram" },
+  kg: { label: "kg", name: "kilogram" },
+  liter: { label: "liter", name: "liter" },
+};
+
+// Get all available units as array
+export const getAvailableUnits = () => {
+  return Object.entries(units).map(([key, unit]) => ({
+    key,
+    label: unit.label,
+    name: unit.name,
+  }));
+};
+
+// Get unit label from key
+export const getUnitLabel = (unitKey) => {
+  return units[unitKey]?.label || unitKey;
+};
+
 // Category icons mapping
 export const categoryIcons = {
-  "Frugt & Grønt": "🥬",
-  "Kød & Fisk": "🥩",
-  "Brød & Kager": "🍞",
-  Mejeri: "🥛",
-  Frost: "❄️",
-  Tørvarer: "📦",
-  Drikkevarer: "🥤",
-  "Snacks & Slik": "🍭",
-  "Personlig Pleje": "🧴",
-  Husholdning: "🧽",
-  Andet: "❓",
+  "Frugt & Grønt": require("../assets/icons/categories/frugt-gront.png"),
+  "Kød & Fisk": require("../assets/icons/categories/kod-fisk.png"),
+  Brød: require("../assets/icons/categories/brod.png"),
+  Kager: require("../assets/icons/categories/kager.png"),
+  Mejeri: require("../assets/icons/categories/mejeri.png"),
+  Frost: require("../assets/icons/categories/frost.png"),
+  Tørvarer: require("../assets/icons/categories/torvarer.png"),
+  Drikkevarer: require("../assets/icons/categories/default-category-icon.png"),
+  Snacks: require("../assets/icons/categories/snacks-slik.png"),
+  "Personlig pleje": require("../assets/icons/categories/personlig-pleje.png"),
+  Husholdning: require("../assets/icons/categories/husholdning.png"),
+  Kolonial: require("../assets/icons/categories/kolonial.png"),
+  Andet: require("../assets/icons/categories/default-category-icon.png"),
 };
 
 // Get categories for current language
@@ -98,7 +127,10 @@ export const getTranslatedCategoryName = (categoryKey, language = "da") => {
 
 // Get category icon from category key
 export const getCategoryIcon = (categoryKey) => {
-  return categoryIcons[categoryKey] || "❓";
+  return (
+    categoryIcons[categoryKey] ||
+    require("../assets/icons/categories/default-category-icon.png")
+  );
 };
 
 export const sortItemsByCategory = (items, language = "da") => {
