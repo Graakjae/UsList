@@ -25,7 +25,7 @@ export default function Input({
           isFocused && editable && styles.inputFocused,
           style,
         ]}
-        value={value}
+        value={value || ""}
         onChangeText={onChangeText}
         placeholder={placeholder}
         onSubmitEditing={onSubmitEditing}
@@ -40,9 +40,9 @@ export default function Input({
         {...props}
       />
 
-      {value.length > maxLength - 10 && (
+      {value && value.length > maxLength - 10 && (
         <Text style={styles.charCounterInInput}>
-          {value.length} / {maxLength}
+          {(value || "").length} / {maxLength}
         </Text>
       )}
     </View>

@@ -91,7 +91,11 @@
     "categoryMemory": "Kategori hukommelse",
     "suggestedCategory": "Foreslået kategori",
     "rememberCategory": "Husk kategori til næste gang",
-    "categoryRemembered": "Kategori gemt til hukommelse"
+    "categoryRemembered": "Kategori gemt til hukommelse",
+    "quantity": "Mængde",
+    "unit": "Enhed",
+    "selectUnit": "Vælg enhed",
+    "noUnit": "Ingen enhed"
   },
   "products": {
     "title": "Administrer produkter",

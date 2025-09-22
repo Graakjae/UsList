@@ -91,7 +91,11 @@
     "categoryMemory": "Category memory",
     "suggestedCategory": "Suggested category",
     "rememberCategory": "Remember category for next time",
-    "categoryRemembered": "Category saved to memory"
+    "categoryRemembered": "Category saved to memory",
+    "quantity": "Quantity",
+    "unit": "Unit",
+    "selectUnit": "Select unit",
+    "noUnit": "No unit"
   },
   "products": {
     "title": "Manage Products",

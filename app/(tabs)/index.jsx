@@ -34,6 +34,10 @@ export default function ShoppingScreen() {
     editingItemName,
     selectedCategory,
     setSelectedCategory,
+    quantity,
+    setQuantity,
+    selectedUnit,
+    setSelectedUnit,
 
     // Computed values
     sortedItems,
@@ -129,6 +133,10 @@ export default function ShoppingScreen() {
               selectEditProduct={selectEditProduct}
               selectedCategory={selectedCategory}
               setSelectedCategory={setSelectedCategory}
+              quantity={quantity}
+              setQuantity={setQuantity}
+              selectedUnit={selectedUnit}
+              setSelectedUnit={setSelectedUnit}
             />
           </View>
 

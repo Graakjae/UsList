@@ -20,6 +20,10 @@ export default function ShoppingList({
   selectEditProduct,
   selectedCategory,
   setSelectedCategory,
+  quantity,
+  setQuantity,
+  selectedUnit,
+  setSelectedUnit,
 }) {
   const { t, i18n } = useTranslation();
   const flatListRef = useRef(null);
@@ -52,19 +56,37 @@ export default function ShoppingList({
           onPress={() => toggleItem(item.id)}
           onLongPress={() => startEditingItem(item)}
         >
-          <Text
-            style={[
-              styles.itemText,
-              {
-                color: item.color || "#333",
-                fontFamily: item.font || "Baloo2-Medium",
-              },
-              item.completed && styles.completedText,
-              !item.category && styles.noCategoryText,
-            ]}
-          >
-            {item.name}
-          </Text>
+          <View style={styles.itemTextContainer}>
+            <Text
+              style={[
+                styles.itemText,
+                {
+                  color: item.color || "#333",
+                  fontFamily: item.font || "Baloo2-Medium",
+                },
+                item.completed && styles.completedText,
+                !item.category && styles.noCategoryText,
+              ]}
+            >
+              {item.name}
+            </Text>
+            {(item.quantity || item.unit) && (
+              <Text
+                style={[
+                  styles.itemQuantity,
+                  {
+                    color: item.color || "#333",
+                    fontFamily: item.font || "Baloo2-Medium",
+                  },
+                  item.completed && styles.completedText,
+                ]}
+              >
+                {item.quantity && item.unit
+                  ? `${item.quantity} ${item.unit}`
+                  : item.quantity || item.unit}
+              </Text>
+            )}
+          </View>
           <View style={styles.itemRightContent}>
             {item.icon_url ? (
               <Image
@@ -81,9 +103,11 @@ export default function ShoppingList({
                 resizeMode="contain"
               />
             ) : (
-              <Text style={styles.categoryIcon}>
-                {item.category ? getCategoryIcon(item.category) : "❓"}
-              </Text>
+              <Image
+                source={getCategoryIcon(item.category)}
+                style={styles.categoryIcon}
+                resizeMode="contain"
+              />
             )}
           </View>
         </TouchableOpacity>
@@ -117,6 +141,10 @@ export default function ShoppingList({
         item={editingItem}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
+        quantity={quantity}
+        setQuantity={setQuantity}
+        selectedUnit={selectedUnit}
+        setSelectedUnit={setSelectedUnit}
       />
     </View>
   );
@@ -161,6 +189,9 @@ const styles = {
     paddingVertical: 16,
     paddingHorizontal: 12,
   },
+  itemTextContainer: {
+    flex: 1,
+  },
   itemRightContent: {
     flexDirection: "row",
     alignItems: "center",
@@ -170,6 +201,12 @@ const styles = {
     fontSize: 16,
     fontFamily: "Nunito-Medium",
     color: "#333",
+  },
+  itemQuantity: {
+    fontSize: 14,
+    fontFamily: "Nunito-Regular",
+    color: "#666",
+    marginTop: 2,
   },
   completedText: {
     textDecorationLine: "line-through",

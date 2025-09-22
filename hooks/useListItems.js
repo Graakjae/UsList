@@ -1,7 +1,7 @@
 import { ref, remove, update } from "firebase/database";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert } from "react-native";
+import { Alert, Keyboard } from "react-native";
 import { database } from "../firebase";
 import {
   getItemPath,
@@ -27,6 +27,8 @@ export default function useListItems(
   const [editSearchResults, setEditSearchResults] = useState([]);
   const [showEditResults, setShowEditResults] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [selectedUnit, setSelectedUnit] = useState("");
 
   // Search function for editing
   const handleEditSearch = (text) => {
@@ -48,6 +50,7 @@ export default function useListItems(
     setEditingItemName(product.name);
     setEditSearchResults([]);
     setShowEditResults(false);
+    Keyboard.dismiss();
   };
 
   // Toggle item completion
@@ -71,6 +74,8 @@ export default function useListItems(
     setEditingItemId(item.id);
     setEditingItemName(item.name);
     setSelectedCategory(item.category || "");
+    setQuantity(item.quantity || "");
+    setSelectedUnit(item.unit || "");
 
     // Get suggested category from memory
     if (user && item.name) {
@@ -88,8 +93,12 @@ export default function useListItems(
     }
   };
 
-  // Save edited item (with optional category)
-  const saveEditedItem = async (category = null) => {
+  // Save edited item (with optional category, quantity, and unit)
+  const saveEditedItem = async (
+    category = null,
+    itemQuantity = null,
+    itemUnit = null
+  ) => {
     if (!user || !currentListId || !editingItemId || !editingItemName.trim())
       return;
 
@@ -118,6 +127,8 @@ export default function useListItems(
       const updateData = {
         name: finalItemName,
         category: finalCategory,
+        quantity: itemQuantity || quantity || "",
+        unit: itemUnit || selectedUnit || "",
       };
 
       // Only add subcategory and icon_url if product matches
@@ -147,6 +158,8 @@ export default function useListItems(
           setEditingItemId(null);
           setEditingItemName("");
           setSelectedCategory("");
+          setQuantity("");
+          setSelectedUnit("");
           setEditSearchResults([]);
           setShowEditResults(false);
         })
@@ -165,6 +178,8 @@ export default function useListItems(
     setEditingItemId(null);
     setEditingItemName("");
     setSelectedCategory("");
+    setQuantity("");
+    setSelectedUnit("");
     setEditSearchResults([]);
     setShowEditResults(false);
   };
@@ -230,6 +245,10 @@ export default function useListItems(
     setShowEditResults,
     selectedCategory,
     setSelectedCategory,
+    quantity,
+    setQuantity,
+    selectedUnit,
+    setSelectedUnit,
 
     // Functions
     handleEditSearch,
