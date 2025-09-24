@@ -54,7 +54,7 @@ export default function useInviteSystem(
 
         if (data) {
           // Set up listeners for each shared list to get real-time updates
-          Object.entries(data).forEach(([listId, listData]) => {
+          Object.entries(data).forEach(([sharedListKey, listData]) => {
             // Set up a listener for the actual list data
             const actualListRef = ref(
               database,
@@ -67,7 +67,7 @@ export default function useInviteSystem(
 
                 // Update the shared list with real data
                 const updatedSharedList = {
-                  id: listId,
+                  id: sharedListKey, // This is already in ownerId_listId format
                   originalId: listData.originalId,
                   ownerId: listData.ownerId,
                   ownerName: listData.ownerName,
@@ -80,7 +80,7 @@ export default function useInviteSystem(
                 // Update the local sharedLists state
                 setSharedLists((prevLists) => {
                   const existingIndex = prevLists.findIndex(
-                    (list) => list.id === listId
+                    (list) => list.id === sharedListKey
                   );
                   if (existingIndex >= 0) {
                     // Update existing list
@@ -95,7 +95,7 @@ export default function useInviteSystem(
               } else {
                 // List no longer exists, remove it from sharedLists
                 setSharedLists((prevLists) =>
-                  prevLists.filter((list) => list.id !== listId)
+                  prevLists.filter((list) => list.id !== sharedListKey)
                 );
               }
             });
@@ -159,19 +159,32 @@ export default function useInviteSystem(
               );
               await remove(sharedListRef);
 
-              // Return the remaining lists for selection
-              const remainingLists = lists.filter(
-                (l) => l.id !== sharedList.originalId
-              );
-              const remainingSharedLists = sharedLists.filter(
-                (l) => l.id !== sharedList.id
-              );
+              // Update state to remove the list from UI and handle navigation
+              setSharedLists((prev) => {
+                const updatedSharedLists = prev.filter(
+                  (l) => l.id !== sharedList.id
+                );
 
-              return { remainingLists, remainingSharedLists };
+                // If this was the current list, select another list if available
+                if (currentListId === sharedList.id) {
+                  const remainingLists = lists.filter(
+                    (l) => l.id !== sharedList.originalId
+                  );
+
+                  if (remainingLists.length > 0) {
+                    setCurrentListIdWithSave(remainingLists[0].id);
+                  } else if (updatedSharedLists.length > 0) {
+                    setCurrentListIdWithSave(updatedSharedLists[0].id);
+                  } else {
+                    setCurrentListIdWithSave(null);
+                  }
+                }
+
+                return updatedSharedLists;
+              });
             } catch (error) {
               console.error("Error leaving/deleting shared list:", error);
               Alert.alert("Fejl", `Kunne ikke ${action} listen`);
-              return null;
             }
           },
         },

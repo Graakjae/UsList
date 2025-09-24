@@ -82,7 +82,7 @@ export const categoryIcons = {
   Mejeri: require("../assets/icons/categories/mejeri.png"),
   Frost: require("../assets/icons/categories/frost.png"),
   Tørvarer: require("../assets/icons/categories/torvarer.png"),
-  Drikkevarer: require("../assets/icons/categories/default-category-icon.png"),
+  Drikkevarer: require("../assets/icons/categories/drikkevarer.png"),
   Snacks: require("../assets/icons/categories/snacks-slik.png"),
   "Personlig pleje": require("../assets/icons/categories/personlig-pleje.png"),
   Husholdning: require("../assets/icons/categories/husholdning.png"),
@@ -157,7 +157,11 @@ export const generateInviteLink = (user, currentListId, getCurrentListName) => {
 
   const cleanOwnerName = cleanTextForUrl(ownerName);
   const cleanListName = cleanTextForUrl(listName);
-  const inviteCode = `${user.uid}_${currentListId}_${timestamp}`;
+
+  // Use a different separator to avoid conflicts with underscores in listId
+  // Encode the currentListId to handle special characters
+  const encodedListId = encodeURIComponent(currentListId);
+  const inviteCode = `${user.uid}|${encodedListId}|${timestamp}`;
 
   return `https://list-invite-app.vercel.app/invite/${cleanOwnerName}/${cleanListName}/${timestamp}?code=${inviteCode}`;
 };
@@ -166,13 +170,15 @@ export const generateInviteLink = (user, currentListId, getCurrentListName) => {
 export const getItemsPath = (user, currentListId) => {
   if (!currentListId) {
     return null; // No list selected
-  } else if (
-    currentListId.includes("_") &&
-    currentListId.split("_").length === 2
-  ) {
-    // Only treat as shared list if it has exactly one underscore and looks like "ownerId_listId"
-    const [ownerId, listId] = currentListId.split("_");
-    // Additional check: ownerId should look like a Firebase UID (28 characters, alphanumeric)
+  }
+
+  if (currentListId.includes("_")) {
+    // Split on first underscore only to handle listIds that contain underscores
+    const firstUnderscoreIndex = currentListId.indexOf("_");
+    const ownerId = currentListId.substring(0, firstUnderscoreIndex);
+    const listId = currentListId.substring(firstUnderscoreIndex + 1);
+
+    // Additional check: ownerId should look like a Firebase UID (at least 20 characters, alphanumeric)
     if (ownerId.length >= 20 && /^[a-zA-Z0-9]+$/.test(ownerId)) {
       return `users/${ownerId}/shoppingItems/${listId}`;
     }
@@ -186,13 +192,12 @@ export const getItemsPath = (user, currentListId) => {
 export const getItemPath = (user, currentListId, itemId) => {
   if (!currentListId) {
     return null; // No list selected
-  } else if (
-    currentListId.includes("_") &&
-    currentListId.split("_").length === 2
-  ) {
-    // Only treat as shared list if it has exactly one underscore and looks like "ownerId_listId"
-    const [ownerId, listId] = currentListId.split("_");
-    // Additional check: ownerId should look like a Firebase UID (28 characters, alphanumeric)
+  } else if (currentListId.includes("_")) {
+    // Split on first underscore only to handle listIds that contain underscores
+    const firstUnderscoreIndex = currentListId.indexOf("_");
+    const ownerId = currentListId.substring(0, firstUnderscoreIndex);
+    const listId = currentListId.substring(firstUnderscoreIndex + 1);
+    // Additional check: ownerId should look like a Firebase UID (at least 20 characters, alphanumeric)
     if (ownerId.length >= 20 && /^[a-zA-Z0-9]+$/.test(ownerId)) {
       return `users/${ownerId}/shoppingItems/${listId}/${itemId}`;
     }

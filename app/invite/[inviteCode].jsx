@@ -24,13 +24,14 @@ export default function InviteCodeScreen() {
     try {
       setStatus("processing");
 
-      // Parse invite code: userId_listId_timestamp
-      const parts = inviteCode.split("_");
-      if (parts.length < 3) {
+      // Parse invite code: userId|listId|timestamp
+      const parts = inviteCode.split("|");
+      if (parts.length !== 3) {
         throw new Error("Ugyldig invitation");
       }
 
-      const [ownerId, listId, timestamp] = parts;
+      const [ownerId, encodedListId, timestamp] = parts;
+      const listId = decodeURIComponent(encodedListId);
 
       // Check if the list exists
       const listRef = ref(database, `users/${ownerId}/shoppingLists/${listId}`);
@@ -66,9 +67,22 @@ export default function InviteCodeScreen() {
         joinedAt: Date.now(),
       });
 
+      // Also add to shared_lists for easier access
+      const sharedListRef = ref(
+        database,
+        `shared_lists/${user.uid}/${ownerId}_${listId}`
+      );
+      await set(sharedListRef, {
+        originalId: listId,
+        ownerId: ownerId,
+        ownerName: listData.ownerName || "Ukendt bruger",
+        isShared: true,
+        isOwner: false,
+      });
+
       setStatus("success");
 
-      // Redirect to the main app after 2 seconds
+      // Navigate to the main app - the shared list will be auto-selected
       setTimeout(() => {
         router.replace("/(tabs)");
       }, 2000);

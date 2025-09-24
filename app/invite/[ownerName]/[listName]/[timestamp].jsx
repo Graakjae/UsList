@@ -15,15 +15,16 @@ export default function InviteHandler() {
 
     const handleInvite = async () => {
       try {
-        // Parse invite code: userId_listId_timestamp
-        const parts = code.split("_");
-        if (parts.length < 3) {
+        // Parse invite code: userId|listId|timestamp
+        const parts = code.split("|");
+        if (parts.length !== 3) {
           Alert.alert("Fejl", "Ugyldig invitation kode");
           router.replace("/");
           return;
         }
 
-        const [ownerId, listId, inviteTimestamp] = parts;
+        const [ownerId, encodedListId, inviteTimestamp] = parts;
+        const listId = decodeURIComponent(encodedListId);
 
         // Check if the list exists
         const listRef = ref(
@@ -78,8 +79,8 @@ export default function InviteHandler() {
 
         Alert.alert("Succes", "Du er nu tilsluttet listen!");
 
-        // Navigate to the shared list
-        router.replace(`/?listId=${ownerId}_${listId}`);
+        // Navigate to the main app - the shared list will be auto-selected
+        router.replace("/(tabs)");
       } catch (error) {
         console.error("Error handling invite:", error);
         Alert.alert("Fejl", "Kunne ikke tilslutte dig listen");
