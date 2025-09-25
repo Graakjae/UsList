@@ -95,7 +95,9 @@
     "quantity": "Quantity",
     "unit": "Unit",
     "selectUnit": "Select unit",
-    "noUnit": "No unit"
+    "noUnit": "No unit",
+    "store": "Store",
+    "noStore": "No store"
   },
   "products": {
     "title": "Manage Products",

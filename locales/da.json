@@ -95,7 +95,9 @@
     "quantity": "Mængde",
     "unit": "Enhed",
     "selectUnit": "Vælg enhed",
-    "noUnit": "Ingen enhed"
+    "noUnit": "Ingen enhed",
+    "store": "Butik",
+    "noStore": "Ingen butik"
   },
   "products": {
     "title": "Administrer produkter",

@@ -38,7 +38,8 @@ export default function ShoppingScreen() {
     setQuantity,
     selectedUnit,
     setSelectedUnit,
-
+    selectedStore,
+    setSelectedStore,
     // Computed values
     sortedItems,
     hasCompletedItems,
@@ -137,6 +138,8 @@ export default function ShoppingScreen() {
               setQuantity={setQuantity}
               selectedUnit={selectedUnit}
               setSelectedUnit={setSelectedUnit}
+              selectedStore={selectedStore}
+              setSelectedStore={setSelectedStore}
             />
           </View>
 

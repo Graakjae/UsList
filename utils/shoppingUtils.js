@@ -52,6 +52,26 @@ export const categoryTranslations = {
   },
 };
 
+export const stores = {
+  Løvbjerg: { label: "Løvbjerg", name: "loebjerg" },
+  Rema: { label: "Rema", name: "rema" },
+  "Coop 365": { label: "Coop 365", name: "coop365" },
+  Lidl: { label: "Lidl", name: "lidl" },
+  Føtex: { label: "Føtex", name: "fotex" },
+  Netto: { label: "Netto", name: "netto" },
+  SuperBrugsen: { label: "SuperBrugsen", name: "superbrugsen" },
+  Kvickly: { label: "Kvickly", name: "kvickly" },
+  Salling: { label: "Salling", name: "salling" },
+};
+
+export const getAvailableStores = () => {
+  return Object.entries(stores).map(([key, store]) => ({
+    key,
+    label: store.label,
+    name: store.name,
+  }));
+};
+
 // Units definitions
 export const units = {
   g: { label: "g", name: "gram" },

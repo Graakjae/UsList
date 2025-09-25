@@ -29,6 +29,7 @@ export default function useListItems(
   const [selectedCategory, setSelectedCategory] = useState("");
   const [quantity, setQuantity] = useState("");
   const [selectedUnit, setSelectedUnit] = useState("");
+  const [selectedStore, setSelectedStore] = useState("");
 
   // Search function for editing
   const handleEditSearch = (text) => {
@@ -76,6 +77,7 @@ export default function useListItems(
     setSelectedCategory(item.category || "");
     setQuantity(item.quantity || "");
     setSelectedUnit(item.unit || "");
+    setSelectedStore(item.store || "");
 
     // Get suggested category from memory
     if (user && item.name) {
@@ -129,6 +131,7 @@ export default function useListItems(
         category: finalCategory,
         quantity: itemQuantity || quantity || "",
         unit: itemUnit || selectedUnit || "",
+        store: selectedStore || "",
       };
 
       // Only add subcategory and icon_url if product matches
@@ -160,6 +163,7 @@ export default function useListItems(
           setSelectedCategory("");
           setQuantity("");
           setSelectedUnit("");
+          setSelectedStore("");
           setEditSearchResults([]);
           setShowEditResults(false);
         })
@@ -180,6 +184,7 @@ export default function useListItems(
     setSelectedCategory("");
     setQuantity("");
     setSelectedUnit("");
+    setSelectedStore("");
     setEditSearchResults([]);
     setShowEditResults(false);
   };
@@ -249,7 +254,8 @@ export default function useListItems(
     setQuantity,
     selectedUnit,
     setSelectedUnit,
-
+    selectedStore,
+    setSelectedStore,
     // Functions
     handleEditSearch,
     selectEditProduct,

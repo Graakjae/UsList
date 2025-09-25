@@ -24,8 +24,10 @@ export default function ShoppingList({
   setQuantity,
   selectedUnit,
   setSelectedUnit,
+  selectedStore,
+  setSelectedStore,
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const flatListRef = useRef(null);
 
   if (!currentListId) {
@@ -69,11 +71,12 @@ export default function ShoppingList({
               ]}
             >
               {item.name}
+              {item?.quantity && `, ${item?.quantity} ${item?.unit}`}
             </Text>
-            {(item.quantity || item.unit) && (
+            {item.store && (
               <Text
                 style={[
-                  styles.itemQuantity,
+                  styles.itemText,
                   {
                     color: item.color || "#333",
                     fontFamily: item.font || "Baloo2-Medium",
@@ -81,9 +84,7 @@ export default function ShoppingList({
                   item.completed && styles.completedText,
                 ]}
               >
-                {item.quantity && item.unit
-                  ? `${item.quantity} ${item.unit}`
-                  : item.quantity || item.unit}
+                {item.store}
               </Text>
             )}
           </View>
@@ -145,6 +146,8 @@ export default function ShoppingList({
         setQuantity={setQuantity}
         selectedUnit={selectedUnit}
         setSelectedUnit={setSelectedUnit}
+        selectedStore={selectedStore}
+        setSelectedStore={setSelectedStore}
       />
     </View>
   );
@@ -202,12 +205,7 @@ const styles = {
     fontFamily: "Nunito-Medium",
     color: "#333",
   },
-  itemQuantity: {
-    fontSize: 14,
-    fontFamily: "Nunito-Regular",
-    color: "#666",
-    marginTop: 2,
-  },
+
   completedText: {
     textDecorationLine: "line-through",
     color: "red",

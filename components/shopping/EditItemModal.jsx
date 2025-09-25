@@ -1,21 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
+import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import {
-  FlatList,
-  Image,
-  Keyboard,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import {
+  getAvailableStores,
   getAvailableUnits,
   getCategoriesForLanguage,
-  getTranslatedCategoryName,
-  getUnitLabel,
 } from "../../utils/shoppingUtils";
 import Input from "../ui/Input";
 import Modal from "../ui/Modal";
+import Selector from "../ui/Selector";
+import { SelectorProvider } from "../ui/SelectorContext";
 
 export default function EditItemModal({
   visible,
@@ -33,204 +27,155 @@ export default function EditItemModal({
   setQuantity,
   selectedUnit,
   setSelectedUnit,
+  selectedStore,
+  setSelectedStore,
 }) {
   const { t, i18n } = useTranslation();
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [showUnitDropdown, setShowUnitDropdown] = useState(false);
 
-  // Get available categories and units
+  // Get available categories, units and stores
   const availableCategories = getCategoriesForLanguage(i18n.language);
   const availableUnits = getAvailableUnits();
-
-  // Close dropdowns when modal opens
-  useEffect(() => {
-    if (visible) {
-      setShowCategoryDropdown(false);
-      setShowUnitDropdown(false);
-    }
-  }, [visible]);
+  const availableStores = getAvailableStores();
 
   return (
-    <Modal
-      visible={visible}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={cancelEditingItem}
-      title={t("shopping.editItem")}
-      onClose={cancelEditingItem}
-      buttons={[
-        {
-          text: t("shopping.cancel"),
-          style: { backgroundColor: "#f0f0f0", zIndex: -1 },
-          onPress: cancelEditingItem,
-        },
-        {
-          text: t("shopping.save"),
-          style: { backgroundColor: "#FFC0CB", zIndex: -1 },
-          textStyle: { color: "#fff" },
-          onPress: () =>
-            saveEditedItem(selectedCategory, quantity, selectedUnit),
-        },
-      ]}
-    >
-      <View style={styles.modalContainer}>
-        <View style={styles.editContainer}>
-          <View style={styles.editInputContainer}>
-            <Text style={styles.editInputLabel}>{t("shopping.itemName")}</Text>
-            <Input
-              value={editingItemName}
-              onChangeText={handleEditSearch}
-              placeholder={t("shopping.itemName")}
-              maxLength={50}
-            />
-
-            {showEditResults && editSearchResults.length > 0 && (
-              <View style={styles.editSearchResultsContainer}>
-                <FlatList
-                  data={editSearchResults}
-                  keyExtractor={(product) =>
-                    `edit_search_${product.id}_${product.name}`
-                  }
-                  renderItem={({ item: product }) => (
-                    <TouchableOpacity
-                      style={styles.editSearchResultItem}
-                      onPress={() => selectEditProduct(product)}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.editSearchResultText}>
-                        {product.name}
-                      </Text>
-                      {product.icon_url && (
-                        <Image
-                          source={
-                            product.icon_url.startsWith("data:")
-                              ? { uri: product.icon_url }
-                              : {
-                                  uri: `data:image/png;base64,${
-                                    product.icon_url.split(",")[1]
-                                  }`,
-                                }
-                          }
-                          style={styles.editProductImage}
-                          resizeMode="contain"
-                        />
-                      )}
-                    </TouchableOpacity>
-                  )}
-                  keyboardShouldPersistTaps="handled"
-                />
-              </View>
-            )}
-
-            {/* Quantity and Unit Selector */}
-            <View style={styles.quantityUnitContainer}>
-              <View style={styles.quantityContainer}>
-                <Text style={styles.quantityLabel}>
-                  {t("shopping.quantity")}
-                </Text>
-                <Input
-                  value={quantity}
-                  onChangeText={setQuantity}
-                  placeholder="1"
-                  keyboardType="number-pad"
-                  maxLength={10}
-                  style={styles.quantityInput}
-                />
-              </View>
-
-              <View style={styles.unitContainer}>
-                <Text style={styles.unitLabel}>{t("shopping.unit")}</Text>
-                <TouchableOpacity
-                  style={styles.unitButton}
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    setShowUnitDropdown(!showUnitDropdown);
-                    setShowCategoryDropdown(false);
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.unitButtonText}>
-                    {selectedUnit
-                      ? getUnitLabel(selectedUnit)
-                      : t("shopping.noUnit")}
-                  </Text>
-                </TouchableOpacity>
-
-                {showUnitDropdown && (
-                  <View style={styles.unitDropdown}>
-                    <FlatList
-                      data={availableUnits}
-                      keyExtractor={(unit) => unit.key}
-                      renderItem={({ item: unit }) => (
-                        <TouchableOpacity
-                          style={styles.unitOption}
-                          onPress={() => {
-                            setSelectedUnit(unit.key);
-                            setShowUnitDropdown(!showUnitDropdown);
-                          }}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={styles.unitOptionText}>
-                            {unit.label}
-                          </Text>
-                        </TouchableOpacity>
-                      )}
-                      keyboardShouldPersistTaps="handled"
-                    />
-                  </View>
-                )}
-              </View>
-            </View>
-
-            {/* Category Selector */}
-            <View style={styles.categoryContainer}>
-              <Text style={styles.categoryLabel}>
-                {t("shopping.selectCategory")}
+    <SelectorProvider>
+      <Modal
+        visible={visible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={cancelEditingItem}
+        title={t("shopping.editItem")}
+        onClose={cancelEditingItem}
+        buttons={[
+          {
+            text: t("shopping.cancel"),
+            style: { backgroundColor: "#f0f0f0", zIndex: -1 },
+            onPress: cancelEditingItem,
+          },
+          {
+            text: t("shopping.save"),
+            style: { backgroundColor: "#FFC0CB", zIndex: -1 },
+            textStyle: { color: "#fff" },
+            onPress: () =>
+              saveEditedItem(
+                selectedCategory,
+                quantity,
+                selectedUnit,
+                selectedStore
+              ),
+          },
+        ]}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.editContainer}>
+            <View style={styles.editInputContainer}>
+              <Text style={styles.editInputLabel}>
+                {t("shopping.itemName")}
               </Text>
-              <TouchableOpacity
-                style={styles.categoryButton}
-                onPress={() => {
-                  Keyboard.dismiss();
-                  setShowCategoryDropdown(!showCategoryDropdown);
-                  setShowUnitDropdown(false);
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.categoryButtonText}>
-                  {selectedCategory
-                    ? getTranslatedCategoryName(selectedCategory, i18n.language)
-                    : t("shopping.noCategory")}
-                </Text>
-              </TouchableOpacity>
+              <Input
+                value={editingItemName}
+                onChangeText={handleEditSearch}
+                placeholder={t("shopping.itemName")}
+                maxLength={50}
+              />
 
-              {showCategoryDropdown && (
-                <View style={styles.categoryDropdown}>
+              {showEditResults && editSearchResults.length > 0 && (
+                <View style={styles.editSearchResultsContainer}>
                   <FlatList
-                    data={availableCategories}
-                    keyExtractor={(category) => category.key}
-                    renderItem={({ item: category }) => (
+                    data={editSearchResults}
+                    keyExtractor={(product) =>
+                      `edit_search_${product.id}_${product.name}`
+                    }
+                    renderItem={({ item: product }) => (
                       <TouchableOpacity
-                        style={styles.categoryOption}
-                        onPress={() => {
-                          setSelectedCategory(category.key);
-                          setShowCategoryDropdown(!showCategoryDropdown);
-                        }}
+                        style={styles.editSearchResultItem}
+                        onPress={() => selectEditProduct(product)}
                         activeOpacity={0.7}
                       >
-                        <Text style={styles.categoryOptionText}>
-                          {category.label}
+                        <Text style={styles.editSearchResultText}>
+                          {product.name}
                         </Text>
+                        {product.icon_url && (
+                          <Image
+                            source={
+                              product.icon_url.startsWith("data:")
+                                ? { uri: product.icon_url }
+                                : {
+                                    uri: `data:image/png;base64,${
+                                      product.icon_url.split(",")[1]
+                                    }`,
+                                  }
+                            }
+                            style={styles.editProductImage}
+                            resizeMode="contain"
+                          />
+                        )}
                       </TouchableOpacity>
                     )}
                     keyboardShouldPersistTaps="handled"
                   />
                 </View>
               )}
+
+              {/* Category Selector */}
+              <Selector
+                id="category"
+                label={t("shopping.selectCategory")}
+                value={selectedCategory}
+                options={availableCategories}
+                onSelect={(category) => {
+                  setSelectedCategory(category.key);
+                }}
+                placeholder={t("shopping.noCategory")}
+                style={styles.categoryContainer}
+              />
+
+              {/* Quantity and Unit Selector */}
+              <View style={styles.quantityUnitContainer}>
+                <View style={styles.quantityContainer}>
+                  <Text style={styles.quantityLabel}>
+                    {t("shopping.quantity")}
+                  </Text>
+                  <Input
+                    value={quantity}
+                    onChangeText={setQuantity}
+                    placeholder="1"
+                    keyboardType="number-pad"
+                    maxLength={10}
+                  />
+                </View>
+
+                <View style={styles.unitContainer}>
+                  <Selector
+                    id="unit"
+                    label={t("shopping.unit")}
+                    value={selectedUnit}
+                    options={availableUnits}
+                    onSelect={(unit) => {
+                      setSelectedUnit(unit.key);
+                    }}
+                    placeholder={t("shopping.noUnit")}
+                  />
+                </View>
+              </View>
+
+              {/* Store selector */}
+              <Selector
+                id="store"
+                label={t("shopping.store")}
+                value={selectedStore}
+                options={availableStores}
+                onSelect={(store) => {
+                  setSelectedStore(store.key);
+                }}
+                placeholder={t("shopping.noStore")}
+                style={styles.storeContainer}
+              />
             </View>
           </View>
         </View>
-      </View>
-    </Modal>
+      </Modal>
+    </SelectorProvider>
   );
 }
 
@@ -262,7 +207,7 @@ const styles = {
   editInputLabel: {
     fontSize: 14,
     color: "#333",
-    fontFamily: "Nunito-Regular",
+    fontFamily: "Nunito-Bold",
     marginBottom: 8,
   },
   editInput: {
@@ -312,10 +257,10 @@ const styles = {
     height: 20,
     marginLeft: 10,
   },
+
   quantityUnitContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 10,
   },
   quantityContainer: {
     flex: 1,
@@ -324,123 +269,26 @@ const styles = {
   quantityLabel: {
     fontSize: 14,
     color: "#333",
-    fontFamily: "Nunito-Medium",
+    fontFamily: "Nunito-Bold",
     marginBottom: 8,
   },
-  quantityInput: {
-    height: 40,
-    fontSize: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: "#FFC0CB",
-    borderRadius: 6,
-    backgroundColor: "white",
-  },
+
   unitContainer: {
     flex: 1,
     marginLeft: 8,
     position: "relative",
     overflow: "visible",
   },
-  unitLabel: {
-    fontSize: 14,
-    color: "#333",
-    fontFamily: "Nunito-Medium",
-    marginBottom: 8,
-  },
-  unitButton: {
-    height: 40,
-    borderWidth: 1,
-    borderColor: "#FFC0CB",
-    borderRadius: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+  storeContainer: {
     backgroundColor: "white",
-    justifyContent: "center",
-  },
-  unitButtonText: {
-    fontSize: 16,
-    color: "#333",
-    fontFamily: "Nunito-Regular",
-  },
-  unitDropdown: {
-    position: "absolute",
-    top: 70,
-    left: 0,
-    right: 0,
-    backgroundColor: "white",
-    borderRadius: 6,
-    maxHeight: 200,
-    zIndex: 1000,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  unitOption: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
-  unitOptionText: {
-    fontSize: 14,
-    color: "#333",
-    fontFamily: "Nunito-Regular",
+    borderRadius: 8,
+    marginBottom: 10,
+    overflow: "visible",
   },
   categoryContainer: {
     backgroundColor: "white",
     borderRadius: 8,
     marginBottom: 10,
     overflow: "visible",
-  },
-  categoryLabel: {
-    fontSize: 14,
-    color: "#333",
-    fontFamily: "Nunito-Medium",
-    marginBottom: 8,
-  },
-  categoryButton: {
-    borderWidth: 1,
-    borderColor: "#FFC0CB",
-    borderRadius: 6,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    backgroundColor: "white",
-  },
-  categoryButtonText: {
-    fontSize: 16,
-    color: "#333",
-    fontFamily: "Nunito-Regular",
-  },
-  categoryDropdown: {
-    position: "absolute",
-    top: 75,
-    left: 0,
-    right: 0,
-    backgroundColor: "white",
-    borderRadius: 6,
-    maxHeight: 200,
-    zIndex: 1000,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  categoryOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
-  categoryOptionText: {
-    fontSize: 14,
-    color: "#333",
-    fontFamily: "Nunito-Regular",
   },
 };
