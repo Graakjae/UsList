@@ -183,7 +183,7 @@ export const generateInviteLink = (user, currentListId, getCurrentListName) => {
   const encodedListId = encodeURIComponent(currentListId);
   const inviteCode = `${user.uid}|${encodedListId}|${timestamp}`;
 
-  return `https://list-invite-app.vercel.app/invite/${cleanOwnerName}/${cleanListName}/${timestamp}?code=${inviteCode}`;
+  return `https://uslist.vercel.app/invite/${cleanOwnerName}/${cleanListName}/${timestamp}?code=${inviteCode}`;
 };
 
 // Get items path based on list type
