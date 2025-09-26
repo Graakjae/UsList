@@ -67,12 +67,12 @@ const styles = {
     backgroundColor: "#FFC0CB",
   },
   deleteButtonText: {
-    color: "#fff",
+    color: "#000",
     fontSize: 16,
     fontFamily: "Baloo2-Bold",
   },
   deleteCompletedButtonDisabled: {
-    opacity: 0.7,
+    opacity: 0.4,
   },
   deleteAllButtonDisabled: {
     opacity: 0.7,

@@ -138,8 +138,6 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    borderWidth: 2,
-    borderColor: "#fff",
     backgroundColor: "#f0f0f0",
     justifyContent: "center",
     alignItems: "center",
@@ -155,7 +153,7 @@ const styles = StyleSheet.create({
   remainingCountText: {
     fontSize: 12,
     fontFamily: "Baloo2-Bold",
-    color: "#fff",
+    color: "#000",
   },
   // Modal styles
   modalOverlay: {

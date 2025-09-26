@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   signupButtonText: {
-    color: "#fff",
+    color: "#000",
     fontSize: 16,
     fontFamily: "Baloo2-Bold",
   },

@@ -150,7 +150,7 @@ export default function ShoppingModals({
           {
             text: isCreatingList ? t("shopping.create") : t("shopping.save"),
             style: { backgroundColor: "#FFC0CB" },
-            textStyle: { color: "#fff" },
+            textStyle: { color: "#000" },
             onPress: handleSaveListName,
           },
         ]}
@@ -238,7 +238,7 @@ export default function ShoppingModals({
           {
             text: t("shopping.close"),
             style: { backgroundColor: "#FFC0CB" },
-            textStyle: { color: "#fff" },
+            textStyle: { color: "#000" },
             onPress: () => {
               setShowMembersModal(false);
               openBottomSheet();

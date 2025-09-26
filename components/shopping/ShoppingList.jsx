@@ -46,9 +46,10 @@ export default function ShoppingList({
     );
   }
 
-  const renderItem = ({ item }) => {
+  const renderItem = ({ item, index }) => {
+    const isLastItem = index === sortedItems.length - 1;
     return (
-      <View style={styles.noteLine}>
+      <View style={[styles.noteLine, isLastItem && styles.lastItem]}>
         <View style={styles.holeMargin}>
           <View style={styles.hole} />
         </View>
@@ -76,7 +77,7 @@ export default function ShoppingList({
             {item.store && (
               <Text
                 style={[
-                  styles.itemText,
+                  styles.itemStoreText,
                   {
                     color: item.color || "#333",
                     fontFamily: item.font || "Baloo2-Medium",
@@ -158,10 +159,14 @@ const styles = {
     flex: 1,
     position: "relative",
     backgroundColor: "#fff89d",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e1d96b",
+    marginBottom: 50,
   },
   listContainer: {
     flex: 1,
-    marginBottom: 60,
+    marginBottom: 0,
   },
   noteLine: {
     flexDirection: "row",
@@ -170,6 +175,9 @@ const styles = {
     marginHorizontal: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#e1d96b",
+  },
+  lastItem: {
+    borderBottomWidth: 0,
   },
   holeMargin: {
     width: 24,
@@ -204,6 +212,11 @@ const styles = {
     fontSize: 16,
     fontFamily: "Nunito-Medium",
     color: "#333",
+  },
+  itemStoreText: {
+    fontSize: 12,
+    fontFamily: "Nunito-Regular",
+    color: "#666",
   },
 
   completedText: {
@@ -249,6 +262,6 @@ const styles = {
   createListButtonText: {
     fontSize: 16,
     fontFamily: "Nunito-Medium",
-    color: "white",
+    color: "#000",
   },
 };

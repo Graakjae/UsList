@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   emptyAddButtonText: {
-    color: "#fff",
+    color: "#000",
     fontSize: 16,
     fontFamily: "Baloo2-Bold",
   },

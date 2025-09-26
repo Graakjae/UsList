@@ -97,7 +97,7 @@ export default function ItemInput({
 const styles = {
   inputContainer: {
     flexDirection: "row",
-    marginBottom: 20,
+    marginBottom: 12,
   },
   inputWrapper: {
     flex: 1,
@@ -143,7 +143,7 @@ const styles = {
     alignItems: "center",
   },
   addButtonText: {
-    color: "#fff",
+    color: "#000",
     fontSize: 24,
     fontFamily: "Baloo2-Bold",
   },

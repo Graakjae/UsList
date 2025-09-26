@@ -65,8 +65,6 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 3,
-    borderColor: "#fff",
   },
   nameSection: {
     marginBottom: 8,

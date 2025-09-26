@@ -55,7 +55,7 @@ export default function EditItemModal({
           {
             text: t("shopping.save"),
             style: { backgroundColor: "#FFC0CB", zIndex: -1 },
-            textStyle: { color: "#fff" },
+            textStyle: { color: "#000" },
             onPress: () =>
               saveEditedItem(
                 selectedCategory,
