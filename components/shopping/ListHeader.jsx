@@ -7,7 +7,14 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useTranslation } from "react-i18next";
-import { Text, TouchableOpacity, View } from "react-native";
+import {
+  Modal,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import MembersAvatars from "./MembersAvatars";
 
 export default function ListHeader({
@@ -28,133 +35,150 @@ export default function ListHeader({
   const currentListName = getCurrentListName();
   const { t } = useTranslation();
   return (
-    <View style={styles.headerRow}>
-      <View style={styles.titleContainer}>
-        <View style={styles.titleRow}>
-          <TouchableOpacity
-            style={styles.listSelector}
-            onPress={() => setShowListDropdown(!showListDropdown)}
-          >
-            <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
-              {hasLists ? currentListName : t("shopping.noLists")}
-            </Text>
-            <FontAwesomeIcon icon={faChevronDown} size={16} color="#333" />
-          </TouchableOpacity>
+    <>
+      <View style={styles.headerRow}>
+        <View style={styles.titleContainer}>
+          <View style={styles.titleRow}>
+            <TouchableOpacity
+              style={styles.listSelector}
+              onPress={() => setShowListDropdown(!showListDropdown)}
+            >
+              <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
+                {hasLists ? currentListName : t("shopping.noLists")}
+              </Text>
+              <FontAwesomeIcon icon={faChevronDown} size={16} color="#333" />
+            </TouchableOpacity>
 
-          {hasLists && currentListId && (
-            <MembersAvatars members={listMembers} />
-          )}
+            {hasLists && currentListId && (
+              <MembersAvatars members={listMembers} />
+            )}
+          </View>
         </View>
 
-        {showListDropdown && (
-          <View style={styles.dropdownContainer}>
-            {/* My Lists */}
-            {lists.length > 0 && (
-              <>
-                <View style={styles.dropdownSectionHeader}>
-                  <Text style={styles.dropdownSectionText}>
-                    {t("shopping.myLists")}
-                  </Text>
-                </View>
-                {lists.map((list) => (
-                  <TouchableOpacity
-                    key={list.id}
-                    style={
-                      currentListId === list.id
-                        ? [styles.dropdownItemSelected, styles.dropdownItem]
-                        : styles.dropdownItem
-                    }
-                    onPress={() => {
-                      setCurrentListId(list.id);
-                      setShowListDropdown(false);
-                    }}
-                  >
-                    <Text
-                      style={
-                        currentListId === list.id
-                          ? styles.dropdownSelectedText
-                          : styles.dropdownText
-                      }
-                    >
-                      {list.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </>
-            )}
-
-            {/* Shared Lists */}
-            {sharedLists.length > 0 && (
-              <>
-                <View style={styles.dropdownSectionHeader}>
-                  <Text style={styles.dropdownSectionText}>
-                    {t("shopping.sharedLists")}
-                  </Text>
-                </View>
-                {sharedLists.map((sharedList) => (
-                  <TouchableOpacity
-                    key={sharedList.id}
-                    style={
-                      currentListId === sharedList.id
-                        ? [styles.dropdownItemSelected, styles.dropdownItem]
-                        : styles.dropdownItem
-                    }
-                    onPress={() => {
-                      selectSharedList(sharedList);
-                      setShowListDropdown(false);
-                    }}
-                  >
-                    <View style={styles.sharedListItem}>
-                      <Text
-                        style={
-                          currentListId === sharedList.id
-                            ? styles.dropdownSelectedText
-                            : styles.dropdownText
-                        }
-                      >
-                        {sharedList.name}
-                      </Text>
-                    </View>
-                    <TouchableOpacity
-                      onPress={() => leaveSharedList(sharedList)}
-                      style={styles.deleteListButton}
-                    >
-                      <FontAwesomeIcon
-                        icon={sharedList.isOwner ? faTrash : faUserTimes}
-                        size={14}
-                        color="#F44336"
-                      />
-                    </TouchableOpacity>
-                  </TouchableOpacity>
-                ))}
-              </>
-            )}
-
+        {hasLists && currentListId && (
+          <View style={styles.headerButtons}>
             <TouchableOpacity
-              style={styles.addListButton}
-              onPress={() => {
-                onCreateNewList();
-                setShowListDropdown(false);
-              }}
+              onPress={openBottomSheet}
+              style={styles.headerIconButton}
             >
-              <FontAwesomeIcon icon={faPlus} size={14} color="#FFC0CB" />
-              <Text style={styles.addListText}>{t("shopping.addList")}</Text>
+              <FontAwesomeIcon icon={faEllipsisV} size={20} color="#333" />
             </TouchableOpacity>
           </View>
         )}
       </View>
 
-      {hasLists && currentListId && (
-        <View style={styles.headerButtons}>
-          <TouchableOpacity
-            onPress={openBottomSheet}
-            style={styles.headerIconButton}
-          >
-            <FontAwesomeIcon icon={faEllipsisV} size={20} color="#333" />
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
+      <Modal
+        visible={showListDropdown}
+        transparent={true}
+        animationType="none"
+        onRequestClose={() => setShowListDropdown(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowListDropdown(false)}
+        >
+          <View style={styles.dropdownContainer}>
+            <ScrollView
+              style={styles.dropdownScrollView}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              {/* My Lists */}
+              {lists.length > 0 && (
+                <>
+                  <View style={styles.dropdownSectionHeader}>
+                    <Text style={styles.dropdownSectionText}>
+                      {t("shopping.myLists")}
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.addListButton}
+                      onPress={() => {
+                        onCreateNewList();
+                        setShowListDropdown(false);
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faPlus} size={14} color="#000" />
+                    </TouchableOpacity>
+                  </View>
+                  {lists.map((list) => (
+                    <TouchableOpacity
+                      key={list.id}
+                      style={
+                        currentListId === list.id
+                          ? [styles.dropdownItemSelected, styles.dropdownItem]
+                          : styles.dropdownItem
+                      }
+                      onPress={() => {
+                        setCurrentListId(list.id);
+                        setShowListDropdown(false);
+                      }}
+                    >
+                      <Text
+                        style={
+                          currentListId === list.id
+                            ? styles.dropdownSelectedText
+                            : styles.dropdownText
+                        }
+                      >
+                        {list.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </>
+              )}
+
+              {/* Shared Lists */}
+              {sharedLists.length > 0 && (
+                <>
+                  <View style={styles.dropdownSectionHeader}>
+                    <Text style={styles.dropdownSectionText}>
+                      {t("shopping.sharedLists")}
+                    </Text>
+                  </View>
+                  {sharedLists.map((sharedList) => (
+                    <TouchableOpacity
+                      key={sharedList.id}
+                      style={
+                        currentListId === sharedList.id
+                          ? [styles.dropdownItemSelected, styles.dropdownItem]
+                          : styles.dropdownItem
+                      }
+                      onPress={() => {
+                        selectSharedList(sharedList);
+                        setShowListDropdown(false);
+                      }}
+                    >
+                      <View style={styles.sharedListItem}>
+                        <Text
+                          style={
+                            currentListId === sharedList.id
+                              ? styles.dropdownSelectedText
+                              : styles.dropdownText
+                          }
+                        >
+                          {sharedList.name}
+                        </Text>
+                      </View>
+                      <TouchableOpacity
+                        onPress={() => leaveSharedList(sharedList)}
+                        style={styles.deleteListButton}
+                      >
+                        <FontAwesomeIcon
+                          icon={sharedList.isOwner ? faTrash : faUserTimes}
+                          size={14}
+                          color="#F44336"
+                        />
+                      </TouchableOpacity>
+                    </TouchableOpacity>
+                  ))}
+                </>
+              )}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </>
   );
 }
 
@@ -165,6 +189,8 @@ const styles = {
     justifyContent: "space-between",
     marginBottom: 20,
     marginTop: 40,
+    zIndex: 1001,
+    backgroundColor: "#fff",
   },
   headerButtons: {
     flexDirection: "row",
@@ -193,11 +219,16 @@ const styles = {
     alignItems: "center",
     gap: 8,
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "transparent",
+    position: "relative",
+  },
   dropdownContainer: {
     position: "absolute",
-    top: 40,
-    left: 0,
-    right: 0,
+    top: Platform.OS === "ios" ? 100 : 75,
+    left: 20,
+    right: 20,
     backgroundColor: "white",
     borderRadius: 8,
     borderWidth: 1,
@@ -207,13 +238,13 @@ const styles = {
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-    zIndex: 1000,
+    maxHeight: 500,
+    overflow: "hidden",
   },
-  dropDownOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
+  dropdownScrollView: {
+    maxHeight: 500,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
   },
   dropdownItem: {
     flexDirection: "row",
@@ -244,16 +275,12 @@ const styles = {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    padding: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
   },
-  addListText: {
-    fontSize: 16,
-    fontFamily: "Nunito-Regular",
-    color: "#FFC0CB",
-  },
+
   dropdownSectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 12,
     paddingVertical: 8,
     backgroundColor: "#f8f8f8",
@@ -261,10 +288,9 @@ const styles = {
     borderBottomColor: "#eee",
   },
   dropdownSectionText: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "Baloo2-Bold",
     color: "#666",
-    textTransform: "uppercase",
   },
   sharedListItem: {
     flex: 1,
