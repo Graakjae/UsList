@@ -1,12 +1,13 @@
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, ScrollView, StyleSheet } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import EditProfileModal from "@/components/profile/EditProfileModal";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileMenu from "@/components/profile/ProfileMenu";
+import Modal from "@/components/ui/Modal";
 import { useAuth } from "@/hooks/useAuth";
 import useProfile from "@/hooks/useProfile";
 
@@ -15,6 +16,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user, signOut } = useAuth();
   const { t } = useTranslation();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const {
     // State
@@ -33,17 +35,13 @@ export default function ProfileScreen() {
   } = useProfile(user);
 
   const handleSignOut = () => {
-    Alert.alert(t("profile.logout"), t("profile.logoutConfirm"), [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: t("profile.logout"),
-        style: "destructive",
-        onPress: () => {
-          signOut();
-          router.replace("/login");
-        },
-      },
-    ]);
+    setShowLogoutModal(true);
+  };
+
+  const confirmSignOut = () => {
+    signOut();
+    router.replace("/login");
+    setShowLogoutModal(false);
   };
 
   const handleManageProducts = () => {
@@ -79,6 +77,25 @@ export default function ProfileScreen() {
         newDisplayName={newDisplayName}
         setNewDisplayName={setNewDisplayName}
         onChooseImage={chooseImage}
+      />
+
+      <Modal
+        visible={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        title={t("profile.logoutConfirm")}
+        buttons={[
+          {
+            text: t("common.cancel"),
+            onPress: () => setShowLogoutModal(false),
+            style: { backgroundColor: "#f0f0f0" },
+          },
+          {
+            text: t("profile.logout"),
+            onPress: confirmSignOut,
+            style: { backgroundColor: "#F44336" },
+            textStyle: { color: "#fff" },
+          },
+        ]}
       />
     </ScrollView>
   );

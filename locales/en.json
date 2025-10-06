@@ -151,7 +151,8 @@
     "fillAllFields": "Fill in all fields",
     "passwordsDontMatch": "Passwords don't match",
     "backToLogin": "Back to login",
-    "createAccount": "Create account"
+    "createAccount": "Create account",
+    "emailOrPasswordWrong": "Invalid email or password"
   },
   "common": {
     "loading": "Loading...",

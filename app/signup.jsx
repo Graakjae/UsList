@@ -3,7 +3,6 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -23,14 +22,21 @@ export default function SignupScreen() {
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  const clearError = () => {
+    setError("");
+  };
 
   const handleSignup = async () => {
+    clearError();
+
     if (!name || !email || !password || !repeatPassword) {
-      Alert.alert(t("common.error"), t("auth.fillAllFields"));
+      setError(t("auth.fillAllFields"));
       return;
     }
     if (password !== repeatPassword) {
-      Alert.alert(t("common.error"), t("auth.passwordsDontMatch"));
+      setError(t("auth.passwordsDontMatch"));
       return;
     }
     setIsSubmitting(true);
@@ -38,10 +44,8 @@ export default function SignupScreen() {
       await signUpWithEmail(email, password, name);
       router.replace("/(tabs)");
     } catch (error) {
-      Alert.alert(
-        t("auth.signupError"),
-        error.message || t("auth.signupFailed")
-      );
+      // Generic error message for all signup errors
+      setError(t("auth.signupFailed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -64,7 +68,10 @@ export default function SignupScreen() {
             placeholder={t("auth.name")}
             autoCapitalize="words"
             value={name}
-            onChangeText={setName}
+            onChangeText={(text) => {
+              setName(text);
+              clearError();
+            }}
             editable={!isSubmitting}
             maxLength={50}
           />
@@ -73,30 +80,43 @@ export default function SignupScreen() {
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              clearError();
+            }}
             editable={!isSubmitting}
           />
           <Input
             placeholder={t("auth.password")}
             secureTextEntry
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              clearError();
+            }}
             editable={!isSubmitting}
           />
           <Input
             placeholder={t("auth.confirmPassword")}
             secureTextEntry
             value={repeatPassword}
-            onChangeText={setRepeatPassword}
+            onChangeText={(text) => {
+              setRepeatPassword(text);
+              clearError();
+            }}
             editable={!isSubmitting}
           />
+
+          {/* Error Message */}
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
           <TouchableOpacity
             style={styles.signupButton}
             onPress={handleSignup}
             disabled={isSubmitting}
           >
             <Text style={styles.signupButtonText}>
-              {t("auth.createAccount")}
+              {isSubmitting ? t("common.loading") : t("auth.createAccount")}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -150,6 +170,12 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
 
+  errorText: {
+    color: "#ff4444",
+    fontSize: 14,
+    fontFamily: "Nunito-Regular",
+    marginBottom: 16,
+  },
   signupButton: {
     backgroundColor: "#FFC0CB",
     paddingVertical: 16,

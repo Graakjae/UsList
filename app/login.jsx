@@ -27,6 +27,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -36,10 +37,11 @@ export default function LoginScreen() {
 
   const handleEmailLogin = async () => {
     setIsSubmitting(true);
+    setError("");
     try {
       await signInWithEmail(email, password);
     } catch (error) {
-      Alert.alert(t("auth.loginError"), error.message || t("auth.loginFailed"));
+      setError(t("auth.emailOrPasswordWrong"));
     } finally {
       setIsSubmitting(false);
     }
@@ -96,7 +98,7 @@ export default function LoginScreen() {
           >
             <Text style={styles.loginButtonText}>{t("auth.login")}</Text>
           </TouchableOpacity>
-
+          {error && <Text style={styles.errorText}>{error}</Text>}
           <TouchableOpacity
             style={styles.linkButton}
             onPress={() => router.push("/signup")}
@@ -254,5 +256,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#FFC0CB",
     fontFamily: "Baloo2-Bold",
+  },
+  errorText: {
+    color: "#FF0000",
+    fontSize: 14,
+    fontFamily: "Nunito-Regular",
+    marginBottom: 16,
   },
 });

@@ -4,8 +4,8 @@ import { Text, TouchableOpacity, View } from "react-native";
 export default function DeleteButtons({
   hasItems,
   hasCompletedItems,
-  deleteCompletedItems,
-  deleteAllItems,
+  setShowDeleteCompletedModal,
+  setShowDeleteAllModal,
   currentListId,
 }) {
   const { t } = useTranslation();
@@ -19,7 +19,7 @@ export default function DeleteButtons({
           !currentListId ||
             (!hasCompletedItems && styles.deleteCompletedButtonDisabled),
         ]}
-        onPress={deleteCompletedItems}
+        onPress={() => setShowDeleteCompletedModal(true)}
         disabled={!currentListId || !hasCompletedItems}
       >
         <Text style={styles.deleteButtonText}>
@@ -32,7 +32,7 @@ export default function DeleteButtons({
           styles.deleteAllButton,
           !currentListId || (!hasItems && styles.deleteAllButtonDisabled),
         ]}
-        onPress={deleteAllItems}
+        onPress={() => setShowDeleteAllModal(true)}
         disabled={!currentListId || !hasItems}
       >
         <Text style={styles.deleteButtonText}>{t("shopping.deleteAll")}</Text>

@@ -28,7 +28,12 @@ export default function ShoppingModals({
   setIsCreatingList,
   showMembersModal,
   setShowMembersModal,
-
+  showDeleteListModal,
+  setShowDeleteListModal,
+  showDeleteCompletedModal,
+  setShowDeleteCompletedModal,
+  showDeleteAllModal,
+  setShowDeleteAllModal,
   // Modal data
   editListName,
   setEditListName,
@@ -37,10 +42,12 @@ export default function ShoppingModals({
   // Functions
   addNewList,
   saveListName,
-  deleteList,
+  performDeleteList,
   removeUserFromList,
   openBottomSheet,
   closeBottomSheet,
+  deleteCompletedItems,
+  deleteAllItems,
 
   // Other props
   currentListId,
@@ -106,8 +113,13 @@ export default function ShoppingModals({
 
   // Handle delete list
   const handleDeleteList = () => {
-    deleteList(currentListId);
+    setShowDeleteListModal(true);
     closeBottomSheet();
+  };
+
+  const confirmDeleteList = async () => {
+    setShowDeleteListModal(false);
+    await performDeleteList(currentListId);
   };
 
   // Handle save list name (create or edit)
@@ -149,9 +161,13 @@ export default function ShoppingModals({
           },
           {
             text: isCreatingList ? t("shopping.create") : t("shopping.save"),
-            style: { backgroundColor: "#FFC0CB" },
+            style: {
+              opacity: editListName.trim() === "" ? 0.5 : 1,
+              backgroundColor: "#FFC0CB",
+            },
             textStyle: { color: "#000" },
             onPress: handleSaveListName,
+            disabled: editListName.trim() === "",
           },
         ]}
       >
@@ -224,6 +240,80 @@ export default function ShoppingModals({
             </>
           )}
         </View>
+      </Modal>
+
+      {/* Delete List Confirmation Modal */}
+      <Modal
+        visible={showDeleteListModal}
+        onClose={() => setShowDeleteListModal(false)}
+        title={t("shopping.deleteList")}
+        buttons={[
+          {
+            text: t("shopping.cancel"),
+            onPress: () => setShowDeleteListModal(false),
+            style: styles.cancelButton,
+          },
+          {
+            text: t("shopping.delete"),
+            onPress: confirmDeleteList,
+            style: styles.deleteButton,
+            textStyle: styles.deleteButtonText,
+          },
+        ]}
+      >
+        <Text style={styles.modalText}>{t("shopping.deleteListConfirm")}</Text>
+      </Modal>
+
+      {/* Delete Completed Items Confirmation Modal */}
+      <Modal
+        visible={showDeleteCompletedModal}
+        onClose={() => setShowDeleteCompletedModal(false)}
+        title={t("shopping.deleteCompleted")}
+        buttons={[
+          {
+            text: t("shopping.cancel"),
+            onPress: () => setShowDeleteCompletedModal(false),
+            style: styles.cancelButton,
+          },
+          {
+            text: t("shopping.delete"),
+            onPress: () => {
+              deleteCompletedItems();
+              setShowDeleteCompletedModal(false);
+            },
+            style: styles.deleteButton,
+            textStyle: styles.deleteButtonText,
+          },
+        ]}
+      >
+        <Text style={styles.modalText}>
+          {t("shopping.deleteCompletedConfirm")}
+        </Text>
+      </Modal>
+
+      {/* Delete All Items Confirmation Modal */}
+      <Modal
+        visible={showDeleteAllModal}
+        onClose={() => setShowDeleteAllModal(false)}
+        title={t("shopping.deleteAll")}
+        buttons={[
+          {
+            text: t("shopping.cancel"),
+            onPress: () => setShowDeleteAllModal(false),
+            style: styles.cancelButton,
+          },
+          {
+            text: t("shopping.delete"),
+            onPress: () => {
+              deleteAllItems();
+              setShowDeleteAllModal(false);
+            },
+            style: styles.deleteButton,
+            textStyle: styles.deleteButtonText,
+          },
+        ]}
+      >
+        <Text style={styles.modalText}>{t("shopping.deleteAllConfirm")}</Text>
       </Modal>
 
       {/* Members Modal */}
@@ -363,5 +453,21 @@ const styles = {
     textAlign: "center",
     marginBottom: 20,
     lineHeight: 20,
+  },
+  cancelButton: {
+    backgroundColor: "#f0f0f0",
+  },
+  deleteButton: {
+    backgroundColor: "#F44336",
+  },
+  deleteButtonText: {
+    color: "#fff",
+  },
+  modalText: {
+    fontSize: 16,
+    fontFamily: "Nunito-Regular",
+    color: "#333",
+    textAlign: "center",
+    marginBottom: 20,
   },
 };

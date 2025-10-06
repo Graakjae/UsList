@@ -47,9 +47,8 @@ export default function ShoppingList({
   }
 
   const renderItem = ({ item, index }) => {
-    const isLastItem = index === sortedItems.length - 1;
     return (
-      <View style={[styles.noteLine, isLastItem && styles.lastItem]}>
+      <View style={[styles.noteLine]}>
         <View style={styles.holeMargin}>
           <View style={styles.hole} />
         </View>

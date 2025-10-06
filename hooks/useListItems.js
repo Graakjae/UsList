@@ -30,6 +30,9 @@ export default function useListItems(
   const [quantity, setQuantity] = useState("");
   const [selectedUnit, setSelectedUnit] = useState("");
   const [selectedStore, setSelectedStore] = useState("");
+  const [showDeleteCompletedModal, setShowDeleteCompletedModal] =
+    useState(false);
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
 
   // Search function for editing
   const handleEditSearch = (text) => {
@@ -193,47 +196,25 @@ export default function useListItems(
   const deleteCompletedItems = () => {
     if (!user || !currentListId) return;
 
-    Alert.alert(
-      t("shopping.deleteCompleted"),
-      t("shopping.deleteCompletedConfirm"),
-      [
-        { text: t("shopping.cancel"), style: "cancel" },
-        {
-          text: t("shopping.delete"),
-          style: "destructive",
-          onPress: () => {
-            const completedItems = items.filter((item) => item.completed);
-            completedItems.forEach((item) => {
-              const itemPath = getItemPath(user, currentListId, item.id);
-              if (itemPath) {
-                const itemRef = ref(database, itemPath);
-                remove(itemRef);
-              }
-            });
-          },
-        },
-      ]
-    );
+    const completedItems = items.filter((item) => item.completed);
+    completedItems.forEach((item) => {
+      const itemPath = getItemPath(user, currentListId, item.id);
+      if (itemPath) {
+        const itemRef = ref(database, itemPath);
+        remove(itemRef);
+      }
+    });
   };
 
   // Delete all items
   const deleteAllItems = () => {
     if (!user || !currentListId) return;
 
-    Alert.alert(t("shopping.deleteAll"), t("shopping.deleteAllConfirm"), [
-      { text: t("shopping.cancel"), style: "cancel" },
-      {
-        text: t("shopping.delete"),
-        style: "destructive",
-        onPress: () => {
-          const itemsPath = getItemsPath(user, currentListId);
-          if (itemsPath) {
-            const itemsRef = ref(database, itemsPath);
-            remove(itemsRef);
-          }
-        },
-      },
-    ]);
+    const itemsPath = getItemsPath(user, currentListId);
+    if (itemsPath) {
+      const itemsRef = ref(database, itemsPath);
+      remove(itemsRef);
+    }
   };
 
   return {
@@ -256,6 +237,10 @@ export default function useListItems(
     setSelectedUnit,
     selectedStore,
     setSelectedStore,
+    showDeleteCompletedModal,
+    setShowDeleteCompletedModal,
+    showDeleteAllModal,
+    setShowDeleteAllModal,
     // Functions
     handleEditSearch,
     selectEditProduct,

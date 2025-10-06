@@ -25,6 +25,7 @@ export default function ShoppingScreen() {
     showListDropdown,
     showBottomSheet,
     showEditListModal,
+    showDeleteListModal,
     isCreatingList,
     editListName,
     listMembers,
@@ -40,6 +41,10 @@ export default function ShoppingScreen() {
     setSelectedUnit,
     selectedStore,
     setSelectedStore,
+    showDeleteCompletedModal,
+    setShowDeleteCompletedModal,
+    showDeleteAllModal,
+    setShowDeleteAllModal,
     // Computed values
     sortedItems,
     hasCompletedItems,
@@ -50,6 +55,7 @@ export default function ShoppingScreen() {
     setShowBottomSheet,
     setShowEditListModal,
     setIsCreatingList,
+    setShowDeleteListModal,
     setEditListName,
     setShowMembersModal,
     setShowInviteCodeModal,
@@ -66,10 +72,13 @@ export default function ShoppingScreen() {
     saveEditedItem,
     cancelEditingItem,
     deleteCompletedItems,
+    performDeleteCompletedItems,
     deleteAllItems,
+    performDeleteAllItems,
     addNewList,
     handleCreateNewList,
     deleteList,
+    performDeleteList,
     saveListName,
     selectSharedList,
     leaveSharedList,
@@ -146,8 +155,8 @@ export default function ShoppingScreen() {
           <DeleteButtons
             hasItems={hasItems}
             hasCompletedItems={hasCompletedItems}
-            deleteCompletedItems={deleteCompletedItems}
-            deleteAllItems={deleteAllItems}
+            setShowDeleteCompletedModal={setShowDeleteCompletedModal}
+            setShowDeleteAllModal={setShowDeleteAllModal}
             currentListId={currentListId}
           />
 
@@ -163,6 +172,12 @@ export default function ShoppingScreen() {
             setShowMembersModal={setShowMembersModal}
             showInviteCodeModal={showInviteCodeModal}
             setShowInviteCodeModal={setShowInviteCodeModal}
+            showDeleteListModal={showDeleteListModal}
+            setShowDeleteListModal={setShowDeleteListModal}
+            showDeleteCompletedModal={showDeleteCompletedModal}
+            setShowDeleteCompletedModal={setShowDeleteCompletedModal}
+            showDeleteAllModal={showDeleteAllModal}
+            setShowDeleteAllModal={setShowDeleteAllModal}
             // Modal data
             editListName={editListName}
             setEditListName={setEditListName}
@@ -170,7 +185,9 @@ export default function ShoppingScreen() {
             // Functions
             addNewList={addNewList}
             saveListName={saveListName}
-            deleteList={deleteList}
+            performDeleteList={performDeleteList}
+            deleteCompletedItems={deleteCompletedItems}
+            deleteAllItems={deleteAllItems}
             removeUserFromList={removeUserFromList}
             openBottomSheet={openBottomSheet}
             closeBottomSheet={closeBottomSheet}

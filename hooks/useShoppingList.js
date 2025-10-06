@@ -35,6 +35,7 @@ export default function useShoppingList() {
   // UI state
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [showEditListModal, setShowEditListModal] = useState(false);
+  const [showDeleteListModal, setShowDeleteListModal] = useState(false);
   const [isCreatingList, setIsCreatingList] = useState(false);
   const [editListName, setEditListName] = useState("");
   const [userListColor, setUserListColor] = useState("#333");
@@ -184,59 +185,69 @@ export default function useShoppingList() {
     setShowEditListModal(true);
   };
 
-  // Delete list
-  const deleteList = (listId) => {
+  const deleteList = (listId, onConfirm) => {
     if (!user) return;
 
-    Alert.alert(t("shopping.deleteList"), t("shopping.deleteListConfirm"), [
-      { text: t("shopping.cancel"), style: "cancel" },
-      {
-        text: t("shopping.delete"),
-        style: "destructive",
-        onPress: async () => {
-          try {
-            setListsLoading(true);
-
-            const listRef = ref(
-              database,
-              `users/${user.uid}/shoppingLists/${listId}`
-            );
-            await remove(listRef);
-
-            const itemsRef = ref(
-              database,
-              `users/${user.uid}/shoppingItems/${listId}`
-            );
-            await remove(itemsRef);
-
-            // If this was the current list, select another list if available
-            if (currentListId === listId) {
-              // Check if there are other lists available
-              const remainingLists = lists.filter((l) => l.id !== listId);
-              const hasOtherLists =
-                remainingLists.length > 0 ||
-                (inviteSystem?.sharedLists?.length || 0) > 0;
-
-              if (hasOtherLists) {
-                // Select first available list
-                if (remainingLists.length > 0) {
-                  setCurrentListIdWithSave(remainingLists[0].id);
-                } else if (inviteSystem?.sharedLists?.length > 0) {
-                  setCurrentListIdWithSave(inviteSystem.sharedLists[0].id);
-                }
-              } else {
-                // No lists left, clear selection
-                setCurrentListIdWithSave(null);
-              }
-            }
-          } catch (error) {
-            console.error("Error deleting list:", error);
-            Alert.alert("Fejl", "Kunne ikke slette listen");
-            setListsLoading(false);
-          }
+    if (onConfirm) {
+      // Hvis onConfirm callback er givet, kald den i stedet for Alert
+      onConfirm();
+    } else {
+      // Fallback til Alert hvis ingen callback er givet
+      Alert.alert(t("shopping.deleteList"), t("shopping.deleteListConfirm"), [
+        { text: t("shopping.cancel"), style: "cancel" },
+        {
+          text: t("shopping.delete"),
+          style: "destructive",
+          onPress: async () => {
+            await performDeleteList(listId);
+          },
         },
-      },
-    ]);
+      ]);
+    }
+  };
+
+  const performDeleteList = async (listId) => {
+    try {
+      setListsLoading(true);
+
+      const listRef = ref(
+        database,
+        `users/${user.uid}/shoppingLists/${listId}`
+      );
+      await remove(listRef);
+
+      const itemsRef = ref(
+        database,
+        `users/${user.uid}/shoppingItems/${listId}`
+      );
+      await remove(itemsRef);
+
+      // If this was the current list, select another list if available
+      if (currentListId === listId) {
+        // Check if there are other lists available
+        const remainingLists = lists.filter((l) => l.id !== listId);
+        const hasOtherLists =
+          remainingLists.length > 0 ||
+          (inviteSystem?.sharedLists?.length || 0) > 0;
+
+        if (hasOtherLists) {
+          // Select first available list
+          if (remainingLists.length > 0) {
+            setCurrentListIdWithSave(remainingLists[0].id);
+          } else if (inviteSystem?.sharedLists?.length > 0) {
+            setCurrentListIdWithSave(inviteSystem.sharedLists[0].id);
+          }
+        } else {
+          // No lists left, clear selection
+          setCurrentListIdWithSave(null);
+        }
+      }
+    } catch (error) {
+      console.error("Error deleting list:", error);
+      Alert.alert("Fejl", "Kunne ikke slette listen");
+    } finally {
+      setListsLoading(false);
+    }
   };
 
   // Save list name
@@ -766,6 +777,8 @@ export default function useShoppingList() {
     setShowBottomSheet,
     showEditListModal,
     setShowEditListModal,
+    showDeleteListModal,
+    setShowDeleteListModal,
     isCreatingList,
     setIsCreatingList,
     editListName,
@@ -789,6 +802,7 @@ export default function useShoppingList() {
     addNewList,
     handleCreateNewList,
     deleteList,
+    performDeleteList,
     saveListName,
     openBottomSheet,
     closeBottomSheet,

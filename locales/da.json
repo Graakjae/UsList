@@ -151,7 +151,8 @@
     "fillAllFields": "Udfyld alle felter",
     "passwordsDontMatch": "Kodeordene matcher ikke",
     "backToLogin": "Tilbage til login",
-    "createAccount": "Opret konto"
+    "createAccount": "Opret konto",
+    "emailOrPasswordWrong": "Ugyldig email eller adgangskode"
   },
   "common": {
     "loading": "Indlæser...",

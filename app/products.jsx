@@ -78,7 +78,7 @@ export default function Products() {
 
       {activeTab === "user" && (
         <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
-          <FontAwesomeIcon icon={faPlus} size={16} color="#fff" />
+          <FontAwesomeIcon icon={faPlus} size={16} color="#000" />
           <Text style={styles.addButtonText}>{t("products.addProduct")}</Text>
         </TouchableOpacity>
       )}
