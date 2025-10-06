@@ -635,7 +635,7 @@ export default function useShoppingList() {
       if (settingsUnsubscribe) settingsUnsubscribe();
       if (sharedListsUnsubscribe) sharedListsUnsubscribe();
     };
-  }, [user]);
+  }, [user, i18n.language]);
 
   // Auto-select first available list if no list is currently selected
   useEffect(() => {
