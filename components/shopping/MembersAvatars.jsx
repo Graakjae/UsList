@@ -137,15 +137,14 @@ const styles = StyleSheet.create({
   avatar: {
     width: 32,
     height: 32,
-    borderRadius: 16,
-    backgroundColor: "#f0f0f0",
+    borderRadius: 14,
     justifyContent: "center",
     alignItems: "center",
   },
   avatarImage: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 50,
   },
   remainingCount: {
     backgroundColor: "#FFC0CB",
