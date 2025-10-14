@@ -12,6 +12,8 @@ export default function useListMembers(currentListId, sharedLists) {
   // State
   const [listMembers, setListMembers] = useState([]);
   const [showMembersModal, setShowMembersModal] = useState(false);
+  const [showRemoveUserModal, setShowRemoveUserModal] = useState(false);
+  const [userToRemove, setUserToRemove] = useState(null);
 
   // Helper function to get list path information
   const getListPathInfo = (currentListId, sharedLists, user) => {
@@ -137,29 +139,32 @@ export default function useListMembers(currentListId, sharedLists) {
     }
   };
 
-  // Remove user from list
+  // Remove user from list - sets state to show modal
   const removeUserFromList = (userId) => {
     if (!user || !currentListId) return;
 
-    Alert.alert(t("shopping.removeUser"), t("shopping.removeUserConfirm"), [
-      { text: t("shopping.cancel"), style: "cancel" },
-      {
-        text: t("shopping.remove"),
-        style: "destructive",
-        onPress: async () => {
-          try {
-            const memberRef = ref(
-              database,
-              `users/${user.uid}/shoppingLists/${currentListId}/members/${userId}`
-            );
-            await remove(memberRef);
-          } catch (error) {
-            console.error("Error removing user:", error);
-            Alert.alert("Fejl", "Kunne ikke fjerne bruger");
-          }
-        },
-      },
-    ]);
+    setShowMembersModal(false); // Close members modal first
+    // Small delay to ensure smooth modal transition
+    setTimeout(() => {
+      setUserToRemove(userId);
+      setShowRemoveUserModal(true);
+    }, 300);
+  };
+
+  // Perform user removal
+  const performRemoveUser = async () => {
+    if (!user || !currentListId || !userToRemove) return;
+
+    try {
+      const memberRef = ref(
+        database,
+        `users/${user.uid}/shoppingLists/${currentListId}/members/${userToRemove}`
+      );
+      await remove(memberRef);
+    } catch (error) {
+      console.error("Error removing user:", error);
+      Alert.alert(t("shopping.error"), t("shopping.errorRemovingUser"));
+    }
   };
 
   return {
@@ -168,9 +173,14 @@ export default function useListMembers(currentListId, sharedLists) {
     setListMembers,
     showMembersModal,
     setShowMembersModal,
+    showRemoveUserModal,
+    setShowRemoveUserModal,
+    userToRemove,
+    setUserToRemove,
 
     // Functions
     loadListMembers,
     removeUserFromList,
+    performRemoveUser,
   };
 }

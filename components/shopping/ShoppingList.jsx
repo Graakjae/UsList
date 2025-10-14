@@ -1,3 +1,5 @@
+import { faCheck } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React, { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
@@ -49,14 +51,25 @@ export default function ShoppingList({
   const renderItem = ({ item, index }) => {
     return (
       <View style={[styles.noteLine]}>
-        <View style={styles.holeMargin}>
-          <View style={styles.hole} />
-        </View>
+        <TouchableOpacity
+          style={styles.holeMargin}
+          onPress={() => toggleItem(item.id)}
+        >
+          <View style={styles.hole}>
+            {item.completed && (
+              <FontAwesomeIcon
+                icon={faCheck}
+                size={12}
+                color="#007806"
+                style={styles.checkIcon}
+              />
+            )}
+          </View>
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.item}
-          onPress={() => toggleItem(item.id)}
-          onLongPress={() => startEditingItem(item)}
+          onPress={() => startEditingItem(item)}
         >
           <View style={styles.itemTextContainer}>
             <Text
@@ -179,9 +192,12 @@ const styles = {
     borderBottomWidth: 0,
   },
   holeMargin: {
-    width: 24,
+    height: 52,
     alignItems: "center",
     justifyContent: "center",
+    paddingLeft: 12,
+    paddingRight: 12,
+    marginRight: 8,
   },
   hole: {
     width: 15,
@@ -190,14 +206,19 @@ const styles = {
     borderRadius: 50,
     borderWidth: 1,
     borderColor: "#ccc",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  checkIcon: {
+    marginTop: 1,
   },
   item: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 16,
-    paddingHorizontal: 12,
+    paddingVertical: 12,
+    paddingRight: 12,
   },
   itemTextContainer: {
     flex: 1,
@@ -220,11 +241,9 @@ const styles = {
 
   completedText: {
     textDecorationLine: "line-through",
-    color: "red",
+    color: "#707070",
   },
-  noCategoryText: {
-    fontStyle: "italic",
-  },
+
   categoryIcon: {
     fontSize: 20,
     width: 25,
