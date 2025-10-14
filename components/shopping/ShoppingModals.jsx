@@ -34,16 +34,20 @@ export default function ShoppingModals({
   setShowDeleteCompletedModal,
   showDeleteAllModal,
   setShowDeleteAllModal,
+  showRemoveUserModal,
+  setShowRemoveUserModal,
   // Modal data
   editListName,
   setEditListName,
   listMembers,
+  userToRemove,
 
   // Functions
   addNewList,
   saveListName,
   performDeleteList,
   removeUserFromList,
+  performRemoveUser,
   openBottomSheet,
   closeBottomSheet,
   deleteCompletedItems,
@@ -156,16 +160,12 @@ export default function ShoppingModals({
         buttons={[
           {
             text: t("shopping.cancel"),
-            style: { backgroundColor: "#f0f0f0" },
+            variant: "secondary",
             onPress: handleCloseListNameModal,
           },
           {
             text: isCreatingList ? t("shopping.create") : t("shopping.save"),
-            style: {
-              opacity: editListName.trim() === "" ? 0.5 : 1,
-              backgroundColor: "#FFC0CB",
-            },
-            textStyle: { color: "#000" },
+            variant: "primary",
             onPress: handleSaveListName,
             disabled: editListName.trim() === "",
           },
@@ -188,7 +188,7 @@ export default function ShoppingModals({
         buttons={[
           {
             text: t("shopping.close"),
-            style: { backgroundColor: "#f0f0f0" },
+            variant: "secondary",
             onPress: closeBottomSheet,
           },
         ]}
@@ -250,14 +250,13 @@ export default function ShoppingModals({
         buttons={[
           {
             text: t("shopping.cancel"),
+            variant: "secondary",
             onPress: () => setShowDeleteListModal(false),
-            style: styles.cancelButton,
           },
           {
             text: t("shopping.delete"),
+            variant: "delete",
             onPress: confirmDeleteList,
-            style: styles.deleteButton,
-            textStyle: styles.deleteButtonText,
           },
         ]}
       >
@@ -272,17 +271,16 @@ export default function ShoppingModals({
         buttons={[
           {
             text: t("shopping.cancel"),
+            variant: "secondary",
             onPress: () => setShowDeleteCompletedModal(false),
-            style: styles.cancelButton,
           },
           {
             text: t("shopping.delete"),
+            variant: "delete",
             onPress: () => {
               deleteCompletedItems();
               setShowDeleteCompletedModal(false);
             },
-            style: styles.deleteButton,
-            textStyle: styles.deleteButtonText,
           },
         ]}
       >
@@ -299,21 +297,51 @@ export default function ShoppingModals({
         buttons={[
           {
             text: t("shopping.cancel"),
+            variant: "secondary",
             onPress: () => setShowDeleteAllModal(false),
-            style: styles.cancelButton,
           },
           {
             text: t("shopping.delete"),
+            variant: "delete",
             onPress: () => {
               deleteAllItems();
               setShowDeleteAllModal(false);
             },
-            style: styles.deleteButton,
-            textStyle: styles.deleteButtonText,
           },
         ]}
       >
         <Text style={styles.modalText}>{t("shopping.deleteAllConfirm")}</Text>
+      </Modal>
+
+      {/* Remove User Confirmation Modal */}
+      <Modal
+        visible={showRemoveUserModal}
+        onClose={() => {
+          setShowRemoveUserModal(false);
+          setTimeout(() => setShowMembersModal(true), 300); // Reopen members modal with delay
+        }}
+        title={t("shopping.removeUser")}
+        buttons={[
+          {
+            text: t("shopping.cancel"),
+            variant: "secondary",
+            onPress: () => {
+              setShowRemoveUserModal(false);
+              setTimeout(() => setShowMembersModal(true), 300); // Reopen members modal with delay
+            },
+          },
+          {
+            text: t("shopping.remove"),
+            variant: "delete",
+            onPress: () => {
+              performRemoveUser();
+              setShowRemoveUserModal(false);
+              setTimeout(() => setShowMembersModal(true), 300); // Reopen members modal with delay
+            },
+          },
+        ]}
+      >
+        <Text style={styles.modalText}>{t("shopping.removeUserConfirm")}</Text>
       </Modal>
 
       {/* Members Modal */}
@@ -327,8 +355,7 @@ export default function ShoppingModals({
         buttons={[
           {
             text: t("shopping.close"),
-            style: { backgroundColor: "#FFC0CB" },
-            textStyle: { color: "#000" },
+            variant: "primary",
             onPress: () => {
               setShowMembersModal(false);
               openBottomSheet();
@@ -453,15 +480,6 @@ const styles = {
     textAlign: "center",
     marginBottom: 20,
     lineHeight: 20,
-  },
-  cancelButton: {
-    backgroundColor: "#f0f0f0",
-  },
-  deleteButton: {
-    backgroundColor: "#F44336",
-  },
-  deleteButtonText: {
-    color: "#fff",
   },
   modalText: {
     fontSize: 16,

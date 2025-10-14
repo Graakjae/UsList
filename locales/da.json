@@ -71,6 +71,7 @@
     "errorSharingQRCode": "Kunne ikke dele QR-kode",
     "errorEditingListName": "Kunne ikke redigere liste navn",
     "errorUpdatingItemName": "Kunne ikke opdatere vare navn",
+    "errorRemovingUser": "Kunne ikke fjerne bruger",
     "editItemName": "Rediger vare navn",
     "saveItemName": "Gem vare navn",
     "cancelEditItem": "Annuller redigering",

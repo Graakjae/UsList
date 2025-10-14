@@ -71,6 +71,7 @@
     "errorSharingQRCode": "Could not share QR code",
     "errorEditingListName": "Could not edit list name",
     "errorUpdatingItemName": "Could not update item name",
+    "errorRemovingUser": "Could not remove user",
     "editItemName": "Edit item name",
     "saveItemName": "Save item name",
     "cancelEditItem": "Cancel editing",

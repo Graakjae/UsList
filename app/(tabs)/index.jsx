@@ -45,6 +45,9 @@ export default function ShoppingScreen() {
     setShowDeleteCompletedModal,
     showDeleteAllModal,
     setShowDeleteAllModal,
+    showRemoveUserModal,
+    setShowRemoveUserModal,
+    userToRemove,
     // Computed values
     sortedItems,
     hasCompletedItems,
@@ -83,6 +86,7 @@ export default function ShoppingScreen() {
     selectSharedList,
     leaveSharedList,
     removeUserFromList,
+    performRemoveUser,
 
     openBottomSheet,
     closeBottomSheet,
@@ -178,10 +182,13 @@ export default function ShoppingScreen() {
             setShowDeleteCompletedModal={setShowDeleteCompletedModal}
             showDeleteAllModal={showDeleteAllModal}
             setShowDeleteAllModal={setShowDeleteAllModal}
+            showRemoveUserModal={showRemoveUserModal}
+            setShowRemoveUserModal={setShowRemoveUserModal}
             // Modal data
             editListName={editListName}
             setEditListName={setEditListName}
             listMembers={listMembers}
+            userToRemove={userToRemove}
             // Functions
             addNewList={addNewList}
             saveListName={saveListName}
@@ -189,6 +196,7 @@ export default function ShoppingScreen() {
             deleteCompletedItems={deleteCompletedItems}
             deleteAllItems={deleteAllItems}
             removeUserFromList={removeUserFromList}
+            performRemoveUser={performRemoveUser}
             openBottomSheet={openBottomSheet}
             closeBottomSheet={closeBottomSheet}
             // Other props
