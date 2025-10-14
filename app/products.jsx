@@ -1,7 +1,7 @@
 // app/products.jsx
-import { faArrowLeft, faPlus } from "@fortawesome/free-solid-svg-icons";
+import Header from "@/components/ui/Header";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -19,7 +19,6 @@ import ProductTabs from "../components/products/ProductTabs";
 import useProducts from "../hooks/useProducts";
 
 export default function Products() {
-  const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("user");
@@ -63,16 +62,7 @@ export default function Products() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <FontAwesomeIcon icon={faArrowLeft} size={20} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.title}>{t("products.title")}</Text>
-        <View style={styles.placeholder} />
-      </View>
+      <Header title={t("products.title")} />
 
       <ProductTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
