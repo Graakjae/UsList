@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Button from "./Button";
 
 export default function Modal({
   visible,
@@ -43,20 +44,20 @@ export default function Modal({
           {buttons.length > 0 && (
             <View style={styles.buttonContainer}>
               {buttons.map((button, index) => (
-                <TouchableOpacity
+                <Button
                   key={index}
+                  variant={button.variant || "primary"}
+                  onPress={button.onPress}
+                  disabled={button.disabled}
                   style={[
                     styles.button,
                     button.style,
                     buttons.length > 1 && styles.buttonWithMargin,
                   ]}
-                  onPress={button.onPress}
-                  disabled={button.disabled}
+                  textStyle={button.textStyle}
                 >
-                  <Text style={[styles.buttonText, button.textStyle]}>
-                    {button.text}
-                  </Text>
-                </TouchableOpacity>
+                  {button.text}
+                </Button>
               ))}
             </View>
           )}
@@ -97,16 +98,8 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 1,
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
   },
   buttonWithMargin: {
     marginHorizontal: 5,
-  },
-  buttonText: {
-    fontSize: 16,
-    fontFamily: "Baloo2-Bold",
-    color: "#333",
   },
 });

@@ -1,3 +1,4 @@
+import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -109,16 +110,13 @@ export default function SignupScreen() {
 
           {/* Error Message */}
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-          <TouchableOpacity
-            style={styles.signupButton}
+          <Button
+            variant="primary"
             onPress={handleSignup}
             disabled={isSubmitting}
           >
-            <Text style={styles.signupButtonText}>
-              {isSubmitting ? t("common.loading") : t("auth.createAccount")}
-            </Text>
-          </TouchableOpacity>
+            {isSubmitting ? t("common.loading") : t("auth.createAccount")}
+          </Button>
           <TouchableOpacity
             style={styles.linkButton}
             onPress={() => router.replace("/login")}
@@ -176,21 +174,10 @@ const styles = StyleSheet.create({
     fontFamily: "Nunito-Regular",
     marginBottom: 16,
   },
-  signupButton: {
-    backgroundColor: "#FFC0CB",
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  signupButtonText: {
-    color: "#000",
-    fontSize: 16,
-    fontFamily: "Baloo2-Bold",
-  },
   linkButton: {
     alignItems: "center",
     marginBottom: 8,
+    marginTop: 12,
   },
   linkButtonText: {
     color: "#007AFF",

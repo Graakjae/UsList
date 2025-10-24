@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   actionButtonText: {
     color: "#333",
     fontSize: 14,
-    fontFamily: "Baloo2-Medium",
+    fontFamily: "Nunito-Medium",
   },
   productImage: {
     width: 35,

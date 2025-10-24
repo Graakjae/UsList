@@ -64,6 +64,7 @@ export default function ShoppingScreen() {
     setShowInviteCodeModal,
     setCurrentListIdWithSave,
     setEditingItemName,
+    setShowEditResults,
 
     handleSearch,
     handleEditSearch,
@@ -143,6 +144,7 @@ export default function ShoppingScreen() {
               cancelEditingItem={cancelEditingItem}
               editSearchResults={editSearchResults}
               showEditResults={showEditResults}
+              setShowEditResults={setShowEditResults}
               handleEditSearch={handleEditSearch}
               selectEditProduct={selectEditProduct}
               selectedCategory={selectedCategory}

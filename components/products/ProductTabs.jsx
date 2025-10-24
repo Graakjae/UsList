@@ -37,7 +37,7 @@ export default function ProductTabs({ activeTab, setActiveTab }) {
 const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: "row",
-    marginBottom: 20,
+    marginBottom: 18,
     backgroundColor: "#f0f0f0",
     borderRadius: 8,
     padding: 4,

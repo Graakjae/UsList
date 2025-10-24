@@ -145,7 +145,7 @@ const styles = {
   addButtonText: {
     color: "#000",
     fontSize: 24,
-    fontFamily: "Baloo2-Bold",
+    fontFamily: "Nunito-Bold",
   },
   searchResultsContainer: {
     position: "absolute",

@@ -2,7 +2,8 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import Button from "../ui/Button";
 
 export default function EmptyState({ onAddProduct }) {
   const { t } = useTranslation();
@@ -14,12 +15,9 @@ export default function EmptyState({ onAddProduct }) {
       <Text style={styles.emptyDescription}>
         {t("products.noOwnProductsDescription")}
       </Text>
-      <TouchableOpacity style={styles.emptyAddButton} onPress={onAddProduct}>
-        <FontAwesomeIcon icon={faPlus} size={16} color="#fff" />
-        <Text style={styles.emptyAddButtonText}>
-          {t("products.addFirstProduct")}
-        </Text>
-      </TouchableOpacity>
+      <Button variant="primary" onPress={onAddProduct} icon={faPlus}>
+        {t("products.addFirstProduct")}
+      </Button>
     </View>
   );
 }
@@ -45,19 +43,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 24,
     marginBottom: 24,
-  },
-  emptyAddButton: {
-    backgroundColor: "#FFC0CB",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  emptyAddButtonText: {
-    color: "#000",
-    fontSize: 16,
-    fontFamily: "Baloo2-Bold",
   },
 });
