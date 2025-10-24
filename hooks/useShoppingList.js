@@ -143,7 +143,7 @@ export default function useShoppingList() {
       const filtered = products.filter((product) =>
         product.name.toLowerCase().includes(text.toLowerCase())
       );
-      setSearchResults(filtered);
+      setSearchResults(filtered.slice(0, 5));
       setShowResults(true);
     } else {
       setSearchResults([]);
