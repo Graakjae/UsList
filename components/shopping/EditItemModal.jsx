@@ -1,6 +1,13 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
+import {
+  FlatList,
+  Image,
+  Keyboard,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import {
   getAvailableStores,
   getAvailableUnits,
@@ -19,6 +26,7 @@ export default function EditItemModal({
   cancelEditingItem,
   editSearchResults,
   showEditResults,
+  setShowEditResults,
   selectEditProduct,
   item,
   selectedCategory,
@@ -77,6 +85,10 @@ export default function EditItemModal({
                 onChangeText={handleEditSearch}
                 placeholder={t("shopping.itemName")}
                 maxLength={50}
+                onSubmitEditing={() => {
+                  Keyboard.dismiss();
+                  setShowEditResults(false);
+                }}
               />
 
               {showEditResults && editSearchResults.length > 0 && (
