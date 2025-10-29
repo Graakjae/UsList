@@ -41,8 +41,17 @@ export default function useListItems(
       const filtered = products.filter((product) =>
         product.name.toLowerCase().includes(text.toLowerCase())
       );
-      setEditSearchResults(filtered);
+      setEditSearchResults(filtered.slice(0, 5));
       setShowEditResults(true);
+
+      // Auto-update category if there's an exact match
+      const exactMatch = products.find(
+        (product) => product.name.toLowerCase() === text.toLowerCase()
+      );
+      if (exactMatch && exactMatch.category) {
+        setSelectedCategory(exactMatch.category);
+        setShowEditResults(false);
+      }
     } else {
       setEditSearchResults([]);
       setShowEditResults(false);
@@ -52,6 +61,7 @@ export default function useListItems(
   // Select product from edit search results
   const selectEditProduct = (product) => {
     setEditingItemName(product.name);
+    setSelectedCategory(product.category || "");
     setEditSearchResults([]);
     setShowEditResults(false);
     Keyboard.dismiss();

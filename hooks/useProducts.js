@@ -20,6 +20,8 @@ export default function useProducts() {
   const [productSubcategory, setProductSubcategory] = useState("");
   const [productImage, setProductImage] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
 
   // Get category order based on current language
   const getCategoryOrder = () => {
@@ -306,34 +308,32 @@ export default function useProducts() {
       return;
     }
 
-    Alert.alert(
-      t("products.deleteProduct"),
-      `${t("products.deleteProductConfirm")} "${product.name}"?`,
-      [
-        {
-          text: t("common.cancel"),
-          style: "cancel",
-        },
-        {
-          text: t("common.delete"),
-          style: "destructive",
-          onPress: async () => {
-            try {
-              // Extract the actual product ID from the combined ID
-              const actualId = product.id.replace("user_", "");
-              const productRef = ref(
-                database,
-                `users/${user.uid}/products/${actualId}`
-              );
-              await remove(productRef);
-            } catch (error) {
-              console.error("Error deleting product:", error);
-              Alert.alert(t("common.error"), t("products.deleteError"));
-            }
-          },
-        },
-      ]
-    );
+    setProductToDelete(product);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!productToDelete || !user?.uid) return;
+
+    try {
+      // Extract the actual product ID from the combined ID
+      const actualId = productToDelete.id.replace("user_", "");
+      const productRef = ref(
+        database,
+        `users/${user.uid}/products/${actualId}`
+      );
+      await remove(productRef);
+      setShowDeleteModal(false);
+      setProductToDelete(null);
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      Alert.alert(t("common.error"), t("products.deleteError"));
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setProductToDelete(null);
   };
 
   const canEditProduct = (product) => {
@@ -364,6 +364,8 @@ export default function useProducts() {
     productSubcategory,
     productImage,
     uploading,
+    showDeleteModal,
+    productToDelete,
 
     // Setters
     setProductName,
@@ -377,6 +379,8 @@ export default function useProducts() {
     openEditModal,
     handleSave,
     handleDelete,
+    confirmDelete,
+    cancelDelete,
     canEditProduct,
     canDeleteProduct,
     getSortedProducts,

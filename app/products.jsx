@@ -1,21 +1,16 @@
 // app/products.jsx
 import Header from "@/components/ui/Header";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { FlatList, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import EmptyState from "../components/products/EmptyState";
 import ProductItem from "../components/products/ProductItem";
 import ProductModal from "../components/products/ProductModal";
 import ProductTabs from "../components/products/ProductTabs";
+import Button from "../components/ui/Button";
+import Modal from "../components/ui/Modal";
 import useProducts from "../hooks/useProducts";
 
 export default function Products() {
@@ -33,6 +28,8 @@ export default function Products() {
     productSubcategory,
     productImage,
     uploading,
+    showDeleteModal,
+    productToDelete,
     setProductName,
     setProductCategory,
     setProductSubcategory,
@@ -42,6 +39,8 @@ export default function Products() {
     openEditModal,
     handleSave,
     handleDelete,
+    confirmDelete,
+    cancelDelete,
     canEditProduct,
     canDeleteProduct,
     getSortedProducts,
@@ -67,14 +66,21 @@ export default function Products() {
       <ProductTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {activeTab === "user" && (
-        <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
-          <FontAwesomeIcon icon={faPlus} size={16} color="#000" />
-          <Text style={styles.addButtonText}>{t("products.addProduct")}</Text>
-        </TouchableOpacity>
+        <>
+          <Button
+            variant="primary"
+            onPress={openAddModal}
+            disabled={uploading}
+            icon={faPlus}
+          >
+            {t("products.addProduct")}
+          </Button>
+        </>
       )}
 
       {renderEmptyState() || (
         <FlatList
+          style={styles.list}
           data={sortedProducts}
           keyExtractor={(item) => item.id.toString()}
           showsVerticalScrollIndicator={false}
@@ -107,6 +113,28 @@ export default function Products() {
         onChooseImage={chooseProductImage}
         newImage={productImage}
       />
+
+      <Modal
+        visible={showDeleteModal}
+        onClose={cancelDelete}
+        title={t("products.deleteProduct")}
+        buttons={[
+          {
+            text: t("common.cancel"),
+            variant: "secondary",
+            onPress: cancelDelete,
+          },
+          {
+            text: t("common.delete"),
+            variant: "delete",
+            onPress: confirmDelete,
+          },
+        ]}
+      >
+        <Text style={styles.deleteText}>
+          {t("products.deleteProductConfirm")} "{productToDelete?.name}"?
+        </Text>
+      </Modal>
     </View>
   );
 }
@@ -117,38 +145,14 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#fff",
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
+  list: {
+    marginTop: 18,
   },
-  backButton: {
-    padding: 10,
-    marginRight: 10,
-  },
-  title: {
-    fontSize: 24,
-    fontFamily: "Baloo2-Bold",
+  deleteText: {
+    fontSize: 16,
+    fontFamily: "Baloo2-Regular",
     color: "#333",
     textAlign: "center",
-    flex: 1,
-  },
-  placeholder: {
-    width: 45,
-  },
-  addButton: {
-    backgroundColor: "#FFC0CB",
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 20,
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 8,
-  },
-  addButtonText: {
-    color: "#000",
-    fontSize: 16,
-    fontFamily: "Baloo2-Bold",
+    lineHeight: 24,
   },
 });

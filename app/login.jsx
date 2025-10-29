@@ -1,3 +1,4 @@
+import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -91,13 +92,13 @@ export default function LoginScreen() {
             onChangeText={setPassword}
             editable={!isSubmitting}
           />
-          <TouchableOpacity
-            style={styles.loginButton}
+          <Button
+            variant="primary"
             onPress={handleEmailLogin}
             disabled={isSubmitting}
           >
-            <Text style={styles.loginButtonText}>{t("auth.login")}</Text>
-          </TouchableOpacity>
+            {isSubmitting ? t("common.loading") : t("auth.login")}
+          </Button>
           {error && <Text style={styles.errorText}>{error}</Text>}
           <TouchableOpacity
             style={styles.linkButton}
@@ -182,21 +183,10 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
 
-  loginButton: {
-    backgroundColor: "#FFC0CB",
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  loginButtonText: {
-    color: "#000",
-    fontSize: 16,
-    fontFamily: "Baloo2-Bold",
-  },
   linkButton: {
     alignItems: "center",
     marginBottom: 8,
+    marginTop: 12,
   },
   linkButtonText: {
     color: "#007AFF",
@@ -237,7 +227,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     marginLeft: 12,
-    fontFamily: "Baloo2-Bold",
+    fontFamily: "Nunito-Bold",
   },
   anonymousButton: {
     flexDirection: "row",
@@ -255,7 +245,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontSize: 16,
     color: "#FFC0CB",
-    fontFamily: "Baloo2-Bold",
+    fontFamily: "Nunito-Bold",
   },
   errorText: {
     color: "#FF0000",

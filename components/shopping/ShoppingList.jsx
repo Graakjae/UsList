@@ -18,6 +18,7 @@ export default function ShoppingList({
   cancelEditingItem,
   editSearchResults,
   showEditResults,
+  setShowEditResults,
   handleEditSearch,
   selectEditProduct,
   selectedCategory,
@@ -151,6 +152,7 @@ export default function ShoppingList({
         cancelEditingItem={cancelEditingItem}
         editSearchResults={editSearchResults}
         showEditResults={showEditResults}
+        setShowEditResults={setShowEditResults}
         selectEditProduct={selectEditProduct}
         item={editingItem}
         selectedCategory={selectedCategory}
@@ -174,7 +176,7 @@ const styles = {
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#e1d96b",
-    marginBottom: 50,
+    marginBottom: 48,
   },
   listContainer: {
     flex: 1,
