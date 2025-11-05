@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React, { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
-import { getCategoryIcon } from "../../utils/shoppingUtils";
+import { getCategoryIcon, getTranslatedText } from "../../utils/shoppingUtils";
 import EditItemModal from "./EditItemModal";
 
 export default function ShoppingList({
@@ -29,8 +29,11 @@ export default function ShoppingList({
   setSelectedUnit,
   selectedStore,
   setSelectedStore,
+  getCategoryNameById,
+  getSubcategoryNameById,
+  products,
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const flatListRef = useRef(null);
 
   if (!currentListId) {
@@ -50,6 +53,24 @@ export default function ShoppingList({
   }
 
   const renderItem = ({ item, index }) => {
+    // Find product by product_id
+    const product = item.product_id
+      ? products.find((p) => p.id === item.product_id)
+      : null;
+
+    // Get product name from product (in correct language) or fallback to item.name
+    const displayName = product
+      ? getTranslatedText(product, "name", i18n.language)
+      : item.name || "";
+
+    // Get category name from category_id (for display)
+    const categoryName = item.category_id
+      ? getCategoryNameById(item.category_id)
+      : null;
+
+    // Use product icon_url if available, otherwise use item icon_url
+    const iconUrl = product?.icon_url || item.icon_url;
+
     return (
       <View style={[styles.noteLine]}>
         <TouchableOpacity
@@ -81,10 +102,10 @@ export default function ShoppingList({
                   fontFamily: item.font || "Baloo2-Medium",
                 },
                 item.completed && styles.completedText,
-                !item.category && styles.noCategoryText,
+                !categoryName && styles.noCategoryText,
               ]}
             >
-              {item.name}
+              {displayName}
               {item?.quantity && `, ${item?.quantity} ${item?.unit}`}
             </Text>
             {item.store && (
@@ -103,15 +124,13 @@ export default function ShoppingList({
             )}
           </View>
           <View style={styles.itemRightContent}>
-            {item.icon_url ? (
+            {iconUrl ? (
               <Image
                 source={
-                  item.icon_url.startsWith("data:")
-                    ? { uri: item.icon_url }
+                  iconUrl.startsWith("data:")
+                    ? { uri: iconUrl }
                     : {
-                        uri: `data:image/png;base64,${
-                          item.icon_url.split(",")[1]
-                        }`,
+                        uri: `data:image/png;base64,${iconUrl.split(",")[1]}`,
                       }
                 }
                 style={styles.productImage}
@@ -119,7 +138,7 @@ export default function ShoppingList({
               />
             ) : (
               <Image
-                source={getCategoryIcon(item.category)}
+                source={getCategoryIcon(item.category_id)}
                 style={styles.categoryIcon}
                 resizeMode="contain"
               />
@@ -139,7 +158,15 @@ export default function ShoppingList({
         ref={flatListRef}
         data={sortedItems}
         style={styles.listContainer}
-        keyExtractor={(item) => `item_${item.id}_${item.name}`}
+        keyExtractor={(item) => {
+          const product = item.product_id
+            ? products.find((p) => p.id === item.product_id)
+            : null;
+          const displayName = product
+            ? getTranslatedText(product, "name", i18n.language)
+            : item.name || "";
+          return `item_${item.id}_${displayName}`;
+        }}
         renderItem={renderItem}
         keyboardShouldPersistTaps="never"
       />
