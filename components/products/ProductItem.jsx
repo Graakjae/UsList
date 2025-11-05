@@ -1,4 +1,7 @@
-import { getTranslatedCategoryName } from "@/utils/shoppingUtils";
+import {
+  getTranslatedCategoryName,
+  getTranslatedText,
+} from "@/utils/shoppingUtils";
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React from "react";
@@ -20,13 +23,15 @@ export default function ProductItem({
     i18n.language
   );
 
+  const productName = getTranslatedText(product, "name", i18n.language);
+
   return (
     <View style={[styles.productItem, !canEdit && styles.productItemReadOnly]}>
       {product.icon_url && (
         <Image source={{ uri: product.icon_url }} style={styles.productImage} />
       )}
       <View style={styles.productInfo}>
-        <Text style={styles.productName}>{product.name}</Text>
+        <Text style={styles.productName}>{productName}</Text>
         <Text style={styles.productCategory}>{translatedCategory}</Text>
         {product.subcategory && (
           <Text style={styles.productSubcategory}>{product.subcategory}</Text>

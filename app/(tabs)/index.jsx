@@ -16,6 +16,7 @@ export default function ShoppingScreen() {
     newItem,
     searchResults,
     showResults,
+    products,
     editSearchResults,
     showEditResults,
     lists,
@@ -94,6 +95,8 @@ export default function ShoppingScreen() {
 
     getCurrentListName,
     generateInviteLink,
+    getCategoryNameById,
+    getSubcategoryNameById,
   } = useShoppingList();
 
   return (
@@ -155,6 +158,9 @@ export default function ShoppingScreen() {
               setSelectedUnit={setSelectedUnit}
               selectedStore={selectedStore}
               setSelectedStore={setSelectedStore}
+              getCategoryNameById={getCategoryNameById}
+              getSubcategoryNameById={getSubcategoryNameById}
+              products={products}
             />
           </View>
 

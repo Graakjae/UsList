@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { getTranslatedText } from "../../utils/shoppingUtils";
 
 export default function ItemInput({
   newItem,
@@ -18,7 +19,7 @@ export default function ItemInput({
   currentListId,
   isEditing,
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const MAX_LENGTH = 50;
 
   return (
@@ -61,31 +62,41 @@ export default function ItemInput({
         <View style={styles.searchResultsContainer}>
           <FlatList
             data={searchResults}
-            keyExtractor={(item) => `search_${item.id}_${item.name}`}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.searchResultItem}
-                onPress={() => selectProduct(item)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.searchResultText}>{item.name}</Text>
-                {item.icon_url && (
-                  <Image
-                    source={
-                      item.icon_url.startsWith("data:")
-                        ? { uri: item.icon_url }
-                        : {
-                            uri: `data:image/png;base64,${
-                              item.icon_url.split(",")[1]
-                            }`,
-                          }
-                    }
-                    style={styles.productImage}
-                    resizeMode="contain"
-                  />
-                )}
-              </TouchableOpacity>
-            )}
+            keyExtractor={(item) => {
+              const name = getTranslatedText(item, "name", i18n.language);
+              return `search_${item.id}_${name}`;
+            }}
+            renderItem={({ item }) => {
+              const productName = getTranslatedText(
+                item,
+                "name",
+                i18n.language
+              );
+              return (
+                <TouchableOpacity
+                  style={styles.searchResultItem}
+                  onPress={() => selectProduct(item)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.searchResultText}>{productName}</Text>
+                  {item.icon_url && (
+                    <Image
+                      source={
+                        item.icon_url.startsWith("data:")
+                          ? { uri: item.icon_url }
+                          : {
+                              uri: `data:image/png;base64,${
+                                item.icon_url.split(",")[1]
+                              }`,
+                            }
+                      }
+                      style={styles.productImage}
+                      resizeMode="contain"
+                    />
+                  )}
+                </TouchableOpacity>
+              );
+            }}
             keyboardShouldPersistTaps="handled"
           />
         </View>

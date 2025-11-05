@@ -5,14 +5,19 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
 import { database } from "../firebase";
-import { getCategoriesForLanguage } from "../utils/shoppingUtils";
+import {
+  categoryOrder,
+  getCategoriesForLanguageFromDB,
+  getTranslatedText,
+} from "../utils/shoppingUtils";
 import { useAuth } from "./useAuth";
 
 export default function useProducts() {
   const { user } = useAuth();
-  const { t, i18n } = useTranslation(); // Tilføj i18n for at få adgang til nuværende sprog
+  const { t, i18n } = useTranslation();
   const [standardProducts, setStandardProducts] = useState([]);
   const [userProducts, setUserProducts] = useState([]);
+  const [productCategories, setProductCategories] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [productName, setProductName] = useState("");
@@ -23,19 +28,26 @@ export default function useProducts() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
 
-  // Get category order based on current language
-  const getCategoryOrder = () => {
-    const categories = getCategoriesForLanguage(i18n.language);
-    const order = {};
-    categories.forEach((category, index) => {
-      order[category.label] = index + 1;
-    });
-    return order;
-  };
+  // Import categoryOrder from utils (now uses IDs)
+  // No need for getCategoryOrder function anymore
+
+  // Load product categories
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const categories = await getCategoriesForLanguageFromDB(i18n.language);
+        setProductCategories(categories);
+      } catch (error) {
+        console.error("Error loading product categories:", error);
+        setProductCategories([]);
+      }
+    };
+    loadCategories();
+  }, [i18n.language]);
 
   // Get available categories for current language
   const getAvailableCategories = () => {
-    return getCategoriesForLanguage(i18n.language);
+    return productCategories;
   };
 
   // Validate if category exists in current language
@@ -52,40 +64,40 @@ export default function useProducts() {
     }));
   };
 
-  // Helper function til at hente oversat tekst
-  const getTranslatedText = (product, field) => {
-    const currentLanguage = i18n.language;
+  // Helper function to get category name from category_id
+  const getCategoryNameById = (categoryId) => {
+    if (!categoryId || !productCategories.length) return null;
+    const category = productCategories.find((cat) => cat.id === categoryId);
+    return category ? category.label || category.name : null;
+  };
 
-    // Først prøv at hente fra oversættelser
-    if (product.translations && product.translations[currentLanguage]) {
-      return product.translations[currentLanguage][field] || "";
-    }
+  // Helper function to get subcategory name from subcategory_id
+  const getSubcategoryNameById = (subcategoryId, categoryId) => {
+    if (!subcategoryId || !productCategories.length) return null;
 
-    // Fallback til dansk hvis oversættelse ikke findes
-    if (product.translations && product.translations.da) {
-      return product.translations.da[field] || "";
-    }
+    // Find the category first
+    const category = productCategories.find((cat) => cat.id === categoryId);
+    if (!category || !category.subcategories) return null;
 
-    // Fallback til original felt (for bagudkompatibilitet)
-    return product[field] || "";
+    // Find the subcategory
+    const subcategory = category.subcategories.find(
+      (sub) => sub.id === subcategoryId
+    );
+    return subcategory ? subcategory.label || subcategory.name : null;
   };
 
   // Load standard products
   useEffect(() => {
-    const standardProductsRef = ref(database, "standard_products");
+    const standardProductsRef = ref(database, "standard_products2");
     const unsubscribe = onValue(standardProductsRef, (snapshot) => {
       try {
         const data = snapshot.val();
         if (data) {
           const itemsArray = Object.entries(data).map(([index, item]) => ({
             id: `standard_${index}`,
-            name: getTranslatedText(item, "name"),
-            category: getTranslatedText(item, "category"),
-            subcategory: getTranslatedText(item, "subcategory"),
-            icon_url: item.icon_url || null,
-            isStandard: true,
-            createdBy: "system",
-            translations: item.translations || null, // Behold oversættelser for fremtidig brug
+            name: getTranslatedText(item, "name", i18n.language),
+            category_id: item.category_id,
+            subcategory_id: item.subcategory_id,
           }));
           setStandardProducts(itemsArray);
         } else {
@@ -110,9 +122,9 @@ export default function useProducts() {
         if (data) {
           const itemsArray = Object.entries(data).map(([index, item]) => ({
             id: `user_${index}`,
-            name: getTranslatedText(item, "name"),
-            category: getTranslatedText(item, "category"),
-            subcategory: getTranslatedText(item, "subcategory"),
+            name: getTranslatedText(item, "name", i18n.language),
+            category: getTranslatedText(item, "category", i18n.language),
+            subcategory: getTranslatedText(item, "subcategory", i18n.language),
             icon_url: item.icon_url || null,
             isStandard: false,
             createdBy: user.uid,
@@ -192,43 +204,56 @@ export default function useProducts() {
     setEditingProduct({
       id: product.id,
       name: product.name,
-      category: product.category,
-      subcategory: product.subcategory || "",
+      category_id: product.category_id,
+      subcategory_id: product.subcategory_id,
       icon_url: product.icon_url || null,
-      createdBy: product.createdBy,
-      isStandard: product.isStandard,
-      translations: product.translations || null,
     });
 
-    // Hent oversat tekst for det nuværende sprog
-    const currentLanguage = i18n.language;
-    if (product.translations && product.translations[currentLanguage]) {
-      setProductName(
-        product.translations[currentLanguage].name || product.name
-      );
-      setProductCategory(
-        product.translations[currentLanguage].category || product.category
-      );
-      setProductSubcategory(
-        product.translations[currentLanguage].subcategory ||
-          product.subcategory ||
-          ""
-      );
-    } else if (product.translations && product.translations.da) {
-      // Fallback til dansk hvis oversættelse for nuværende sprog ikke findes
-      setProductName(product.translations.da.name || product.name);
-      setProductCategory(product.translations.da.category || product.category);
-      setProductSubcategory(
-        product.translations.da.subcategory || product.subcategory || ""
-      );
-    } else {
-      // Fallback til original felter
-      setProductName(product.name);
-      setProductCategory(product.category);
-      setProductSubcategory(product.subcategory || "");
+    // Hent oversat tekst for produktnavn
+    const productNameText = getTranslatedText(product, "name", i18n.language);
+    setProductName(productNameText);
+
+    // Get category and subcategory names from IDs
+    let categoryName = "";
+    let subcategoryName = "";
+
+    if (product.category_id) {
+      categoryName = getCategoryNameById(product.category_id) || "";
+      if (product.subcategory_id) {
+        subcategoryName =
+          getSubcategoryNameById(product.subcategory_id, product.category_id) ||
+          "";
+      }
     }
+
+    setProductCategory(categoryName);
+    setProductSubcategory(subcategoryName);
     setProductImage(product.icon_url || null);
     setIsModalVisible(true);
+  };
+
+  // Helper function to convert category name to category_id
+  const getCategoryIdFromName = (categoryName) => {
+    if (!categoryName || !productCategories.length) return null;
+    const category = productCategories.find(
+      (cat) => (cat.label || cat.name) === categoryName
+    );
+    return category ? category.id : null;
+  };
+
+  // Helper function to convert subcategory name to subcategory_id
+  const getSubcategoryIdFromName = (subcategoryName, categoryId) => {
+    if (!subcategoryName || !productCategories.length) return null;
+
+    // Find the category first
+    const category = productCategories.find((cat) => cat.id === categoryId);
+    if (!category || !category.subcategories) return null;
+
+    // Find the subcategory
+    const subcategory = category.subcategories.find(
+      (sub) => (sub.label || sub.name) === subcategoryName
+    );
+    return subcategory ? subcategory.id : null;
   };
 
   const handleSave = async () => {
@@ -239,30 +264,23 @@ export default function useProducts() {
 
     setUploading(true);
     try {
+      // Convert category and subcategory names to IDs
+      const categoryId = getCategoryIdFromName(productCategory.trim());
+      const subcategoryId = categoryId
+        ? getSubcategoryIdFromName(productSubcategory.trim(), categoryId)
+        : null;
+
       const productData = {
-        translations: {
-          // Behold eksisterende oversættelser hvis vi redigerer
-          ...(editingProduct?.translations || {}),
-          // Altid inkluder dansk som fallback
-          da: {
-            name: productName.trim(),
-            category: productCategory.trim(),
-            subcategory: productSubcategory.trim(),
-          },
-          // Tilføj oversættelse for det aktuelle sprog hvis det ikke er dansk
+        // New structure with direct language fields
+        name: {
+          da: productName.trim(),
           ...(i18n.language !== "da"
-            ? {
-                [i18n.language]: {
-                  name: productName.trim(),
-                  category: productCategory.trim(),
-                  subcategory: productSubcategory.trim(),
-                },
-              }
+            ? { [i18n.language]: productName.trim() }
             : {}),
         },
+        category_id: categoryId,
+        subcategory_id: subcategoryId,
         icon_url: productImage || null,
-        createdBy: user?.uid,
-        isStandard: false,
         updatedAt: Date.now(),
       };
 
@@ -345,11 +363,11 @@ export default function useProducts() {
   };
 
   const getSortedProducts = (products) => {
-    const categoryOrder = getCategoryOrder();
     return [...products].sort((a, b) => {
-      const categoryA = categoryOrder[a.category] || 999;
-      const categoryB = categoryOrder[b.category] || 999;
-      return categoryA - categoryB;
+      // Use category_id for sorting with categoryOrder (now uses IDs)
+      const orderA = a.category_id ? categoryOrder[a.category_id] || 999 : 999;
+      const orderB = b.category_id ? categoryOrder[b.category_id] || 999 : 999;
+      return orderA - orderB;
     });
   };
 

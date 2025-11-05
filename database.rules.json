@@ -63,7 +63,10 @@
           ".read": "auth != null && auth.uid == $userId",
           ".write": "auth != null && auth.uid == $userId",
           "$itemName": {
-            ".validate": "newData.hasChildren(['category', 'lastUsed'])",
+            ".validate": "newData.hasChildren(['lastUsed']) && (newData.hasChildren(['category_id']) || newData.hasChildren(['category']))",
+            "category_id": {
+              ".validate": "newData.isString() && newData.val().length > 0"
+            },
             "category": {
               ".validate": "newData.isString() && newData.val().length > 0"
             },

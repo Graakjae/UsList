@@ -5,12 +5,12 @@ import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
 import { database } from "../firebase";
 import {
-  getCategoriesForLanguage,
+  getCategoriesForLanguageFromDB,
   getItemsPath,
   getSuggestedCategory,
+  getTranslatedText,
   hasItems as hasItemsUtil,
   isItemCompleted,
-  sortItemsByCategory,
   updateCategoryMemory,
 } from "../utils/shoppingUtils";
 import { useAuth } from "./useAuth";
@@ -27,6 +27,7 @@ export default function useShoppingList() {
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const [products, setProducts] = useState([]);
+  const [productCategories, setProductCategories] = useState([]);
   const [lists, setLists] = useState([]);
   const [currentListId, setCurrentListId] = useState(null);
   const [listsLoading, setListsLoading] = useState(true);
@@ -71,27 +72,9 @@ export default function useShoppingList() {
     }
   };
 
-  // Helper function til at hente oversat tekst
-  const getTranslatedText = (product, field) => {
-    const currentLanguage = i18n.language;
-
-    // Først prøv at hente fra oversættelser
-    if (product.translations && product.translations[currentLanguage]) {
-      return product.translations[currentLanguage][field] || "";
-    }
-
-    // Fallback til dansk hvis oversættelse ikke findes
-    if (product.translations && product.translations.da) {
-      return product.translations.da[field] || "";
-    }
-
-    // Fallback til original felt (for bagudkompatibilitet)
-    return product[field] || "";
-  };
-
   // Get available categories for current language
   const getAvailableCategories = () => {
-    return getCategoriesForLanguage(i18n.language);
+    return productCategories;
   };
 
   // Get category options for dropdown/selection
@@ -100,6 +83,40 @@ export default function useShoppingList() {
       label: cat.label,
       value: cat.label,
     }));
+  };
+
+  // Load product categories
+  const loadProductCategories = async () => {
+    try {
+      const categories = await getCategoriesForLanguageFromDB(i18n.language);
+      setProductCategories(categories);
+    } catch (error) {
+      console.error("Error loading product categories:", error);
+      setProductCategories([]);
+    }
+  };
+
+  // Helper function to get category name from category_id
+  const getCategoryNameById = (categoryId) => {
+    if (!categoryId || !productCategories.length) return null;
+    const category = productCategories.find((cat) => cat.id === categoryId);
+    return category ? category.label || category.name : null;
+  };
+
+  // Helper function to get subcategory name from subcategory_id
+  const getSubcategoryNameById = (subcategoryId) => {
+    if (!subcategoryId || !productCategories.length) return null;
+    for (const category of productCategories) {
+      if (category.subcategories) {
+        const subcategory = category.subcategories.find(
+          (sub) => sub.id === subcategoryId
+        );
+        if (subcategory) {
+          return subcategory.name || subcategory.label;
+        }
+      }
+    }
+    return null;
   };
 
   // Get current list name
@@ -140,9 +157,12 @@ export default function useShoppingList() {
   const handleSearch = (text) => {
     setNewItem(text);
     if (text.length > 0) {
-      const filtered = products.filter((product) =>
-        product.name.toLowerCase().includes(text.toLowerCase())
-      );
+      const filtered = products.filter((product) => {
+        const productName = getTranslatedText(product, "name", i18n.language);
+        return (
+          productName && productName.toLowerCase().includes(text.toLowerCase())
+        );
+      });
       setSearchResults(filtered.slice(0, 5));
       setShowResults(true);
     } else {
@@ -351,7 +371,7 @@ export default function useShoppingList() {
   const loadProducts = () => {
     try {
       // Load standard products
-      const standardProductsRef = ref(database, "standard_products");
+      const standardProductsRef = ref(database, "standard_products2");
       const userProductsRef = user
         ? ref(database, `users/${user.uid}/products`)
         : null;
@@ -364,13 +384,10 @@ export default function useShoppingList() {
           if (data) {
             standardProducts = Object.entries(data).map(([id, item]) => ({
               id: `standard_${id}`,
-              name: getTranslatedText(item, "name"),
-              category: getTranslatedText(item, "category"),
-              subcategory: getTranslatedText(item, "subcategory"),
+              name: item.name, // Keep original structure {da: "...", en: "..."}
+              category_id: item.category_id,
+              subcategory_id: item.subcategory_id,
               icon_url: item.icon_url || null,
-              isStandard: true,
-              createdBy: "system",
-              translations: item.translations || null,
             }));
           }
 
@@ -384,13 +401,10 @@ export default function useShoppingList() {
                 if (userData) {
                   userProducts = Object.entries(userData).map(([id, item]) => ({
                     id: `user_${id}`,
-                    name: getTranslatedText(item, "name"),
-                    category: getTranslatedText(item, "category"),
-                    subcategory: getTranslatedText(item, "subcategory"),
+                    name: item.name, // Keep original structure {da: "...", en: "..."}
+                    category_id: item.category_id,
+                    subcategory_id: item.subcategory_id,
                     icon_url: item.icon_url || null,
-                    isStandard: false,
-                    createdBy: user.uid,
-                    translations: item.translations || null,
                   }));
                 }
 
@@ -472,7 +486,8 @@ export default function useShoppingList() {
     currentListId,
     products,
     userListColor,
-    userListFont
+    userListFont,
+    productCategories
   );
 
   // Select product from search results
@@ -486,24 +501,41 @@ export default function useShoppingList() {
       const itemsRef = ref(database, itemsPath);
       const newItemRef = push(itemsRef);
 
-      // Check for suggested category from memory
-      let finalCategory = product.category;
+      const productName = getTranslatedText(product, "name", i18n.language);
+
+      // Use product category_id and subcategory_id, or check memory for suggested category
+      let finalCategoryId = product.category_id;
       try {
         const suggestedCategory = await getSuggestedCategory(
           user.uid,
-          product.name
+          productName
         );
+        // suggestedCategory is now category_id (or legacy category name)
         if (suggestedCategory) {
-          finalCategory = suggestedCategory;
+          // Check if it's a category_id (starts with "cat-") or legacy category name
+          if (suggestedCategory.startsWith("cat-")) {
+            finalCategoryId = suggestedCategory;
+          } else {
+            // Legacy category name - try to convert to category_id
+            const category = productCategories.find(
+              (cat) =>
+                cat.label === suggestedCategory ||
+                cat.name === suggestedCategory
+            );
+            if (category) {
+              finalCategoryId = category.id;
+            }
+          }
         }
       } catch (error) {
         console.error("Error getting suggested category:", error);
       }
 
       const itemData = {
-        name: product.name,
-        category: finalCategory,
-        subcategory: product.subcategory,
+        name: productName,
+        product_id: product.id,
+        category_id: finalCategoryId,
+        subcategory_id: product.subcategory_id || null,
         quantity: "",
         unit: "",
         completed: false,
@@ -516,10 +548,10 @@ export default function useShoppingList() {
         itemData.icon_url = product.icon_url;
       }
 
-      // Save category memory if category differs from product category
-      if (finalCategory && finalCategory !== product.category) {
+      // Save category memory if needed (using category_id)
+      if (finalCategoryId && finalCategoryId !== product.category_id) {
         try {
-          await updateCategoryMemory(user.uid, product.name, finalCategory);
+          await updateCategoryMemory(user.uid, productName, finalCategoryId);
         } catch (memoryError) {
           console.error("Error saving category memory:", memoryError);
           // Don't fail the main operation if memory saving fails
@@ -542,9 +574,13 @@ export default function useShoppingList() {
     if (!user || !newItem.trim() || !currentListId) return;
 
     try {
-      const matchingProduct = products.find(
-        (product) => product.name.toLowerCase() === newItem.trim().toLowerCase()
-      );
+      const matchingProduct = products.find((product) => {
+        const productName = getTranslatedText(product, "name", i18n.language);
+        return (
+          productName &&
+          productName.toLowerCase() === newItem.trim().toLowerCase()
+        );
+      });
 
       const itemsPath = getItemsPath(user, currentListId);
       if (!itemsPath) return; // No valid path
@@ -552,18 +588,34 @@ export default function useShoppingList() {
       const itemsRef = ref(database, itemsPath);
       const newItemRef = push(itemsRef);
       const finalItemName = matchingProduct
-        ? matchingProduct.name
+        ? getTranslatedText(matchingProduct, "name", i18n.language)
         : newItem.trim();
 
       // Get suggested category from memory (always check, even for standard products)
-      let finalCategory = matchingProduct ? matchingProduct.category : "Andet";
+      let finalCategoryId = matchingProduct
+        ? matchingProduct.category_id
+        : null;
       try {
         const suggestedCategory = await getSuggestedCategory(
           user.uid,
           finalItemName
         );
+        // suggestedCategory is now category_id (or legacy category name)
         if (suggestedCategory) {
-          finalCategory = suggestedCategory;
+          // Check if it's a category_id (starts with "cat-") or legacy category name
+          if (suggestedCategory.startsWith("cat-")) {
+            finalCategoryId = suggestedCategory;
+          } else {
+            // Legacy category name - try to convert to category_id
+            const category = productCategories.find(
+              (cat) =>
+                cat.label === suggestedCategory ||
+                cat.name === suggestedCategory
+            );
+            if (category) {
+              finalCategoryId = category.id;
+            }
+          }
         }
       } catch (error) {
         console.error("Error getting suggested category:", error);
@@ -571,8 +623,9 @@ export default function useShoppingList() {
 
       const itemData = {
         name: finalItemName,
-        category: finalCategory,
-        subcategory: matchingProduct ? matchingProduct.subcategory : "",
+        product_id: matchingProduct ? matchingProduct.id : null,
+        category_id: finalCategoryId,
+        subcategory_id: matchingProduct ? matchingProduct.subcategory_id : null,
         quantity: "",
         unit: "",
         completed: false,
@@ -585,13 +638,14 @@ export default function useShoppingList() {
         itemData.icon_url = matchingProduct.icon_url;
       }
 
-      // Save category memory if category differs from standard product category
-      const standardCategory = matchingProduct
-        ? matchingProduct.category
-        : "Andet";
-      if (finalCategory && finalCategory !== standardCategory) {
+      // Save category memory if needed (using category_id)
+      if (
+        finalCategoryId &&
+        matchingProduct &&
+        finalCategoryId !== matchingProduct.category_id
+      ) {
         try {
-          await updateCategoryMemory(user.uid, finalItemName, finalCategory);
+          await updateCategoryMemory(user.uid, finalItemName, finalCategoryId);
         } catch (memoryError) {
           console.error("Error saving category memory:", memoryError);
           // Don't fail the main operation if memory saving fails
@@ -623,6 +677,9 @@ export default function useShoppingList() {
       }
     };
     loadLastList();
+
+    // Load product categories
+    loadProductCategories();
 
     const listsUnsubscribe = loadLists();
     const productsUnsubscribe = loadProducts();
@@ -752,8 +809,34 @@ export default function useShoppingList() {
     }
   }, [user, currentListId]);
 
+  // Helper function to sort items by category using productCategories order
+  const sortItemsWithCategoryId = (items) => {
+    return [...items].sort((a, b) => {
+      if (!a.category_id || !b.category_id) {
+        // Items without category_id go to the end
+        if (!a.category_id && !b.category_id) return 0;
+        if (!a.category_id) return 1;
+        if (!b.category_id) return -1;
+      }
+
+      // Find category index in productCategories (already sorted by categoryOrder)
+      const indexA = productCategories.findIndex(
+        (cat) => cat.id === a.category_id
+      );
+      const indexB = productCategories.findIndex(
+        (cat) => cat.id === b.category_id
+      );
+
+      // If not found, put at the end
+      const orderA = indexA !== -1 ? indexA : 999;
+      const orderB = indexB !== -1 ? indexB : 999;
+
+      return orderA - orderB;
+    });
+  };
+
   // Computed values
-  const sortedItems = sortItemsByCategory(listItems.items, i18n.language);
+  const sortedItems = sortItemsWithCategoryId(listItems.items);
   const hasCompletedItems = isItemCompleted(listItems.items);
   const hasItems = hasItemsUtil(listItems.items);
 
@@ -796,6 +879,8 @@ export default function useShoppingList() {
     // Functions
     getAvailableCategories,
     getCategoryOptions,
+    getCategoryNameById,
+    getSubcategoryNameById,
     handleSearch,
     selectProduct,
     addItem,

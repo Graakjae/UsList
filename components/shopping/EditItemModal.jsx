@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   FlatList,
@@ -11,7 +11,8 @@ import {
 import {
   getAvailableStores,
   getAvailableUnits,
-  getCategoriesForLanguage,
+  getCategoriesForLanguageFromDB,
+  getTranslatedText,
 } from "../../utils/shoppingUtils";
 import Input from "../ui/Input";
 import Modal from "../ui/Modal";
@@ -39,9 +40,23 @@ export default function EditItemModal({
   setSelectedStore,
 }) {
   const { t, i18n } = useTranslation();
+  const [availableCategories, setAvailableCategories] = useState([]);
 
-  // Get available categories, units and stores
-  const availableCategories = getCategoriesForLanguage(i18n.language);
+  // Load categories from database
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const categories = await getCategoriesForLanguageFromDB(i18n.language);
+        setAvailableCategories(categories);
+      } catch (error) {
+        console.error("Error loading categories:", error);
+        setAvailableCategories([]);
+      }
+    };
+    loadCategories();
+  }, [i18n.language]);
+
+  // Get available units and stores
   const availableUnits = getAvailableUnits();
   const availableStores = getAvailableStores();
 
@@ -95,35 +110,47 @@ export default function EditItemModal({
                 <View style={styles.editSearchResultsContainer}>
                   <FlatList
                     data={editSearchResults}
-                    keyExtractor={(product) =>
-                      `edit_search_${product.id}_${product.name}`
-                    }
-                    renderItem={({ item: product }) => (
-                      <TouchableOpacity
-                        style={styles.editSearchResultItem}
-                        onPress={() => selectEditProduct(product)}
-                        activeOpacity={0.7}
-                      >
-                        <Text style={styles.editSearchResultText}>
-                          {product.name}
-                        </Text>
-                        {product.icon_url && (
-                          <Image
-                            source={
-                              product.icon_url.startsWith("data:")
-                                ? { uri: product.icon_url }
-                                : {
-                                    uri: `data:image/png;base64,${
-                                      product.icon_url.split(",")[1]
-                                    }`,
-                                  }
-                            }
-                            style={styles.editProductImage}
-                            resizeMode="contain"
-                          />
-                        )}
-                      </TouchableOpacity>
-                    )}
+                    keyExtractor={(product) => {
+                      const name = getTranslatedText(
+                        product,
+                        "name",
+                        i18n.language
+                      );
+                      return `edit_search_${product.id}_${name}`;
+                    }}
+                    renderItem={({ item: product }) => {
+                      const productName = getTranslatedText(
+                        product,
+                        "name",
+                        i18n.language
+                      );
+                      return (
+                        <TouchableOpacity
+                          style={styles.editSearchResultItem}
+                          onPress={() => selectEditProduct(product)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={styles.editSearchResultText}>
+                            {productName}
+                          </Text>
+                          {product.icon_url && (
+                            <Image
+                              source={
+                                product.icon_url.startsWith("data:")
+                                  ? { uri: product.icon_url }
+                                  : {
+                                      uri: `data:image/png;base64,${
+                                        product.icon_url.split(",")[1]
+                                      }`,
+                                    }
+                              }
+                              style={styles.editProductImage}
+                              resizeMode="contain"
+                            />
+                          )}
+                        </TouchableOpacity>
+                      );
+                    }}
                     keyboardShouldPersistTaps="handled"
                   />
                 </View>
@@ -136,7 +163,10 @@ export default function EditItemModal({
                 value={selectedCategory}
                 options={availableCategories}
                 onSelect={(category) => {
-                  setSelectedCategory(category.key);
+                  // Use label (category name) instead of key
+                  setSelectedCategory(
+                    category.label || category.name || category.key
+                  );
                 }}
                 placeholder={t("shopping.noCategory")}
                 style={styles.categoryContainer}
